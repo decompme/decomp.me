@@ -11,7 +11,7 @@ export type HighlighterContextData = {
     setHighlightAll: Highlighter["setValue"];
 };
 
-export function useHighlighers(count: number): HighlighterContextData {
+export function useHighlighters(count: number): HighlighterContextData {
     const [values, setValues] = useState<string[]>(Array(count).fill(null));
     if (values.length !== count) {
         throw new Error("Count changed");
