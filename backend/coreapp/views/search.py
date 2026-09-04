@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Case, Count, IntegerField, When
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
@@ -38,10 +38,23 @@ class SearchViewSet(APIView):
             .select_related("owner__user", "owner__user__github")
             .annotate(num_scratches=Count("scratch"))[:page_size]
         )
-        scratch_qs = Scratch.objects.filter(name__icontains=query).select_related(
-            "owner__user__github",
-            "best_fork__fork__owner__user__github",
-        )[:page_size]
+        # Returns up to 3x page_size, but we should prioritize scratches
+        scratch_page_size = page_size * 3 - user_qs.count() - preset_qs.count()
+        scratch_qs = (
+            Scratch.objects.filter(name__icontains=query)
+            .select_related(
+                "owner__user__github",
+                "best_fork__fork__owner__user__github",
+            )
+            .annotate(
+                exact_match=Case(
+                    When(name__iexact=query, then=1),
+                    default=0,
+                    output_field=IntegerField(),
+                )
+            )
+            .order_by("-exact_match", "name", "slug")[:scratch_page_size]
+        )
 
         results = []
 
