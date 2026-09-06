@@ -214,7 +214,7 @@ class MSVCCompiler(Compiler):
 
 @dataclass(frozen=True)
 class ICCCompiler(Compiler):
-    flags: ClassVar[flags.FlagClass] = flags.COMMON_ICC_FLAGS
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_ICC_FLAGS
     library_include_flag: str = "/IZ:"
 
 
