@@ -8,13 +8,40 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from coreapp import compilers
+from coreapp import compilers, flags
 from coreapp.models.preset import Preset
 
 from ..decorators.cache import globally_cacheable
 from ..decorators.django import condition
 
 boot_time = now()
+
+
+def compiler_metadata_json(
+    selected_compilers: list[compilers.Compiler],
+) -> dict[str, dict[str, object]]:
+    return {
+        compiler.id: {
+            "platform": compiler.platform.id,
+            "flags_class": compiler.flag_class.name,
+            "diff_flags_class": compiler.platform.diff_flag_class.name,
+        }
+        for compiler in selected_compilers
+    }
+
+
+def compiler_response_json(
+    selected_compilers: list[compilers.Compiler],
+) -> dict[str, object]:
+    return {
+        "compilers": compiler_metadata_json(selected_compilers),
+        "flags": flags.compiler_flag_classes_to_json(
+            (compiler.flag_class for compiler in selected_compilers)
+        ),
+        "diff_flags": flags.diff_flag_classes_to_json(
+            (compiler.platform.diff_flag_class for compiler in selected_compilers)
+        ),
+    }
 
 
 def endpoint_updated(request: Request, **_: typing.Any) -> datetime:
@@ -43,16 +70,7 @@ class SingleCompilerDetail(APIView):
             if len(filtered) == 0:
                 raise NotFound(detail="Compiler not found")
 
-        return Response(
-            {
-                c.id: {
-                    "platform": c.platform.id,
-                    "flags": [f.to_json() for f in c.flags],
-                    "diff_flags": [f.to_json() for f in c.platform.diff_flags],
-                }
-                for c in filtered
-            }
-        )
+        return Response(compiler_response_json(filtered))
 
 
 @method_decorator(
@@ -61,14 +79,7 @@ class SingleCompilerDetail(APIView):
 class CompilerDetail(APIView):
     @staticmethod
     def compilers_json() -> dict[str, dict[str, object]]:
-        return {
-            c.id: {
-                "platform": c.platform.id,
-                "flags": [f.to_json() for f in c.flags],
-                "diff_flags": [f.to_json() for f in c.platform.diff_flags],
-            }
-            for c in compilers.available_compilers()
-        }
+        return compiler_metadata_json(compilers.available_compilers())
 
     @staticmethod
     def platforms_json() -> dict[str, dict[str, object]]:
@@ -85,9 +96,6 @@ class CompilerDetail(APIView):
 
     @condition(last_modified_func=endpoint_updated)
     def get(self, request: Request) -> Response:
-        return Response(
-            {
-                "compilers": CompilerDetail.compilers_json(),
-                "platforms": CompilerDetail.platforms_json(),
-            }
-        )
+        data = compiler_response_json(compilers.available_compilers())
+        data["platforms"] = CompilerDetail.platforms_json()
+        return Response(data)

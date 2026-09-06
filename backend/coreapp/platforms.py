@@ -7,13 +7,7 @@ from typing import Any
 
 from rest_framework.exceptions import ValidationError
 
-from coreapp import compilers
-from coreapp.flags import (
-    COMMON_DIFF_FLAGS,
-    COMMON_MIPS_DIFF_FLAGS,
-    COMMON_MSDOS_DIFF_FLAGS,
-    Flags,
-)
+from coreapp import compilers, flags
 from coreapp.models.scratch import Scratch
 
 logger = logging.getLogger(__name__)
@@ -28,9 +22,15 @@ class Platform:
     assemble_cmd: str
     objdump_cmd: str
     nm_cmd: str
-    diff_flags: Flags = field(default_factory=lambda: COMMON_DIFF_FLAGS, hash=False)
+    diff_flag_class: flags.FlagClass = field(
+        default=flags.COMMON_DIFF_FLAGS, hash=False
+    )
     supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
     has_decompiler: bool = False
+
+    @property
+    def diff_flags(self) -> flags.Flags:
+        return flags.resolve_flags(self.diff_flag_class)
 
     @property
     @functools.lru_cache
@@ -91,7 +91,7 @@ MSDOS = Platform(
     objdump_cmd="omf-objdump --no-objects",
     nm_cmd="omf-nm",
     supports_objdump_disassemble=True,
-    diff_flags=COMMON_DIFF_FLAGS + COMMON_MSDOS_DIFF_FLAGS,
+    diff_flag_class=flags.COMMON_MSDOS_DIFF_FLAGS,
 )
 
 WIN32 = Platform(
@@ -123,7 +123,7 @@ N64 = Platform(
     assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
-    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
+    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
 
@@ -135,7 +135,7 @@ IRIX = Platform(
     assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -KPIC -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
-    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
+    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
 
@@ -147,7 +147,7 @@ PS1 = Platform(
     assemble_cmd='mips-linux-gnu-as -EL -march=r3000 -mabi=32 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
-    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
+    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
 
@@ -159,7 +159,7 @@ PSP = Platform(
     assemble_cmd='mips-ps2-decompals-as -EL -march=gs464 -mabi=32 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="mips-ps2-decompals-objdump",
     nm_cmd="mips-ps2-decompals-nm",
-    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
+    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
 
@@ -171,7 +171,6 @@ SATURN = Platform(
     assemble_cmd='sh-elf-as --isa=sh2 --big -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="sh-elf-objdump",
     nm_cmd="sh-elf-nm",
-    diff_flags=COMMON_DIFF_FLAGS,
     has_decompiler=True,
 )
 
@@ -183,7 +182,6 @@ DREAMCAST = Platform(
     assemble_cmd='sh-elf-as --isa=sh4 --little --relax -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="sh-elf-objdump",
     nm_cmd="sh-elf-nm",
-    diff_flags=COMMON_DIFF_FLAGS,
     has_decompiler=False,
 )
 
@@ -195,7 +193,7 @@ PS2 = Platform(
     assemble_cmd='mips-ps2-decompals-as -EL -march=r5900 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="mips-ps2-decompals-objdump",
     nm_cmd="mips-ps2-decompals-nm",
-    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
+    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
 
