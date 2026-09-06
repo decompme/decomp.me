@@ -213,6 +213,12 @@ class MSVCCompiler(Compiler):
 
 
 @dataclass(frozen=True)
+class ICCCompiler(Compiler):
+    flags: ClassVar[flags.FlagClass] = flags.COMMON_ICC_FLAGS
+    library_include_flag: str = "/IZ:"
+
+
+@dataclass(frozen=True)
 class WatcomCompiler(Compiler):
     flag_class: ClassVar[flags.FlagClass] = flags.COMMON_WATCOM_FLAGS
     library_include_flag: str = "/IZ:"
@@ -1573,6 +1579,15 @@ MSVC80P = MSVCCompiler(
     platform=WIN32,
     cc=CL_WIN,
 )
+
+# icc rejects CL's /Bk flag, so it needs its own command
+ICL_WIN = '${WIBO} "${COMPILER_DIR}/Bin/icl.exe" /c /nologo /I"Z:${COMPILER_DIR}/Include/" ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
+
+ICC501_010525Z = ICCCompiler(
+    id="icc5.0.1-010525z",
+    platform=WIN32,
+    cc=ICL_WIN,
+)
 # Watcom doesn't like '/' in paths passed to it so we need to replace them.
 WATCOM_ARGS = ' -zq -i="Z:${COMPILER_DIR}/h" -i="Z:${COMPILER_DIR}/h/nt" ${COMPILER_FLAGS} -fo"Z:${OUTPUT}" "Z:${INPUT}"'
 WATCOM_CC = (
@@ -1951,6 +1966,7 @@ _all_compilers: list[Compiler] = [
     MSVC71,
     MSVC80,
     MSVC80P,
+    ICC501_010525Z,
     # Watcom, DOS and Win32
     WATCOM_100A_C,
     WATCOM_100A_CPP,

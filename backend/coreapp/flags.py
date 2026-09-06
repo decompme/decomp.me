@@ -500,6 +500,30 @@ COMMON_MSVC_FLAGS = FlagClass(
     ],
 )
 
+# icc accepts the MSVC flags in /Qvc6 mode (always on, see icl.cfg) plus its own
+COMMON_ICC_FLAGS: FlagClass = FlagClass(
+    name="icc",
+    flags=[
+        FlagSet(id="icc_target_cpu", flags=["/Qxi", "/QxM", "/QxK", "/QxW"]),
+        FlagSet(id="icc_dispatch_cpu", flags=["/Qaxi", "/QaxM", "/QaxK", "/QaxW"]),
+        FlagSet(id="icc_fp_precision", flags=["/Qpc32", "/Qpc64", "/Qpc80"]),
+        FlagSet(id="icc_aliasing", flags=["/Oa", "/Ow"]),
+        Checkbox("icc_interprocedural", "/Qip"),
+        Checkbox("icc_interprocedural_all", "/Qipo"),
+        Checkbox("icc_disable_unroll", "/Qunroll0"),
+        Checkbox("icc_fp_precise", "/Qprec"),
+        Checkbox("icc_fp_precise_divide", "/Qprec_div"),
+        Checkbox("icc_fp_consistency", "/Op"),
+        Checkbox("icc_fast_float_to_int", "/Qrcd"),
+        Checkbox("icc_long_double", "/Qlong_double"),
+        Checkbox("icc_restrict", "/Qrestrict"),
+        Checkbox("icc_stack_frame_align", "/Qsfalign"),
+        Checkbox("icc_nobss_init", "/Qnobss_init"),
+        Checkbox("icc_strip_options", "/Qsox"),
+    ],
+    parent=COMMON_MSVC_FLAGS,
+)
+
 COMMON_WATCOM_FLAGS = FlagClass(
     name="watcom",
     flags=[
