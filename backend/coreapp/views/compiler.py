@@ -22,10 +22,9 @@ def compiler_metadata_json(
 ) -> dict[str, dict[str, object]]:
     return {
         compiler.id: {
-            "id": compiler.id,
             "platform": compiler.platform.id,
-            "class": compiler.flag_class.name,
-            "diff_class": compiler.platform.diff_flag_class.name,
+            "flags_class": compiler.flag_class.name,
+            "diff_flags_class": compiler.platform.diff_flag_class.name,
         }
         for compiler in selected_compilers
     }

@@ -177,8 +177,8 @@ export type CompilerBase = {
 
 export type CompilerMetadata = CompilerBase & {
     platform: string;
-    class: string;
-    diff_class: string;
+    flags_class: string;
+    diff_flags_class: string;
 };
 
 export type FlagClass = {

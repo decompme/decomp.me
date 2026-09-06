@@ -59,8 +59,8 @@ describe("resolveCompilersResponse", () => {
                 test: {
                     id: "test",
                     platform: "n64",
-                    class: "child",
-                    diff_class: "diff-child",
+                    flags_class: "child",
+                    diff_flags_class: "diff-child",
                 },
             },
             flags: {

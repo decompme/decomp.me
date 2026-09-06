@@ -41,12 +41,12 @@ export function resolveCompilersResponse(
             {
                 ...compiler,
                 flags: resolveFlags(
-                    compiler.class,
+                    compiler.flags_class,
                     response.flags,
                     resolvedCompilerFlags,
                 ),
                 diff_flags: resolveFlags(
-                    compiler.diff_class,
+                    compiler.diff_flags_class,
                     response.diff_flags,
                     resolvedDiffFlags,
                 ),

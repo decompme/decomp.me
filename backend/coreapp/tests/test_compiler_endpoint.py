@@ -18,12 +18,12 @@ class CompilerEndpointTests(APITestCase):
 
         for compiler in data["compilers"].values():
             self.assertIn("id", compiler)
-            self.assertIn("class", compiler)
-            self.assertIn("diff_class", compiler)
+            self.assertIn("flags_class", compiler)
+            self.assertIn("diff_flags_class", compiler)
             self.assertNotIn("flags", compiler)
             self.assertNotIn("diff_flags", compiler)
-            self.assertIn(compiler["class"], data["flags"])
-            self.assertIn(compiler["diff_class"], data["diff_flags"])
+            self.assertIn(compiler["flags_class"], data["flags"])
+            self.assertIn(compiler["diff_flags_class"], data["diff_flags"])
 
         for field in ("flags", "diff_flags"):
             for flag_class in data[field].values():
@@ -69,8 +69,8 @@ class CompilerEndpointTests(APITestCase):
         self.assert_compilers_response(data)
         self.assertEqual(list(data["compilers"]), [GCC281PM.id])
         compiler = data["compilers"][GCC281PM.id]
-        self.assertEqual(compiler["class"], COMMON_GCC_FLAGS.name)
-        self.assertEqual(compiler["diff_class"], COMMON_MIPS_DIFF_FLAGS.name)
+        self.assertEqual(compiler["flags_class"], COMMON_GCC_FLAGS.name)
+        self.assertEqual(compiler["diff_flags_class"], COMMON_MIPS_DIFF_FLAGS.name)
         self.assertIn(COMMON_GCC_FLAGS.name, data["flags"])
         self.assertEqual(
             data["diff_flags"][COMMON_MIPS_DIFF_FLAGS.name]["parent"],
