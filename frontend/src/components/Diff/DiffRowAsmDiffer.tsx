@@ -27,7 +27,7 @@ import type { Highlighter } from "./Highlighter";
 // Strings matched by the first regex group (spaces, punctuation)
 // are treated as non-highlightable.
 export const RE_TOKEN =
-    /([ \t,()\[\]{}:]+|~>)|%(?:lo|hi)\([^)]+\)|[^ \t,()\[\]{}:]+/g;
+    /([ \t,()[\]{}:]+|~>)|%(?:lo|hi)\([^)]+\)|[^ \t,()[\]{}:]+/g;
 
 function FormatDiffText({
     texts,

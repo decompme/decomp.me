@@ -42,7 +42,7 @@ export async function usernameToContributor(
         // Try and get decomp.me information if they have an account
         const user: User = await get(`/users/${username}`);
         return user;
-    } catch (error) {
+    } catch (_error) {
         // Fall back to GitHub information
         return { login: username };
     }
@@ -61,7 +61,9 @@ export function ContributorItem({ contributor }: { contributor: Contributor }) {
 
 export default function ContributorsList({
     contributors,
-}: { contributors: Contributor[] }) {
+}: {
+    contributors: Contributor[];
+}) {
     if (!contributors.length) {
         return null;
     }

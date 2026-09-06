@@ -1,5 +1,3 @@
-import React from "react";
-
 const Frog = ({
     primary = "#951fd9",
     secondary = "#cc87f4",
