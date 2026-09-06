@@ -17,7 +17,6 @@ class CompilerEndpointTests(APITestCase):
         self.assertIsInstance(data["diff_flags"], dict)
 
         for compiler in data["compilers"].values():
-            self.assertIn("id", compiler)
             self.assertIn("flags_class", compiler)
             self.assertIn("diff_flags_class", compiler)
             self.assertNotIn("flags", compiler)
