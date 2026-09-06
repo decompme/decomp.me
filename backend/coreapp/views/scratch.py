@@ -22,7 +22,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from ..compiler_utils import filter_compiler_flags
-from ..cromper_client import CromperError, get_cromper_client
+from ..cromper_client import CromperError, CromperUnavailableError, get_cromper_client
 from ..decorators.cache import globally_cacheable
 from ..decorators.django import condition
 from ..filters.scratch import ScratchFilter
@@ -111,6 +111,10 @@ def compile_scratch(scratch: Scratch, context: str | None = None) -> Compilation
         )
         return CompilationResult(result["elf_object"], result["errors"])
     except (CromperError, APIException) as e:
+        if isinstance(e, CromperUnavailableError):
+            return CompilationResult(
+                b"", "The compiler service is unavailable. Please try again in a moment."
+            )
         return CompilationResult(b"", str(e))
 
 
@@ -129,6 +133,8 @@ def diff_compilation(
         )
         return DiffResult(result["result"], result["errors"])
     except CromperError as e:
+        if isinstance(e, CromperUnavailableError):
+            return DiffResult(None, "The diff service is unavailable. Please try again in a moment.")
         return DiffResult(None, str(e))
 
 

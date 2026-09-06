@@ -44,6 +44,13 @@ export class RequestFailedError extends Error {
     }
 }
 
+export class CompilerServiceUnavailableError extends RequestFailedError {
+    constructor(message: string, url: string) {
+        super(message, url);
+        this.name = "CompilerServiceUnavailableError";
+    }
+}
+
 function isCromperUrl(url: string) {
     if (url.startsWith("/platform")) return true;
     if (url.startsWith("/compiler")) return true;
@@ -61,13 +68,17 @@ export function normalizeUrl(url: string) {
 export async function errorHandledFetchJson(url: string, init?: RequestInit) {
     let response: Response;
 
+    const cromperRequest = isCromperUrl(url);
     url = normalizeUrl(url);
 
     try {
         response = await fetch(url, init);
     } catch (error) {
         if (error instanceof TypeError) {
-            throw new RequestFailedError(error.message, url);
+            const ErrorType = cromperRequest
+                ? CompilerServiceUnavailableError
+                : RequestFailedError;
+            throw new ErrorType(error.message, url);
         }
 
         throw error;

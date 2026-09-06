@@ -30,7 +30,13 @@ class CromperError(Exception):
     pass
 
 
-class CromperTimeoutError(CromperError):
+class CromperUnavailableError(CromperError):
+    """Raised when the Cromper service cannot be reached or read."""
+
+    pass
+
+
+class CromperTimeoutError(CromperUnavailableError):
     """Exception raised when a cromper request times out."""
 
     pass
@@ -66,10 +72,10 @@ class CromperClient:
             raise CromperTimeoutError(f"cromper service timeout: {e}")
         except requests.exceptions.RequestException as e:
             logger.error(f"Error communicating with cromper service: {e}")
-            raise CromperError(f"cromper service error: {e}")
+            raise CromperUnavailableError(f"cromper service error: {e}")
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON response from cromper service: {e}")
-            raise CromperError("Invalid response from cromper service")
+            raise CromperUnavailableError("Invalid response from cromper service")
 
     def get_compilers(self) -> Dict[str, Compiler]:
         """Get all compilers from cromper service, with caching."""

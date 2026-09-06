@@ -1,8 +1,13 @@
 from unittest.mock import patch
 
+import requests
 from django.test import SimpleTestCase
 
-from coreapp.cromper_client import CromperClient, CromperError
+from coreapp.cromper_client import (
+    CromperClient,
+    CromperError,
+    CromperUnavailableError,
+)
 
 
 class CromperClientCompilerTests(SimpleTestCase):
@@ -91,3 +96,14 @@ class CromperClientCompilerTests(SimpleTestCase):
                 "compiler_flags": "-x c++",
             },
         )
+
+    def test_connection_failure_is_marked_as_service_unavailable(self) -> None:
+        client = CromperClient("http://cromper")
+
+        with patch.object(
+            client.session,
+            "request",
+            side_effect=requests.exceptions.ConnectionError("connection refused"),
+        ):
+            with self.assertRaises(CromperUnavailableError):
+                client._make_request("GET", "/compiler")
