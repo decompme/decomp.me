@@ -170,12 +170,6 @@ export default function ScratchEditor(props: Props) {
             return function useOfflineMiddleware(key, fetcher, config) {
                 const swr = _useSWRNext(key, fetcher, config);
 
-                useEffect(() => {
-                    if (swr.error instanceof api.RequestFailedError) {
-                        setOffline(true);
-                    }
-                }, [swr.error]);
-
                 if (swr.error instanceof api.RequestFailedError) {
                     return Object.assign({}, swr, { error: null });
                 }
@@ -189,15 +183,19 @@ export default function ScratchEditor(props: Props) {
         setOffline(false);
     }, []);
 
+    const onError = useCallback((error: unknown) => {
+        if (error instanceof api.RequestFailedError) {
+            setOffline(true);
+        }
+    }, []);
+
     return (
-        <>
-            <SWRConfig value={{ use: [offlineMiddleware], onSuccess }}>
-                <ScratchEditorInner
-                    key={initialScratchUrl}
-                    {...props}
-                    offline={offline}
-                />
-            </SWRConfig>
-        </>
+        <SWRConfig value={{ use: [offlineMiddleware], onSuccess, onError }}>
+            <ScratchEditorInner
+                key={initialScratchUrl}
+                {...props}
+                offline={offline}
+            />
+        </SWRConfig>
     );
 }

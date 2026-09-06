@@ -57,7 +57,10 @@ export default function VerticalMenu({ children, open, setOpen }: Props) {
 export function MenuItem({
     className,
     children,
-}: { className?: string; children: ReactNode }) {
+}: {
+    className?: string;
+    children: ReactNode;
+}) {
     return <li className={clsx(styles.item, className)}>{children}</li>;
 }
 

@@ -11,7 +11,9 @@ const SelectedSourceLineContext = createContext<
 
 export function SelectedSourceLineProvider({
     children,
-}: { children: React.ReactNode }) {
+}: {
+    children: React.ReactNode;
+}) {
     const [selectedSourceLine, setSelectedSourceLine] = useState<number | null>(
         null,
     );

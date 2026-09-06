@@ -43,7 +43,9 @@ export function getMatchPercentString(source: MatchPercentSource) {
 
 export function Improvement({
     improvement = null,
-}: { improvement?: api.BestFork | null }) {
+}: {
+    improvement?: api.BestFork | null;
+}) {
     if (!improvement) return null;
     const ownerName = improvement.owner?.username ?? "Someone";
 
@@ -123,7 +125,10 @@ function DeleteButton({
 function ScratchItemTitle({
     scratch,
     showPlatform,
-}: { scratch: api.TerseScratch; showPlatform?: boolean }) {
+}: {
+    scratch: api.TerseScratch;
+    showPlatform?: boolean;
+}) {
     return (
         <div className={styles.title}>
             {showPlatform && (
@@ -269,7 +274,10 @@ export function ScratchItem({
 export function ScratchItemNoOwner({
     scratch,
     showDeleteButton,
-}: { scratch: api.TerseScratch; showDeleteButton?: boolean }) {
+}: {
+    scratch: api.TerseScratch;
+    showDeleteButton?: boolean;
+}) {
     return (
         <ScratchItemRow
             scratch={scratch}
@@ -281,13 +289,17 @@ export function ScratchItemNoOwner({
 
 export function ScratchItemPlatformList({
     scratch,
-}: { scratch: api.TerseScratch }) {
+}: {
+    scratch: api.TerseScratch;
+}) {
     return <ScratchItemRow scratch={scratch} showPlatform={false} />;
 }
 
 export function ScratchItemPresetList({
     scratch,
-}: { scratch: api.TerseScratch }) {
+}: {
+    scratch: api.TerseScratch;
+}) {
     return (
         <ScratchItemRow
             scratch={scratch}
@@ -359,7 +371,10 @@ export function ScratchOwnerAvatar({ scratch }: { scratch: api.TerseScratch }) {
 export function SingleLineScratchItem({
     scratch,
     showOwner = false,
-}: { scratch: api.TerseScratch; showOwner?: boolean }) {
+}: {
+    scratch: api.TerseScratch;
+    showOwner?: boolean;
+}) {
     return (
         <li className={styles.singleLine}>
             <PlatformLink

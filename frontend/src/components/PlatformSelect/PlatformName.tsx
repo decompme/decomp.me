@@ -14,9 +14,5 @@ export default function PlatformName({ platform }: Props) {
         api.get,
     );
 
-    return (
-        <>
-            <Link href={`/platform/${platform}`}>{data?.name ?? platform}</Link>
-        </>
-    );
+    return <Link href={`/platform/${platform}`}>{data?.name ?? platform}</Link>;
 }
