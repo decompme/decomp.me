@@ -23,7 +23,7 @@ class Compiler:
     id: str
     platform: Platform
     flag_class: str
-    diff_flags: list[dict[str, object]]
+    diff_flag_class: str
 
 
 def filter_compiler_flags(compiler_flags: str) -> str:

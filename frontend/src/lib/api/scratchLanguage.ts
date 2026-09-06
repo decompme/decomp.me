@@ -20,7 +20,7 @@ export async function resolveCompilerLanguage(
     });
 
     if (typeof response.language !== "string") {
-        throw new Error("Cromper returned an invalid compiler language");
+        throw new Error("cromper returned an invalid compiler language");
     }
 
     return response.language;

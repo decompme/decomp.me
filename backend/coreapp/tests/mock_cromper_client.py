@@ -47,13 +47,13 @@ GC_WII = Platform(
     has_decompiler=True,
 )
 
-DUMMY = Compiler("dummy", _DUMMY_PLATFORM, "other", [])
-DUMMY_LONGRUNNING = Compiler("dummy-longrunning", _DUMMY_PLATFORM, "other", [])
-GCC281PM = Compiler("gcc2.8.1pm", N64, "gcc", [])
-IDO53 = Compiler("ido5.3", N64, "ido", [])
-IDO71 = Compiler("ido7.1", N64, "ido", [])
-EE_GCC29_991111 = Compiler("ee-gcc2.9-991111", PS2, "gcc-ps2", [])
-MWCC_242_81 = Compiler("mwcc_242_81", GC_WII, "mwcc-wii-gc", [])
+DUMMY = Compiler("dummy", _DUMMY_PLATFORM, "other", "common")
+DUMMY_LONGRUNNING = Compiler("dummy-longrunning", _DUMMY_PLATFORM, "other", "common")
+GCC281PM = Compiler("gcc2.8.1pm", N64, "gcc", "mips")
+IDO53 = Compiler("ido5.3", N64, "ido", "mips")
+IDO71 = Compiler("ido7.1", N64, "ido", "mips")
+EE_GCC29_991111 = Compiler("ee-gcc2.9-991111", PS2, "gcc-ps2", "mips")
+MWCC_242_81 = Compiler("mwcc_242_81", GC_WII, "mwcc-wii-gc", "common")
 
 _PLATFORMS = {
     platform.id: platform for platform in (_DUMMY_PLATFORM, N64, PS1, PS2, GC_WII)

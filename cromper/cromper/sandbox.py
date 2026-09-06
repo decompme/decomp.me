@@ -28,7 +28,9 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
     ):
         self.use_jail = use_jail
         self.sandbox_tmp_path = sandbox_tmp_path or Path("/tmp/sandbox")
-        self.sandbox_chroot_path = sandbox_chroot_path or Path("/tmp/sandbox/root")
+        # Keep the read-only chroot off Docker's sandbox tmpfs: its locked mount
+        # flags prevent nsjail from remounting the root in a user namespace.
+        self.sandbox_chroot_path = sandbox_chroot_path or Path("/sandbox/root")
         self.compiler_base_path = compiler_base_path or Path("compilers")
         self.library_base_path = library_base_path or Path("libraries")
         self.nsjail_bin_path = nsjail_bin_path or Path("/bin/nsjail")
@@ -100,8 +102,8 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         if self.sandbox_disable_proc:
             wrapper.append("--disable_proc")  # needed for running inside Docker
 
-        if not self.debug:
-            wrapper.append("--really_quiet")
+        # Informational nsjail logs would be mixed into compiler/objdump output.
+        wrapper.append("--quiet" if self.debug else "--really_quiet")
         for mount in mounts:
             wrapper.extend(["--bindmount_ro", str(mount)])
         for key, value in env.items():

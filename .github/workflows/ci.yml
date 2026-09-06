@@ -50,9 +50,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
-      - name: Build Cromper development image
+      - name: Build cromper development image
         run: docker build cromper --target dev -t decompme_cromper
-      - name: Run Cromper tests
+      - name: Run cromper tests
         run: |-
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0

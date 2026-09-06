@@ -17,7 +17,7 @@ describe("scratch language resolution", () => {
         mockedPost.mockReset();
     });
 
-    it("resolves a scratch language through Cromper", async () => {
+    it("resolves a scratch language through cromper", async () => {
         mockedPost.mockResolvedValue({ language: "C++" });
 
         const scratch = {
@@ -34,7 +34,7 @@ describe("scratch language resolution", () => {
         expect(resolved).toEqual({ ...scratch, language: "C++" });
     });
 
-    it("rejects an invalid Cromper response", async () => {
+    it("rejects an invalid cromper response", async () => {
         mockedPost.mockResolvedValue({ language: [] });
 
         await expect(resolveCompilerLanguage("ido7.1", "")).rejects.toThrow(

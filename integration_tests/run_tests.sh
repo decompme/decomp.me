@@ -48,7 +48,7 @@ done
 
 if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
     echo -e " ${RED}FAILED${NC}"
-    echo -e "${RED}Error: Cromper service is not responding after 60 seconds${NC}"
+    echo -e "${RED}Error: cromper service is not responding after 60 seconds${NC}"
     echo -e "${YELLOW}Checking cromper logs:${NC}"
     docker-compose -f ../docker-compose.yaml logs --tail=50 cromper
     exit 1

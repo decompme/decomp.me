@@ -22,7 +22,7 @@ Tests that:
 ## Running Integration Tests
 
 These tests require:
-1. Cromper service running (port 8888)
+1. cromper service running (port 8888)
 2. Django backend running (port 8000)
 3. Database connection
 

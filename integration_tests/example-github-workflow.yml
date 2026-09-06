@@ -37,7 +37,7 @@ jobs:
           DATABASE_URL: sqlite:///test.db
 
   integration-tests:
-    name: Integration Tests (Cromper + Django)
+    name: Integration Tests (cromper + Django)
     runs-on: ubuntu-latest
 
     steps:

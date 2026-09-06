@@ -78,7 +78,7 @@ class CromperClient:
             response = self._make_request("GET", "/compiler")
             response_json = response.get("compilers", {})
 
-            self._compilers_cache = {}
+            compilers: Dict[str, Compiler] = {}
             for compiler_id, compiler_data in response_json.items():
                 try:
                     response_id = compiler_data.get("id", compiler_id)
@@ -89,17 +89,18 @@ class CromperClient:
                         )
 
                     platform = self.get_platform_by_id(compiler_data["platform"])
-                    self._compilers_cache[compiler_id] = Compiler(
+                    compilers[compiler_id] = Compiler(
                         id=compiler_id,
                         platform=platform,
-                        flag_class=compiler_data["class"],
-                        diff_flags=compiler_data.get("diff_flags", []),
+                        flag_class=compiler_data["flags_class"],
+                        diff_flag_class=compiler_data["diff_flags_class"],
                     )
                 except (KeyError, TypeError, ValueError) as e:
                     raise CromperError(
                         f"Invalid compiler metadata for {compiler_id!r}: {e}"
                     ) from e
 
+            self._compilers_cache = compilers
             logger.info(f"Cached {len(self._compilers_cache)} compilers")
         return self._compilers_cache
 

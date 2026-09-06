@@ -36,7 +36,7 @@ class CromperConfig:
         )
         self.sandbox_tmp_path = Path(os.getenv("SANDBOX_TMP_PATH", "/tmp/sandbox"))
         self.sandbox_chroot_path = Path(
-            os.getenv("SANDBOX_CHROOT_PATH", "/tmp/sandbox/root")
+            os.getenv("SANDBOX_CHROOT_PATH", "/sandbox/root")
         )
         self.nsjail_bin_path = Path(os.getenv("SANDBOX_NSJAIL_BIN_PATH", "/bin/nsjail"))
 
