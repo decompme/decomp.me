@@ -240,7 +240,7 @@ export type Props = {
     offline: boolean;
 };
 
-export default function Scratch({
+function ScratchInner({
     scratch,
     onChange,
     deleteScratch,
@@ -695,18 +695,24 @@ export default function Scratch({
             </ErrorBoundary>
             <ErrorBoundary>
                 {layout && (
-                    <SelectedSourceLineProvider>
-                        <ScrollContext.Provider value={sourceEditor}>
-                            <CustomLayout
-                                layout={layout}
-                                onChange={setLayout}
-                                renderTab={renderTab}
-                            />
-                        </ScrollContext.Provider>
-                    </SelectedSourceLineProvider>
+                    <ScrollContext.Provider value={sourceEditor}>
+                        <CustomLayout
+                            layout={layout}
+                            onChange={setLayout}
+                            renderTab={renderTab}
+                        />
+                    </ScrollContext.Provider>
                 )}
             </ErrorBoundary>
             {offlineOverlay}
         </div>
+    );
+}
+
+export default function Scratch(props: Props) {
+    return (
+        <SelectedSourceLineProvider>
+            <ScratchInner {...props} />
+        </SelectedSourceLineProvider>
     );
 }
