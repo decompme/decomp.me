@@ -7,6 +7,7 @@
 
 import { usePageTitle } from "@/lib/hooks";
 
-export default function SetPageTitle({ title }: { title: string }) {
+export default function SetPageTitle({ title }: { title: string }): null {
     usePageTitle(title);
+    return null;
 }
