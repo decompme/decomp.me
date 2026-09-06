@@ -129,7 +129,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "asm-differ", git = "https://github.com/simonlindholm/asm-differ.git?rev=f49f9b26a7b91f3da6c8d555a87218efb28bbea7" },
-    { name = "m2c", git = "https://github.com/matt-kempster/m2c.git?rev=19f2ddb22dcf5161c27b7eae62f142e697ae895f" },
+    { name = "m2c", git = "https://github.com/matt-kempster/m2c.git?rev=1d1c4454a445326541305f83f2b0cb680a9ecb2d" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.18.2" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.4.2" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.2.0" },
@@ -276,7 +276,7 @@ wheels = [
 [[package]]
 name = "m2c"
 version = "0.1.0"
-source = { git = "https://github.com/matt-kempster/m2c.git?rev=19f2ddb22dcf5161c27b7eae62f142e697ae895f#19f2ddb22dcf5161c27b7eae62f142e697ae895f" }
+source = { git = "https://github.com/matt-kempster/m2c.git?rev=1d1c4454a445326541305f83f2b0cb680a9ecb2d#1d1c4454a445326541305f83f2b0cb680a9ecb2d" }
 dependencies = [
     { name = "graphviz" },
 ]

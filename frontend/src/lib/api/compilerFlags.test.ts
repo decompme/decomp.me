@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { CompilersResponse, Flag } from "./types";
-import {
-    resolveCompilerFlags,
-    resolveCompilersResponse,
-} from "./compilerFlags";
+import { resolveFlags, resolveCompilersResponse } from "./compilerFlags";
 
 const parentFlag: Flag = {
     type: "checkbox",
@@ -16,11 +13,21 @@ const childFlag: Flag = {
     id: "child",
     flag: "-child",
 };
+const diffParentFlag: Flag = {
+    type: "checkbox",
+    id: "diff-parent",
+    flag: "-diff-parent",
+};
+const diffChildFlag: Flag = {
+    type: "checkbox",
+    id: "diff-child",
+    flag: "-diff-child",
+};
 
-describe("resolveCompilerFlags", () => {
+describe("resolveFlags", () => {
     it("resolves inherited flags parent-first", () => {
         expect(
-            resolveCompilerFlags("child", {
+            resolveFlags("child", {
                 parent: { flags: [parentFlag] },
                 child: { parent: "parent", flags: [childFlag] },
             }),
@@ -29,19 +36,19 @@ describe("resolveCompilerFlags", () => {
 
     it("rejects missing parent classes", () => {
         expect(() =>
-            resolveCompilerFlags("child", {
+            resolveFlags("child", {
                 child: { parent: "missing", flags: [childFlag] },
             }),
-        ).toThrow("Unknown compiler flag class: missing");
+        ).toThrow("Unknown flag class: missing");
     });
 
     it("rejects inheritance cycles", () => {
         expect(() =>
-            resolveCompilerFlags("left", {
+            resolveFlags("left", {
                 left: { parent: "right", flags: [] },
                 right: { parent: "left", flags: [] },
             }),
-        ).toThrow("Cyclic compiler flag class inheritance");
+        ).toThrow("Cyclic flag class inheritance");
     });
 });
 
@@ -52,20 +59,27 @@ describe("resolveCompilersResponse", () => {
                 test: {
                     id: "test",
                     platform: "n64",
-                    class: "child",
-                    diff_flags: [],
+                    flags_class: "child",
+                    diff_flags_class: "diff-child",
                 },
             },
             flags: {
                 parent: { flags: [parentFlag] },
                 child: { parent: "parent", flags: [childFlag] },
             },
+            diff_flags: {
+                "diff-parent": { flags: [diffParentFlag] },
+                "diff-child": {
+                    parent: "diff-parent",
+                    flags: [diffChildFlag],
+                },
+            },
         };
 
-        expect(resolveCompilersResponse(response).test.flags).toEqual([
-            parentFlag,
-            childFlag,
-        ]);
+        const compiler = resolveCompilersResponse(response).test;
+        expect(compiler.flags).toEqual([parentFlag, childFlag]);
+        expect(compiler.diff_flags).toEqual([diffParentFlag, diffChildFlag]);
         expect(response.compilers.test).not.toHaveProperty("flags");
+        expect(response.compilers.test).not.toHaveProperty("diff_flags");
     });
 });

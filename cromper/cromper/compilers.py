@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
-from .flags import Language, LanguageFlagSet, resolve_compiler_flags
+from . import flags
 from .platforms import (
     ANDROID_X86,
     DREAMCAST,
@@ -73,11 +73,11 @@ class Compiler:
     id: str
     cc: str
     platform: Platform
-    flag_class: ClassVar[str] = "other"
+    flag_class: ClassVar[flags.FlagClass] = flags.OTHER_FLAGS
     library_include_flag: str
     base_compiler: "Compiler | None" = None
     type: ClassVar[CompilerType] = CompilerType.OTHER
-    language: Language = Language.C
+    language: flags.Language = flags.Language.C
 
     @property
     def path(self) -> Path:
@@ -94,12 +94,12 @@ class Compiler:
             print(f"Compiler {self.id} not found at {self.get_path(base)}")
         return self.get_path(base).exists()
 
-    def get_language(self, compiler_flags: str = "") -> Language:
+    def get_language(self, compiler_flags: str = "") -> flags.Language:
         language_flag_set = next(
             (
                 flag
-                for flag in resolve_compiler_flags(self.flag_class)
-                if isinstance(flag, LanguageFlagSet)
+                for flag in flags.resolve_flags(self.flag_class)
+                if isinstance(flag, flags.LanguageFlagSet)
             ),
             None,
         )
@@ -120,136 +120,142 @@ class Compiler:
         return {
             "id": self.id,
             "platform": self.platform.id,
-            "class": self.flag_class,
-            "diff_flags": [f.to_json() for f in self.platform.diff_flags],
+            "flags_class": self.flag_class.name,
+            "diff_flags_class": self.platform.diff_flag_class.name,
         }
 
 
 @dataclass(frozen=True)
 class ClangCompiler(Compiler):
-    flag_class: ClassVar[str] = "clang"
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_CLANG_FLAGS
     library_include_flag: str = "-isystem"
 
 
 @dataclass(frozen=True)
 class ArmccCompiler(Compiler):
-    flag_class: ClassVar[str] = "armcc"
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_ARMCC_FLAGS
     library_include_flag: str = "-J"
 
 
 @dataclass(frozen=True)
 class SHCCompiler(Compiler):
-    flag_class: ClassVar[str] = "shc"
+    flag_class: ClassVar[flags.FlagClass] = flags.SHC_FLAGS
     library_include_flag: str = ""
 
 
 @dataclass(frozen=True)
 class SHCOldCompiler(Compiler):
-    flag_class: ClassVar[str] = "shc-old"
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_SHC_OLD_FLAGS
     library_include_flag: str = ""
 
 
 @dataclass(frozen=True)
 class GCCCompiler(Compiler):
     type: ClassVar[CompilerType] = CompilerType.GCC
-    flag_class: ClassVar[str] = "gcc"
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_GCC_FLAGS
     library_include_flag: str = "-isystem"
 
 
 @dataclass(frozen=True)
 class GCCPS1Compiler(GCCCompiler):
     platform: Platform = PS1
-    flag_class: ClassVar[str] = "gcc-ps1"
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_GCC_PS1_FLAGS
 
 
 @dataclass(frozen=True)
 class GCCPS2Compiler(GCCCompiler):
     platform: Platform = PS2
-    flag_class: ClassVar[str] = "gcc-ps2"
+    flag_class: ClassVar[flags.FlagClass] = flags.GCC_PS2_FLAGS
 
 
 @dataclass(frozen=True)
 class GCCGCCompiler(GCCCompiler):
     platform: Platform = GC_WII
-    flag_class: ClassVar[str] = "gcc-gc"
+    flag_class: ClassVar[flags.FlagClass] = flags.GCC_GC_FLAGS
 
 
 @dataclass(frozen=True)
 class GCCSaturnCompiler(GCCCompiler):
     platform: Platform = SATURN
-    flag_class: ClassVar[str] = "gcc-saturn"
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_GCC_SATURN_FLAGS
 
 
 @dataclass(frozen=True)
 class IDOCompiler(Compiler):
     type: ClassVar[CompilerType] = CompilerType.IDO
-    flag_class: ClassVar[str] = "ido"
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_IDO_FLAGS
     library_include_flag: str = "-I"
 
 
 @dataclass(frozen=True)
 class MWCCCompiler(Compiler):
     type: ClassVar[CompilerType] = CompilerType.MWCC
-    flag_class: ClassVar[str] = "mwcc"
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_MWCC_FLAGS
 
 
 @dataclass(frozen=True)
 class MWCCNDSArm9Compiler(MWCCCompiler):
     platform: Platform = NDS_ARM9
-    flag_class: ClassVar[str] = "mwcc-nds-arm9"
+    flag_class: ClassVar[flags.FlagClass] = flags.MWCC_NDS_ARM9_FLAGS
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
 class MWCCPS2Compiler(MWCCCompiler):
     platform: Platform = PS2
-    flag_class: ClassVar[str] = "mwcc-ps2"
+    flag_class: ClassVar[flags.FlagClass] = flags.MWCC_PS2_FLAGS
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
 class MWCCPSPCompiler(MWCCCompiler):
     platform: Platform = PSP
-    flag_class: ClassVar[str] = "mwcc-psp"
+    flag_class: ClassVar[flags.FlagClass] = flags.MWCC_PSP_FLAGS
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
 class MWCCWiiGCCompiler(MWCCCompiler):
     platform: Platform = GC_WII
-    flag_class: ClassVar[str] = "mwcc-wii-gc"
+    flag_class: ClassVar[flags.FlagClass] = flags.MWCC_WII_GC_FLAGS
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
 class MSVCCompiler(Compiler):
-    flag_class: ClassVar[str] = "msvc"
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_MSVC_FLAGS
+    library_include_flag: str = "/IZ:"
+
+
+@dataclass(frozen=True)
+class ICCCompiler(Compiler):
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_ICC_FLAGS
     library_include_flag: str = "/IZ:"
 
 
 @dataclass(frozen=True)
 class WatcomCompiler(Compiler):
-    flag_class: ClassVar[str] = "watcom"
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_WATCOM_FLAGS
     library_include_flag: str = "/IZ:"
 
 
 @dataclass(frozen=True)
 class BorlandCompiler(Compiler):
-    flag_class: ClassVar[str] = "borland"
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_BORLAND_FLAGS
     library_include_flag: str = ""
 
 
 @dataclass(frozen=True)
 class GHSCompiler(Compiler):
     platform: Platform = WIIU
-    flag_class: ClassVar[str] = "ghs"
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_GHS_FLAGS
     library_include_flag: str = "-I"
 
 
 @dataclass(frozen=True)
 class MicrosoftCCompiler(Compiler):
     platform = MSDOS
-    flag_class: ClassVar[str] = "microsoft-c"
+    flag_class: ClassVar[flags.FlagClass] = flags.MICROSOFT_C_FLAGS
     library_include_flag: str = ""
 
 
@@ -283,7 +289,7 @@ AGBCC_ARM = GCCCompiler(
 AGBCCPP = GCCCompiler(
     id="agbccpp",
     platform=GBA,
-    language=Language.CXX,
+    language=flags.Language.CXX,
     cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcp -quiet $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
 )
 # N3DS
@@ -884,7 +890,7 @@ IDO53_CXX = IDOCompiler(
     id="ido5.3_c++",
     platform=N64,
     cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    language=Language.OLD_CXX,
+    language=flags.Language.OLD_CXX,
 )
 
 IDO71 = IDOCompiler(
@@ -906,7 +912,7 @@ IDO71_IRIX4_CXX = IDOCompiler(
     id="ido7.1_irix4_c++",
     platform=N64,
     base_compiler=IDO71,
-    language=Language.OLD_CXX,
+    language=flags.Language.OLD_CXX,
     cc='"${COMPILER_DIR}/cc-irix4"'
     ' --frontend "${COMPILER_DIR}/../ido4.1"'
     ' --cfront "${COMPILER_DIR}/../ido5.3_c++"'
@@ -919,7 +925,7 @@ IDO71_CXX = IDOCompiler(
     platform=N64,
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/NCC" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO71,
-    language=Language.OLD_CXX,
+    language=flags.Language.OLD_CXX,
 )
 
 IDO60 = IDOCompiler(
@@ -962,7 +968,7 @@ GCC272SN0001CXX = GCCCompiler(
     id="gcc2.7.2sn0001-cxx",
     base_compiler=GCC272SN0001,
     platform=N64,
-    language=Language.CXX,
+    language=flags.Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q "$OUTPUT".s -o "$OUTPUT".obj '
@@ -988,7 +994,7 @@ GCC272SN0006CXX = GCCCompiler(
     id="gcc2.7.2sn0006-cxx",
     base_compiler=GCC272SN0006,
     platform=N64,
-    language=Language.CXX,
+    language=flags.Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
@@ -1014,7 +1020,7 @@ GCC281SNCXX = GCCCompiler(
     id="gcc2.8.1sn-cxx",
     base_compiler=GCC281SN,
     platform=N64,
-    language=Language.CXX,
+    language=flags.Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
@@ -1025,7 +1031,7 @@ GCC281SNEWCXX = GCCCompiler(
     id="gcc2.8.1snew-cxx",
     base_compiler=GCC281SN,
     platform=N64,
-    language=Language.CXX,
+    language=flags.Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& python3 "${COMPILER_DIR}"/modern-asn64.py mips-linux-gnu-as "$OUTPUT".s -G0 -EB -mtune=vr4300 -march=vr4300 -mabi=32 -O1 --no-construct-floats -o "$OUTPUT"',
@@ -1078,7 +1084,7 @@ IDO53_ASM_IRIX = IDOCompiler(
     platform=IRIX,
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO53,
-    language=Language.ASSEMBLY,
+    language=flags.Language.ASSEMBLY,
 )
 
 IDO53_CXX_IRIX = IDOCompiler(
@@ -1086,7 +1092,7 @@ IDO53_CXX_IRIX = IDOCompiler(
     platform=IRIX,
     cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO53_CXX,
-    language=Language.OLD_CXX,
+    language=flags.Language.OLD_CXX,
 )
 
 IDO53PASCAL = IDOCompiler(
@@ -1094,7 +1100,7 @@ IDO53PASCAL = IDOCompiler(
     platform=IRIX,
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO53,
-    language=Language.PASCAL,
+    language=flags.Language.PASCAL,
 )
 
 IDO60_IRIX = IDOCompiler(
@@ -1116,7 +1122,7 @@ IDO71PASCAL = IDOCompiler(
     platform=IRIX,
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO71,
-    language=Language.PASCAL,
+    language=flags.Language.PASCAL,
 )
 
 MIPS_PRO_744_IRIX = IDOCompiler(
@@ -1143,7 +1149,7 @@ XCODE_GCC401_CPP = GCCCompiler(
     platform=MACOSX,
     cc=GCC_CC1PLUS,
     base_compiler=XCODE_GCC401_C,
-    language=Language.CXX,
+    language=flags.Language.CXX,
 )
 
 XCODE_24_C = GCCCompiler(
@@ -1157,7 +1163,7 @@ XCODE_24_CPP = GCCCompiler(
     platform=MACOSX,
     cc=GCC_CC1PLUS_ALT,
     base_compiler=XCODE_24_C,
-    language=Language.CXX,
+    language=flags.Language.CXX,
 )
 
 XCODE_GCC400_C = GCCCompiler(
@@ -1171,7 +1177,7 @@ XCODE_GCC400_CPP = GCCCompiler(
     platform=MACOSX,
     cc=GCC_CC1PLUS_ALT,
     base_compiler=XCODE_GCC400_C,
-    language=Language.CXX,
+    language=flags.Language.CXX,
 )
 
 PBX_GCC3 = GCCCompiler(
@@ -1564,6 +1570,15 @@ MSVC80P = MSVCCompiler(
     platform=WIN32,
     cc=CL_WIN,
 )
+
+# icc rejects CL's /Bk flag, so it needs its own command
+ICL_WIN = '${WIBO} "${COMPILER_DIR}/Bin/icl.exe" /c /nologo /I"Z:${COMPILER_DIR}/Include/" ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
+
+ICC501_010525Z = ICCCompiler(
+    id="icc5.0.1-010525z",
+    platform=WIN32,
+    cc=ICL_WIN,
+)
 # Watcom doesn't like '/' in paths passed to it so we need to replace them.
 WATCOM_ARGS = ' -zq -i="Z:${COMPILER_DIR}/h" -i="Z:${COMPILER_DIR}/h/nt" ${COMPILER_FLAGS} -fo"Z:${OUTPUT}" "Z:${INPUT}"'
 WATCOM_CC = (
@@ -1587,7 +1602,7 @@ WATCOM_100A_CPP = WatcomCompiler(
     id="wpp10.0a",
     base_compiler=WATCOM_100A_C,
     platform=MSDOS,
-    language=Language.CXX,
+    language=flags.Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1601,7 +1616,7 @@ WATCOM_105_CPP = WatcomCompiler(
     id="wpp10.5",
     base_compiler=WATCOM_105_C,
     platform=MSDOS,
-    language=Language.CXX,
+    language=flags.Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1615,7 +1630,7 @@ WATCOM_105A_CPP = WatcomCompiler(
     id="wpp10.5a",
     base_compiler=WATCOM_105A_C,
     platform=MSDOS,
-    language=Language.CXX,
+    language=flags.Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1629,7 +1644,7 @@ WATCOM_106_CPP = WatcomCompiler(
     id="wpp10.6",
     base_compiler=WATCOM_106_C,
     platform=MSDOS,
-    language=Language.CXX,
+    language=flags.Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1643,7 +1658,7 @@ WATCOM_110_CPP = WatcomCompiler(
     id="wpp11.0",
     base_compiler=WATCOM_110_C,
     platform=MSDOS,
-    language=Language.CXX,
+    language=flags.Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1940,6 +1955,7 @@ _all_compilers: list[Compiler] = [
     MSVC71,
     MSVC80,
     MSVC80P,
+    ICC501_010525Z,
     # Watcom, DOS and Win32
     WATCOM_100A_C,
     WATCOM_100A_CPP,

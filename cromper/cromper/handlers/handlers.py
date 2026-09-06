@@ -120,11 +120,19 @@ class CompilerHandler(BaseHandler):
             compiler.id: compiler.to_json() for compiler in selected_compilers
         }
         flag_classes = flags.compiler_flag_classes_to_json(
-            {compiler.flag_class for compiler in selected_compilers}
+            compiler.flag_class for compiler in selected_compilers
         )
 
         # TODO: Remove the 'compilers' key one day
-        return self.write({"compilers": compilers_data, "flags": flag_classes})
+        return self.write(
+            {
+                "compilers": compilers_data,
+                "flags": flag_classes,
+                "diff_flags": flags.diff_flag_classes_to_json(
+                    compiler.platform.diff_flag_class for compiler in selected_compilers
+                ),
+            }
+        )
 
 
 class CompilerLanguageBaseHandler(BaseHandler):

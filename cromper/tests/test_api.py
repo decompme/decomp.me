@@ -55,15 +55,18 @@ class CromperAPITests(AsyncHTTPTestCase):
         self.assertIsInstance(data["flags"], dict)
 
         for compiler in data["compilers"].values():
-            self.assertIn("class", compiler)
+            self.assertIn("flags_class", compiler)
+            self.assertNotIn("diff_flags", compiler)
+            self.assertIn(compiler["diff_flags_class"], data["diff_flags"])
             self.assertNotIn("flags", compiler)
             self.assertNotIn("language", compiler)
-            self.assertIn(compiler["class"], data["flags"])
+            self.assertIn(compiler["flags_class"], data["flags"])
 
-        for flag_class in data["flags"].values():
-            self.assertIsInstance(flag_class["flags"], list)
-            if "parent" in flag_class:
-                self.assertIn(flag_class["parent"], data["flags"])
+        for field in ("flags", "diff_flags"):
+            for flag_class in data[field].values():
+                self.assertIsInstance(flag_class["flags"], list)
+                if "parent" in flag_class:
+                    self.assertIn(flag_class["parent"], data[field])
 
     def test_compilers_endpoint_platform(self):
         """Test platform-filtered compiler metadata and flag classes."""
@@ -76,7 +79,7 @@ class CromperAPITests(AsyncHTTPTestCase):
         self.assertTrue(data["compilers"])
         for compiler in data["compilers"].values():
             self.assertEqual(compiler["platform"], N64.id)
-            self.assertIn(compiler["class"], data["flags"])
+            self.assertIn(compiler["flags_class"], data["flags"])
 
     def test_compilers_endpoint_single(self):
         """Test a single compiler includes its required flag-class ancestry."""
@@ -86,8 +89,12 @@ class CromperAPITests(AsyncHTTPTestCase):
         data = json.loads(response.body)
         self.assertEqual(list(data["compilers"]), ["gcc2.8.1pm"])
         compiler = data["compilers"]["gcc2.8.1pm"]
-        self.assertEqual(compiler["class"], "gcc")
+        self.assertEqual(compiler["flags_class"], "gcc")
         self.assertIn("gcc", data["flags"])
+        self.assertEqual(compiler["diff_flags_class"], "mips")
+        self.assertEqual(set(data["flags"]), {"gcc"})
+        self.assertEqual(set(data["diff_flags"]), {"common", "mips"})
+        self.assertEqual(data["diff_flags"]["mips"]["parent"], "common")
 
     def test_compiler_language_endpoint(self):
         """Test resolving the effective language from compiler flags."""

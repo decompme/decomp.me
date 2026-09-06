@@ -26,7 +26,8 @@ import type { Highlighter } from "./Highlighter";
 // Regex for tokenizing lines for click-to-highlight purposes.
 // Strings matched by the first regex group (spaces, punctuation)
 // are treated as non-highlightable.
-const RE_TOKEN = /([ \t,()[\]:]+|~>)|%(?:lo|hi)\([^)]+\)|[^ \t,()[\]:]+/g;
+export const RE_TOKEN =
+    /([ \t,()\[\]{}:]+|~>)|%(?:lo|hi)\([^)]+\)|[^ \t,()\[\]{}:]+/g;
 
 function FormatDiffText({
     texts,

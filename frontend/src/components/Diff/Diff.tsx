@@ -31,7 +31,7 @@ import * as AsmDiffer from "./DiffRowAsmDiffer";
 import { type DiffSearchMatch, findDiffSearchMatches } from "./DiffSearch";
 import DiffSearchPanel from "./DiffSearchPanel";
 import DragBar from "./DragBar";
-import { useHighlighers } from "./Highlighter";
+import { useHighlighters } from "./Highlighter";
 import CopyButton from "../CopyButton";
 import ToggleButton from "./ToggleButton";
 import { useResizableColumns } from "./hooks";
@@ -88,7 +88,7 @@ function DiffBody({
     onToggle: (key: string) => void;
     activeSearchMatch: DiffSearchMatch | null;
 }) {
-    const { highlighters, setHighlightAll } = useHighlighers(3);
+    const { highlighters, setHighlightAll } = useHighlighters(3);
     const listRef = useRef<FixedSizeList>(null);
 
     useEffect(() => {
