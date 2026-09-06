@@ -2,7 +2,7 @@
 
 There is support for running subprocesses within [`nsjail`](https://github.com/google/nsjail).
 
-This is controlled by the `SANDBOX` settings, and is disabled by default in the development `.env` but is enabled inside the `backend` Docker container.
+This is controlled by the `SANDBOX` settings, and is disabled by default in the development `.env` but is enabled inside the `cromper` Docker container.
 
 To enable it locally outside of the Docker container:
 

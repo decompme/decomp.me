@@ -2,6 +2,7 @@ import hashlib
 import json
 import logging
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Any
 
 import itsdangerous
@@ -10,10 +11,21 @@ from django.contrib import admin
 from django.db import IntegrityError, models
 from django.utils.crypto import get_random_string
 
-from ..libraries import Library
 from .profile import Profile
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class Library:
+    name: str
+    version: str
+
+    def to_json(self) -> dict[str, str]:
+        return {
+            "name": self.name,
+            "version": self.version,
+        }
 
 
 def gen_scratch_id() -> str:
@@ -196,7 +208,6 @@ class Scratch(models.Model):
             return isinstance(data, dict) and data.get("slug") == self.slug
         except itsdangerous.BadData:
             return False
-
 
 class ScratchAdmin(admin.ModelAdmin[Scratch]):
     raw_id_fields = ["owner", "parent", "family", "context_fk"]

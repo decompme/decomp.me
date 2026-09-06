@@ -8,6 +8,9 @@ if (!API_BASE) {
     throw new Error("No API_BASE set");
 }
 
+const CROMPER_BASE =
+    process.env.INTERNAL_CROMPER_BASE ?? process.env.NEXT_PUBLIC_API_BASE;
+
 type Json = any;
 
 const commonOpts: RequestInit = {
@@ -41,9 +44,23 @@ export class RequestFailedError extends Error {
     }
 }
 
+export class CompilerServiceUnavailableError extends RequestFailedError {
+    constructor(message: string, url: string) {
+        super(message, url);
+        this.name = "CompilerServiceUnavailableError";
+    }
+}
+
+function isCromperUrl(url: string) {
+    if (url.startsWith("/platform")) return true;
+    if (url.startsWith("/compiler")) return true;
+    if (url.startsWith("/library")) return true;
+    return false;
+}
+
 export function normalizeUrl(url: string) {
     if (url.startsWith("/")) {
-        url = API_BASE + url;
+        url = (isCromperUrl(url) ? CROMPER_BASE : API_BASE) + url;
     }
     return url;
 }
@@ -51,13 +68,17 @@ export function normalizeUrl(url: string) {
 export async function errorHandledFetchJson(url: string, init?: RequestInit) {
     let response: Response;
 
+    const cromperRequest = isCromperUrl(url);
     url = normalizeUrl(url);
 
     try {
         response = await fetch(url, init);
     } catch (error) {
         if (error instanceof TypeError) {
-            throw new RequestFailedError(error.message, url);
+            const ErrorType = cromperRequest
+                ? CompilerServiceUnavailableError
+                : RequestFailedError;
+            throw new ErrorType(error.message, url);
         }
 
         throw error;
