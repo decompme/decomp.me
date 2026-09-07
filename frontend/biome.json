@@ -18,17 +18,6 @@
         "enabled": true,
         "rules": {
             "recommended": true,
-            "style": {
-                "noParameterAssign": "off",
-                "useAsConstAssertion": "error",
-                "useDefaultParameterLast": "error",
-                "useEnumInitializers": "error",
-                "useSelfClosingElements": "error",
-                "useSingleVarDeclarator": "error",
-                "noUnusedTemplateLiteral": "error",
-                "useNumberNamespace": "error",
-                "noInferrableTypes": "error"
-            },
             "a11y": {
                 "useValidAnchor": "off",
                 "useSemanticElements": "off",
@@ -48,9 +37,6 @@
             },
             "performance": {
                 "noImgElement": "off"
-            },
-            "nursery": {
-                "useSortedClasses": "error"
             }
         }
     }
