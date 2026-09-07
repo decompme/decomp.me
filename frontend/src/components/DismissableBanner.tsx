@@ -1,7 +1,6 @@
-import { type ReactNode, useState } from "react";
-
 import { XIcon } from "@primer/octicons-react";
 import clsx from "clsx";
+import { type ReactNode, useState } from "react";
 
 import styles from "./DismissableBanner.module.scss";
 
@@ -9,7 +8,11 @@ export default function DismissableBanner({
     className,
     children,
     color = "#4273e1",
-}: { className?: string; children?: ReactNode; color: string }) {
+}: {
+    className?: string;
+    children?: ReactNode;
+    color: string;
+}) {
     const [isOpen, setIsOpen] = useState(true);
 
     if (!isOpen) return null;

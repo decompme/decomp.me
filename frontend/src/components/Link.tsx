@@ -1,8 +1,8 @@
 import NextLink from "next/link";
 import {
-    forwardRef,
     type ComponentPropsWithoutRef,
     type ElementRef,
+    forwardRef,
 } from "react";
 
 export type Props = ComponentPropsWithoutRef<typeof NextLink>;

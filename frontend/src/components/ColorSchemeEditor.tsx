@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-
 import isDarkColor from "is-dark-color";
-import { HexColorPicker, HexColorInput } from "react-colorful";
+import { useEffect, useState } from "react";
+import { HexColorInput, HexColorPicker } from "react-colorful";
 
 import {
     COLOR_NAMES,
@@ -16,14 +15,18 @@ function Color({
     color,
     name,
     onChange,
-}: { color: string; name: string; onChange: (color: string) => void }) {
+}: {
+    color: string;
+    name: string;
+    onChange: (color: string) => void;
+}) {
     const [isEditing, setIsEditing] = useState(false);
     const [isDark, setIsDark] = useState(false);
 
     useEffect(() => {
         try {
             setIsDark(isDarkColor(color));
-        } catch (error) {
+        } catch (_error) {
             // Ignore
         }
     }, [color]);

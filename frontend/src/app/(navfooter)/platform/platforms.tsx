@@ -1,9 +1,8 @@
 "use client";
 
-import { useRouter } from "@/lib/navigation";
-
 import PlatformSelect from "@/components/PlatformSelect";
 import type * as api from "@/lib/api";
+import { useRouter } from "@/lib/navigation";
 
 export function Platforms({
     availablePlatforms,

@@ -1,9 +1,9 @@
 import { ImageResponse } from "next/og";
-import { getPublic } from "@/lib/api/request";
 import {
-    platformIcon,
     PLATFORMS,
+    platformIcon,
 } from "@/components/PlatformSelect/PlatformIcon";
+import { getPublic } from "@/lib/api/request";
 
 const IMAGE_WIDTH_PX = 1200;
 

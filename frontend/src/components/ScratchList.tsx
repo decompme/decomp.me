@@ -1,21 +1,18 @@
 "use client";
 
-import { type JSX, type ReactNode, useState } from "react";
-
-import Link from "@/components/Link";
-
 import clsx from "clsx";
-
-import AsyncButton from "./AsyncButton";
-import Button from "./Button";
-import styles from "./ScratchList.module.scss";
+import { type JSX, type ReactNode, useState } from "react";
+import Link from "@/components/Link";
 import { type TerseScratch, usePaginated } from "@/lib/api";
 import { scratchUrl } from "@/lib/api/urls";
+import AsyncButton from "./AsyncButton";
+import Button from "./Button";
 import {
     ScratchItem,
     ScratchItemSkeleton,
     type ScratchItemSkeletonVariant,
 } from "./ScratchItem";
+import styles from "./ScratchList.module.scss";
 import Sort, { SortMode } from "./SortScratch";
 
 export interface Props {

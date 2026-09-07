@@ -1,10 +1,9 @@
 "use client";
 
-import { type ReactNode, useState, useCallback } from "react";
-
 import clsx from "clsx";
-import { motion, AnimatePresence } from "framer-motion";
-import { useLayer, Arrow } from "react-laag";
+import { AnimatePresence, motion } from "framer-motion";
+import { type ReactNode, useCallback, useState } from "react";
+import { Arrow, useLayer } from "react-laag";
 
 import styles from "./AsyncButton.module.scss";
 import Button, { type Props as ButtonProps } from "./Button";

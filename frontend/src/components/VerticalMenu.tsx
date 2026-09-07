@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import {
     createContext,
     type ReactNode,
@@ -5,11 +6,8 @@ import {
     useContext,
     useState,
 } from "react";
-
 import Link from "@/components/Link";
 import { useRouter } from "@/lib/navigation";
-
-import clsx from "clsx";
 
 import ErrorBoundary from "./ErrorBoundary";
 import LoadingSpinner from "./loading.svg";
@@ -57,7 +55,10 @@ export default function VerticalMenu({ children, open, setOpen }: Props) {
 export function MenuItem({
     className,
     children,
-}: { className?: string; children: ReactNode }) {
+}: {
+    className?: string;
+    children: ReactNode;
+}) {
     return <li className={clsx(styles.item, className)}>{children}</li>;
 }
 
@@ -133,6 +134,7 @@ export function LinkItem({
         shortcutKeys,
         useCallback(() => {
             if (!disabled) router.push(href);
+            return Promise.resolve();
         }, [disabled, router, href]),
     );
 

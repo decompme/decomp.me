@@ -1,9 +1,7 @@
-import Link from "@/components/Link";
-
 import { ArrowRightIcon } from "@primer/octicons-react";
-
 import Button from "@/components/Button";
 import GitHubLoginButton from "@/components/GitHubLoginButton";
+import Link from "@/components/Link";
 import ScrollingPlatformIcons from "@/components/PlatformSelect/ScrollingPlatformIcons";
 
 import SiteStats from "./SiteStats";

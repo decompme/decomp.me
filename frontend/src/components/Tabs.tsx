@@ -1,18 +1,17 @@
-import {
-    type ReactElement,
-    type ReactNode,
-    createContext,
-    Component,
-    useState,
-    createRef,
-    type RefObject,
-    useLayoutEffect,
-    useRef,
-    useEffect,
-} from "react";
-
 import { XIcon } from "@primer/octicons-react";
 import clsx from "clsx";
+import {
+    Component,
+    createContext,
+    createRef,
+    type ReactElement,
+    type ReactNode,
+    type RefObject,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from "react";
 
 import ErrorBoundary from "./ErrorBoundary";
 import styles from "./Tabs.module.scss";

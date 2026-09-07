@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-
-import ScratchList from "@/components/ScratchList";
 import { SingleLineScratchItem } from "@/components/ScratchItem";
+import ScratchList from "@/components/ScratchList";
 import YourScratchList from "@/components/YourScratchList";
 
 import WelcomeInfo from "./WelcomeInfo";

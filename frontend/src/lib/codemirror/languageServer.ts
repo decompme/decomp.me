@@ -1,31 +1,31 @@
 /* Originally adapted from https://github.com/FurqanSoftware/codemirror-languageserver */
 
 import type { ClangdStdioTransport } from "@clangd-wasm/clangd-wasm";
-import { autocompletion } from "@codemirror/autocomplete";
 import type {
     Completion,
     CompletionContext,
     CompletionResult,
 } from "@codemirror/autocomplete";
+import { autocompletion } from "@codemirror/autocomplete";
 import { setDiagnostics } from "@codemirror/lint";
-import { type Extension, Facet } from "@codemirror/state";
 import type { Text } from "@codemirror/state";
+import { type Extension, Facet } from "@codemirror/state";
+import type { PluginValue, ViewUpdate } from "@codemirror/view";
 import {
     type EditorView,
-    ViewPlugin,
-    type Tooltip,
     hoverTooltip,
     keymap,
+    type Tooltip,
+    ViewPlugin,
 } from "@codemirror/view";
-import type { ViewUpdate, PluginValue } from "@codemirror/view";
-import { RequestManager, Client } from "@open-rpc/client-js";
+import { Client, RequestManager } from "@open-rpc/client-js";
 import type { Transport } from "@open-rpc/client-js/build/transports/Transport";
+import type * as LSP from "vscode-languageserver-protocol";
 import {
-    DiagnosticSeverity,
     CompletionItemKind,
     CompletionTriggerKind,
+    DiagnosticSeverity,
 } from "vscode-languageserver-protocol";
-import type * as LSP from "vscode-languageserver-protocol";
 
 const timeout = 10000;
 const changesDelay = 500;

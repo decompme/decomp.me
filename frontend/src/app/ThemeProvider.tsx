@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { applyColorScheme } from "@/lib/codemirror/color-scheme";
 import * as settings from "@/lib/settings";
 
-export default function ThemeProvider() {
+export default function ThemeProvider(): null {
     const [codeColorScheme, setCodeColorScheme] = settings.useCodeColorScheme();
     useEffect(() => {
         applyColorScheme(codeColorScheme);
@@ -65,5 +65,5 @@ export default function ThemeProvider() {
         );
     }, [codeLineHeight]);
 
-    return <></>;
+    return null;
 }

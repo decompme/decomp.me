@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { ChevronDownIcon } from "@primer/octicons-react";
+import { useEffect } from "react";
 
 export type Props = {
     options: { [key: string]: string };

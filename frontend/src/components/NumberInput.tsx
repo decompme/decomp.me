@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-
 import clsx from "clsx";
+import { useEffect, useRef, useState } from "react";
 
 import styles from "./NumberInput.module.scss";
 

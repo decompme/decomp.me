@@ -1,15 +1,14 @@
 /* eslint css-modules/no-unused-class: off */
 
+import clsx from "clsx";
+import type { EditorView } from "codemirror";
 import {
     type CSSProperties,
     type MouseEvent,
-    type RefObject,
     memo,
+    type RefObject,
     useContext,
 } from "react";
-
-import clsx from "clsx";
-import type { EditorView } from "codemirror";
 import { areEqual } from "react-window";
 
 import type * as api from "@/lib/api";
@@ -19,15 +18,15 @@ import * as settings from "@/lib/settings";
 import { ScrollContext } from "../ScrollContext";
 import { useSelectedSourceLine } from "../SelectedSourceLineContext";
 import { PADDING_TOP, type VisibleRow } from "./Diff";
-import type { DiffSearchMatch } from "./DiffSearch";
 import styles from "./Diff.module.scss";
+import type { DiffSearchMatch } from "./DiffSearch";
 import type { Highlighter } from "./Highlighter";
 
 // Regex for tokenizing lines for click-to-highlight purposes.
 // Strings matched by the first regex group (spaces, punctuation)
 // are treated as non-highlightable.
 export const RE_TOKEN =
-    /([ \t,()\[\]{}:]+|~>)|%(?:lo|hi)\([^)]+\)|[^ \t,()\[\]{}:]+/g;
+    /([ \t,()[\]{}:]+|~>)|%(?:lo|hi)\([^)]+\)|[^ \t,()[\]{}:]+/g;
 
 function FormatDiffText({
     texts,

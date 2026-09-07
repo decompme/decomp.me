@@ -1,13 +1,10 @@
 "use client";
 
-import { type ReactNode, type JSX, useState } from "react";
-
-import Link from "@/components/Link";
-
 import clsx from "clsx";
-
+import { type JSX, type ReactNode, useState } from "react";
 import AsyncButton from "@/components/AsyncButton";
 import Button from "@/components/Button";
+import Link from "@/components/Link";
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon";
 import { type Preset, usePaginated } from "@/lib/api";
 import { presetUrl } from "@/lib/api/urls";
@@ -88,7 +85,10 @@ export function PresetList({
 export function PresetItem({
     preset,
     hideIcon,
-}: { preset: Preset; hideIcon?: boolean }): JSX.Element {
+}: {
+    preset: Preset;
+    hideIcon?: boolean;
+}): JSX.Element {
     const compilersTranslation = getTranslation("compilers");
     const compilerName = compilersTranslation.t(preset.compiler);
 

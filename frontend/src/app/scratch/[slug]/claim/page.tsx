@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, use } from "react";
-
-import { useRouter } from "@/lib/navigation";
-
+import { use, useEffect, useRef, useState } from "react";
 import LoadingSkeleton from "@/app/scratch/[slug]/loading";
 import { post } from "@/lib/api/request";
+import { useRouter } from "@/lib/navigation";
 
 export default function Page(props: {
     params: Promise<{ slug: string }>;

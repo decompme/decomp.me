@@ -1,19 +1,16 @@
 "use client";
 
-import { useEffect, useReducer, type ReactNode } from "react";
-
+import { ThreeBarsIcon, XIcon } from "@primer/octicons-react";
+import clsx from "clsx";
+import { type ReactNode, useEffect, useReducer } from "react";
 import Link from "@/components/Link";
 import { useRouter } from "@/lib/navigation";
 
-import { ThreeBarsIcon, XIcon } from "@primer/octicons-react";
-import clsx from "clsx";
-
 import GhostButton from "../GhostButton";
-import SiteLogo from "./SiteLogo";
-
 import LoginState from "./LoginState";
 import styles from "./Nav.module.scss";
 import Search from "./Search";
+import SiteLogo from "./SiteLogo";
 
 export interface Props {
     children?: ReactNode;

@@ -1,4 +1,4 @@
-import { init, captureRouterTransitionStart } from "@sentry/nextjs";
+import { captureRouterTransitionStart, init } from "@sentry/nextjs";
 
 const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
 

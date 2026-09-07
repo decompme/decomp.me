@@ -1,7 +1,4 @@
-import {
-    CompilerServiceUnavailableError,
-    getPublic,
-} from "@/lib/api/request";
+import { CompilerServiceUnavailableError, getPublic } from "@/lib/api/request";
 
 import DESCRIPTION from "./description";
 import NewScratchForm from "./NewScratchForm";

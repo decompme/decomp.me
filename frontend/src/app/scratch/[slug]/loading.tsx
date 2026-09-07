@@ -1,5 +1,5 @@
 import Nav from "@/components/Nav";
-import { TextSkeleton, CODE, DIFF } from "@/components/TextSkeleton";
+import { CODE, DIFF, TextSkeleton } from "@/components/TextSkeleton";
 
 export default function LoadingSkeleton() {
     return (

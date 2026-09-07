@@ -1,11 +1,10 @@
-import { type RefObject, useEffect, useState } from "react";
-
 import type {
     ClangdStdioTransport,
     CompileCommands,
 } from "@clangd-wasm/clangd-wasm";
 import { StateEffect } from "@codemirror/state";
 import type { EditorView } from "codemirror";
+import { type RefObject, useEffect, useState } from "react";
 
 import type * as api from "@/lib/api";
 import {

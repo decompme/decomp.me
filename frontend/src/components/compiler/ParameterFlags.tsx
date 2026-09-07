@@ -1,15 +1,13 @@
-import { useContext, useState, useEffect, useCallback } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 
 import { useDebounce } from "use-debounce";
-
+import styles from "./CompilerOpts.module.css";
 import { OptsContext } from "./OptsContext";
 import {
     isValidHexParameterValue,
     isValidIntegerParameterValue,
     isValidIntOrHexParameterValue,
 } from "./ParameterFlags.state";
-
-import styles from "./CompilerOpts.module.css";
 
 type ParameterFlagProps = {
     flag: string;

@@ -4,7 +4,7 @@ import { LinkExternalIcon } from "@primer/octicons-react";
 
 import Button from "@/components/Button";
 import GhostButton from "@/components/GhostButton";
-import { useThisUser, isAnonUser } from "@/lib/api";
+import { isAnonUser, useThisUser } from "@/lib/api";
 import { userHtmlUrl } from "@/lib/api/urls";
 
 import Section from "../Section";

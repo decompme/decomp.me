@@ -1,5 +1,5 @@
-import type { JSX } from "react";
 import clsx from "clsx";
+import type { JSX } from "react";
 
 type ToggleButtonProps = {
     label: string | JSX.Element;

@@ -1,15 +1,4 @@
 import {
-    useEffect,
-    useRef,
-    useState,
-    type FC,
-    type ClipboardEvent,
-    type KeyboardEvent,
-    type MouseEvent,
-    type JSX,
-} from "react";
-
-import {
     CheckIcon,
     DownloadIcon,
     FileIcon,
@@ -21,6 +10,16 @@ import {
     UploadIcon,
 } from "@primer/octicons-react";
 import clsx from "clsx";
+import {
+    type ClipboardEvent,
+    type FC,
+    type JSX,
+    type KeyboardEvent,
+    type MouseEvent,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import ContentEditable from "react-contenteditable";
 import Link from "@/components/Link";
 
@@ -73,13 +72,7 @@ function EditTimeAgo({ date }: { date: string }) {
 
     return (
         <span className={styles.lastEditTime}>
-            {isActive ? (
-                <>Active now</>
-            ) : (
-                <>
-                    <TimeAgo date={date} />
-                </>
-            )}
+            {isActive ? "Active now" : <TimeAgo date={date} />}
         </span>
     );
 }
@@ -87,7 +80,10 @@ function EditTimeAgo({ date }: { date: string }) {
 function ScratchName({
     name,
     onChange,
-}: { name: string; onChange?: (name: string) => void }) {
+}: {
+    name: string;
+    onChange?: (name: string) => void;
+}) {
     const [isEditing, setEditing] = useState(false);
     const editableRef = useRef<HTMLDivElement>(null);
 
@@ -239,9 +235,9 @@ function Actions({
         canSave ? saveScratch : forkCurrentScratch,
     );
 
-    const compileShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "J"], () => {
-        compile();
-    });
+    const compileShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "J"], () =>
+        compile(),
+    );
 
     const isAdmin = api.useThisUserIsAdmin();
 

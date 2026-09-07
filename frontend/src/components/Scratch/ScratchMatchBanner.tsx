@@ -1,6 +1,5 @@
-import Link from "@/components/Link";
-
 import useSWR from "swr";
+import Link from "@/components/Link";
 
 import * as api from "@/lib/api";
 import { scratchUrl } from "@/lib/api/urls";
@@ -10,7 +9,9 @@ import { calculateScorePercent, percentToString } from "../ScoreBadge";
 
 export default function ScratchMatchBanner({
     scratch,
-}: { scratch: api.TerseScratch }) {
+}: {
+    scratch: api.TerseScratch;
+}) {
     const userIsYou = api.useUserIsYou();
     const { data, error } = useSWR<api.TerseScratch[]>(
         `${scratchUrl(scratch)}/family`,

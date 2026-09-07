@@ -1,14 +1,13 @@
 "use client";
 
-import {
-    useState,
-    useRef,
-    useLayoutEffect,
-    useEffect,
-    type RefObject,
-} from "react";
-
 import useResizeObserver from "@react-hook/resize-observer";
+import {
+    type RefObject,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from "react";
 
 import { joinTitles } from "./title";
 

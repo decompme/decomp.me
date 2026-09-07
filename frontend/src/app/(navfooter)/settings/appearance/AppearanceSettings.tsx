@@ -3,11 +3,10 @@
 import ColorSchemePicker from "@/components/ColorSchemePicker";
 import ThemePicker from "@/components/ThemePicker";
 import * as settings from "@/lib/settings";
-
+import Checkbox from "../Checkbox";
 import Section from "../Section";
 import SliderField from "../SliderField";
 import TextField from "../TextField";
-import Checkbox from "../Checkbox";
 
 import ExampleCodeMirror from "./ExampleCodeMirror";
 

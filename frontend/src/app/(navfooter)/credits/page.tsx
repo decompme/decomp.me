@@ -66,7 +66,7 @@ async function getContributor(username: string): Promise<Contributor> {
             type: "decompme",
             user,
         };
-    } catch (error) {
+    } catch (_error) {
         // Fall back to GitHub information
         // No need to ask their API for data since we just need the username
         return {

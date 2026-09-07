@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useMemo } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
 type SelectedSourceLineContextValue = {
     selectedSourceLine: number | null;
@@ -11,7 +11,9 @@ const SelectedSourceLineContext = createContext<
 
 export function SelectedSourceLineProvider({
     children,
-}: { children: React.ReactNode }) {
+}: {
+    children: React.ReactNode;
+}) {
     const [selectedSourceLine, setSelectedSourceLine] = useState<number | null>(
         null,
     );

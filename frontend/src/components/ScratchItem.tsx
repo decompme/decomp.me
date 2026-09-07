@@ -1,21 +1,18 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
-
-import Image from "next/image";
-import Link from "@/components/Link";
-
 import { RepoForkedIcon, TrashIcon } from "@primer/octicons-react";
 import clsx from "clsx";
+import Image from "next/image";
+import { type ReactNode, useState } from "react";
+import Link from "@/components/Link";
 
 import TimeAgo from "@/components/TimeAgo";
 import * as api from "@/lib/api";
 import { presetUrl, scratchUrl, userAvatarUrl } from "@/lib/api/urls";
 
 import getTranslation from "@/lib/i18n/translate";
-
-import AnonymousFrogAvatar from "./Frog/AnonymousFrog";
 import Button from "./Button";
+import AnonymousFrogAvatar from "./Frog/AnonymousFrog";
 import PlatformLink from "./PlatformLink";
 import { calculateScorePercent, percentToString } from "./ScoreBadge";
 import styles from "./ScratchItem.module.scss";
@@ -43,7 +40,9 @@ export function getMatchPercentString(source: MatchPercentSource) {
 
 export function Improvement({
     improvement = null,
-}: { improvement?: api.BestFork | null }) {
+}: {
+    improvement?: api.BestFork | null;
+}) {
     if (!improvement) return null;
     const ownerName = improvement.owner?.username ?? "Someone";
 
@@ -123,7 +122,10 @@ function DeleteButton({
 function ScratchItemTitle({
     scratch,
     showPlatform,
-}: { scratch: api.TerseScratch; showPlatform?: boolean }) {
+}: {
+    scratch: api.TerseScratch;
+    showPlatform?: boolean;
+}) {
     return (
         <div className={styles.title}>
             {showPlatform && (
@@ -269,7 +271,10 @@ export function ScratchItem({
 export function ScratchItemNoOwner({
     scratch,
     showDeleteButton,
-}: { scratch: api.TerseScratch; showDeleteButton?: boolean }) {
+}: {
+    scratch: api.TerseScratch;
+    showDeleteButton?: boolean;
+}) {
     return (
         <ScratchItemRow
             scratch={scratch}
@@ -281,13 +286,17 @@ export function ScratchItemNoOwner({
 
 export function ScratchItemPlatformList({
     scratch,
-}: { scratch: api.TerseScratch }) {
+}: {
+    scratch: api.TerseScratch;
+}) {
     return <ScratchItemRow scratch={scratch} showPlatform={false} />;
 }
 
 export function ScratchItemPresetList({
     scratch,
-}: { scratch: api.TerseScratch }) {
+}: {
+    scratch: api.TerseScratch;
+}) {
     return (
         <ScratchItemRow
             scratch={scratch}
@@ -359,7 +368,10 @@ export function ScratchOwnerAvatar({ scratch }: { scratch: api.TerseScratch }) {
 export function SingleLineScratchItem({
     scratch,
     showOwner = false,
-}: { scratch: api.TerseScratch; showOwner?: boolean }) {
+}: {
+    scratch: api.TerseScratch;
+    showOwner?: boolean;
+}) {
     return (
         <li className={styles.singleLine}>
             <PlatformLink

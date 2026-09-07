@@ -1,7 +1,6 @@
-import { useMemo, useRef, useState } from "react";
-
 import { ChevronDownIcon, ChevronUpIcon } from "@primer/octicons-react";
 import { Allotment, type AllotmentHandle } from "allotment";
+import { useMemo, useRef, useState } from "react";
 
 import type * as api from "@/lib/api";
 import { interdiff } from "@/lib/interdiff";

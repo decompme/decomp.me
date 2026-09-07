@@ -2,8 +2,8 @@ import { ImageResponse } from "next/og";
 
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon";
 import {
-    percentToString,
     calculateScorePercent,
+    percentToString,
 } from "@/components/ScoreBadge";
 import { get } from "@/lib/api/request";
 import type { Preset } from "@/lib/api/types";
@@ -25,7 +25,9 @@ export const runtime = "edge";
 
 export default async function ScratchOG({
     params,
-}: { params: Promise<{ slug: string }> }) {
+}: {
+    params: Promise<{ slug: string }>;
+}) {
     const OpenSansSemiBold = fetch(
         new URL(
             "../../../../public/fonts/OpenSans-SemiBold.ttf",
