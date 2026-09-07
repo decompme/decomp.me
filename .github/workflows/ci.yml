@@ -153,17 +153,12 @@ jobs:
       - name: Check docker compose status (green)
         run: docker compose -f docker-compose.prod.yaml ps
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v10.0.1
-        with:
-          version: "latest"
-          enable-cache: false
-
       - name: Run integration tests
         run: |
-          cd integration_tests
-          uv sync --all-extras
-          uv run pytest -v
+          docker compose -f docker-compose.prod.yaml run --rm --no-deps \
+            -v "$PWD/integration_tests:/integration_tests" \
+            backend-blue \
+            bash -lc 'cd /integration_tests && uv sync --all-extras && uv run pytest -v'
 
       - name: Shut everything down
         if: always()
