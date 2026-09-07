@@ -1,11 +1,11 @@
-FROM node:24-alpine AS dev
+FROM node:26-alpine AS dev
 
 WORKDIR /frontend
 
 ENTRYPOINT ["/frontend/docker_entrypoint.sh"]
 
 
-FROM node:24-alpine AS builder
+FROM node:26-alpine AS builder
 
 COPY package.json /frontend/
 COPY yarn.lock /frontend/
@@ -46,7 +46,7 @@ ENV GIT_HASH=${GIT_HASH}
 RUN yarn build && rm -rf .next/cache
 
 
-FROM node:24-alpine AS prod
+FROM node:26-alpine AS prod
 
 WORKDIR /frontend
 

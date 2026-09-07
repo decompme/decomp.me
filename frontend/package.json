@@ -78,5 +78,8 @@
     },
     "browserslist": [
         "last 2 versions and not dead and >= 1% and supports async-functions"
-    ]
+    ],
+    "engines": {
+        "node": "26.x"
+    }
 }
