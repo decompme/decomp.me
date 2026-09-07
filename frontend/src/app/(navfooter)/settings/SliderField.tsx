@@ -1,6 +1,5 @@
-import { useId, type ReactNode } from "react";
-
 import clsx from "clsx";
+import { type ReactNode, useId } from "react";
 
 import NumberInput from "@/components/NumberInput";
 

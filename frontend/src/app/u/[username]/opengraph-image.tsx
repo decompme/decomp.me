@@ -1,11 +1,9 @@
 import { ImageResponse } from "next/og";
-
+import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon";
+import type { ScratchUser } from "@/lib/api";
 import { get } from "@/lib/api/request";
 import { userAvatarUrl } from "@/lib/api/urls";
-
 import PurpleFrog from "../../scratch/[slug]/assets/purplefrog.svg";
-import type { ScratchUser } from "@/lib/api";
-import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon";
 
 const IMAGE_WIDTH_PX = 1200;
 const IMAGE_HEIGHT_PX = 400;

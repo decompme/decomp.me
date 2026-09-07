@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import PlatformLink from "@/components/PlatformLink";
-import ScratchList from "@/components/ScratchList";
 import { ScratchItemPresetList } from "@/components/ScratchItem";
+import ScratchList from "@/components/ScratchList";
 import { get } from "@/lib/api/request";
 import type { Preset } from "@/lib/api/types";
 import getTranslation from "@/lib/i18n/translate";

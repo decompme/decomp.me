@@ -2,7 +2,7 @@
 
 import Link from "@/components/Link";
 
-import { useThisUser, isAnonUser } from "@/lib/api";
+import { isAnonUser, useThisUser } from "@/lib/api";
 
 import Button from "./Button";
 import ScratchList, { type Props as ScratchListProps } from "./ScratchList";

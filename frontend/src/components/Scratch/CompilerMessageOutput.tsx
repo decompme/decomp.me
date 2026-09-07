@@ -1,7 +1,6 @@
-import { type RefObject, useContext } from "react";
-
 import type { EditorView } from "@codemirror/view";
 import Ansi from "ansi-to-react";
+import { type RefObject, useContext } from "react";
 
 import { scrollToLineNumber } from "@/lib/codemirror/scrollToLineNumber";
 

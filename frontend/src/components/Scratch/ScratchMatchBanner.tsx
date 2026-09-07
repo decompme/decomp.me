@@ -1,6 +1,5 @@
-import Link from "@/components/Link";
-
 import useSWR from "swr";
+import Link from "@/components/Link";
 
 import * as api from "@/lib/api";
 import { scratchUrl } from "@/lib/api/urls";

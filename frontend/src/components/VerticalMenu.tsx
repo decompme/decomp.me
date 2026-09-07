@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import {
     createContext,
     type ReactNode,
@@ -5,11 +6,8 @@ import {
     useContext,
     useState,
 } from "react";
-
 import Link from "@/components/Link";
 import { useRouter } from "@/lib/navigation";
-
-import clsx from "clsx";
 
 import ErrorBoundary from "./ErrorBoundary";
 import LoadingSpinner from "./loading.svg";

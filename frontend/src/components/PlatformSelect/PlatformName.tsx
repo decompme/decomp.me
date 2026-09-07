@@ -1,6 +1,5 @@
-import Link from "@/components/Link";
-
 import useSWRImmutable from "swr/immutable";
+import Link from "@/components/Link";
 
 import * as api from "@/lib/api";
 

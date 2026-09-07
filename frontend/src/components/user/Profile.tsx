@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, type ReactElement } from "react";
-
 import { MarkGithubIcon } from "@primer/octicons-react";
+import { type ReactElement, useState } from "react";
 
 import GhostButton from "@/components/GhostButton";
 import Tabs, { Tab } from "@/components/Tabs";

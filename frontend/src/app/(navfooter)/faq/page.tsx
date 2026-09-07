@@ -1,9 +1,7 @@
-import type { ReactNode } from "react";
 import type { Metadata } from "next";
-
-import Link from "@/components/Link";
-
+import type { ReactNode } from "react";
 import Frog from "@/components/Frog/Frog";
+import Link from "@/components/Link";
 
 function Title({ title }: { title: string }) {
     return (

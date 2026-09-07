@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import clsx from "clsx";
 
 import Image from "next/image";
-
-import clsx from "clsx";
+import { useEffect, useState } from "react";
 
 import * as api from "@/lib/api";
 import { userAvatarUrl } from "@/lib/api/urls";

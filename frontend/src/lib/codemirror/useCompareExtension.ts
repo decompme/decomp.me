@@ -1,13 +1,12 @@
-import { type RefObject, useEffect, useState } from "react";
-
 import { Compartment, type Extension, Facet } from "@codemirror/state";
 import {
     type EditorView,
-    gutter,
     GutterMarker,
+    gutter,
     ViewPlugin,
     type ViewUpdate,
 } from "@codemirror/view";
+import { type RefObject, useEffect, useState } from "react";
 
 import styles from "./useCompareExtension.module.scss";
 import type { DiffRequest } from "./useCompareExtension.worker";

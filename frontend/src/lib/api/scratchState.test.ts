@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
-
-import type { Scratch } from "./types";
 import {
     buildScratchCompileRequest,
     buildScratchSavePatch,
     isScratchSaved,
     undefinedIfUnchanged,
 } from "./scratchState";
+import type { Scratch } from "./types";
 
 const scratch = (overrides: Partial<Scratch> = {}): Scratch => ({
     slug: "abc123",

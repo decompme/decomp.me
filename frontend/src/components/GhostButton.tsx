@@ -1,8 +1,6 @@
-import type { ReactNode } from "react";
-
-import Link from "@/components/Link";
-
 import clsx from "clsx";
+import type { ReactNode } from "react";
+import Link from "@/components/Link";
 
 export type Props = {
     href?: string;

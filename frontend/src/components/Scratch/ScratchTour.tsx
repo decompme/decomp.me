@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { Boarding, type BoardingSteps } from "boarding.js";
 
 import { useSearchParams } from "next/navigation";
-import { Boarding, type BoardingSteps } from "boarding.js";
+import { useEffect } from "react";
 
 import diffStyles from "../Diff/Diff.module.scss";
 

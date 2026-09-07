@@ -1,34 +1,31 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
-
-import { useRouter } from "@/lib/navigation";
-
-import useSWR, { type Revalidator, type RevalidatorOptions, mutate } from "swr";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import useSWR, { mutate, type Revalidator, type RevalidatorOptions } from "swr";
 import useSWRImmutable from "swr/immutable";
 import { useDebouncedCallback } from "use-debounce";
-
-import { ResponseError, get, getPublic, post, patch } from "./api/request";
-import type {
-    AnonymousUser,
-    User,
-    Scratch,
-    TerseScratch,
-    Compilation,
-    Page,
-    Compiler,
-    CompilersResponse,
-    LibraryVersions,
-    Platform,
-    Preset,
-    PresetBase,
-    ClaimableScratch,
-} from "./api/types";
-import { scratchUrl } from "./api/urls";
+import { useRouter } from "@/lib/navigation";
 import { resolveCompilersResponse } from "./api/compilerFlags";
+import { get, getPublic, patch, post, ResponseError } from "./api/request";
 import {
     buildScratchCompileRequest,
     buildScratchSavePatch,
     isScratchSaved,
 } from "./api/scratchState";
+import type {
+    AnonymousUser,
+    ClaimableScratch,
+    Compilation,
+    Compiler,
+    CompilersResponse,
+    LibraryVersions,
+    Page,
+    Platform,
+    Preset,
+    PresetBase,
+    Scratch,
+    TerseScratch,
+    User,
+} from "./api/types";
+import { scratchUrl } from "./api/urls";
 import { ignoreNextWarnBeforeUnload } from "./hooks";
 
 function onErrorRetry<C>(

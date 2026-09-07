@@ -7,8 +7,8 @@ import Button from "@/components/Button";
 import Select from "@/components/Select2";
 import UserLink from "@/components/user/UserLink";
 import { patch, useCompilers, useThisUser } from "@/lib/api";
-import getTranslation from "@/lib/i18n/translate";
 import type { Preset } from "@/lib/api/types";
+import getTranslation from "@/lib/i18n/translate";
 
 function Field({
     label,

@@ -3,7 +3,7 @@ import { mutate } from "swr";
 import * as api from "@/lib/api";
 
 import GitHubLoginButton from "../GitHubLoginButton";
-import { MenuItem, ButtonItem, LinkItem } from "../VerticalMenu";
+import { ButtonItem, LinkItem, MenuItem } from "../VerticalMenu";
 
 import styles from "./UserMenuItems.module.scss";
 

@@ -1,6 +1,5 @@
-import type { ReactElement } from "react";
-
 import { Allotment } from "allotment";
+import type { ReactElement } from "react";
 
 import Tabs, { type Tab } from "./Tabs";
 

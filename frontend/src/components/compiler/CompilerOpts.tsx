@@ -1,6 +1,5 @@
-import { useContext, useState, Fragment, type ReactElement } from "react";
-
 import { TrashIcon } from "@primer/octicons-react";
+import { Fragment, type ReactElement, useContext, useState } from "react";
 
 import Checkbox from "@/app/(navfooter)/settings/Checkbox";
 import Button from "@/components/Button";
@@ -17,6 +16,7 @@ import {
     addLibrary,
     applyCompilerFlagEdits,
     applyDiffFlagEdits,
+    type FlagEdit,
     getDiffFlagValue,
     getLibraryVersionOptions,
     hasCompilerFlag,
@@ -24,17 +24,15 @@ import {
     removeLibrary,
     setCompilerFlag,
     setLibraryVersion,
-    type FlagEdit,
 } from "./CompilerOpts.state";
-import PresetSelect from "./PresetSelect";
-
 import { OptsContext } from "./OptsContext";
 import {
-    StringParameterFlag,
-    IntegerParameterFlag,
     HexParameterFlag,
+    IntegerParameterFlag,
     IntOrHexParameterFlag,
+    StringParameterFlag,
 } from "./ParameterFlags";
+import PresetSelect from "./PresetSelect";
 
 const NO_TRANSLATION = "NO_TRANSLATION";
 

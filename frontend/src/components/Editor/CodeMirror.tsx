@@ -1,3 +1,13 @@
+import { addCursorAbove, addCursorBelow } from "@codemirror/commands";
+import { EditorState, type Extension, Prec } from "@codemirror/state";
+import {
+    drawSelection,
+    EditorView,
+    keymap,
+    placeholder,
+    rectangularSelection,
+} from "@codemirror/view";
+import clsx from "clsx";
 import {
     type CSSProperties,
     type RefObject,
@@ -5,17 +15,6 @@ import {
     useEffect,
     useRef,
 } from "react";
-
-import { addCursorAbove, addCursorBelow } from "@codemirror/commands";
-import { type Extension, EditorState, Prec } from "@codemirror/state";
-import {
-    EditorView,
-    placeholder,
-    keymap,
-    drawSelection,
-    rectangularSelection,
-} from "@codemirror/view";
-import clsx from "clsx";
 import { useDebouncedCallback } from "use-debounce";
 
 import { useSize } from "@/lib/hooks";

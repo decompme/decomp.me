@@ -1,15 +1,15 @@
 import {
     getSearchQuery,
+    type SearchQuery,
     searchPanelOpen,
     setSearchQuery,
-    type SearchQuery,
 } from "@codemirror/search";
 import type { EditorState, SelectionRange } from "@codemirror/state";
 import {
     type EditorView,
     type PluginValue,
-    type ViewUpdate,
     ViewPlugin,
+    type ViewUpdate,
 } from "@codemirror/view";
 
 export type SearchMatchCount = {

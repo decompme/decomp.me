@@ -14,13 +14,11 @@
         "indentStyle": "space",
         "indentWidth": 4
     },
-    "assist": { "actions": { "source": { "organizeImports": "off" } } },
     "linter": {
         "enabled": true,
         "rules": {
             "recommended": true,
             "style": {
-                "noUselessElse": "off",
                 "noParameterAssign": "off",
                 "useAsConstAssertion": "error",
                 "useDefaultParameterLast": "error",
@@ -43,14 +41,12 @@
             },
             "suspicious": {
                 "noExplicitAny": "off",
-                "noArrayIndexKey": "off",
-                "noConfusingVoidType": "off"
+                "noArrayIndexKey": "off"
             },
             "correctness": {
                 "useExhaustiveDependencies": "off"
             },
             "performance": {
-                "noDelete": "off",
                 "noImgElement": "off"
             },
             "nursery": {

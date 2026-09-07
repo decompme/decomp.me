@@ -1,24 +1,20 @@
-import { useEffect, useRef, useState } from "react";
-
-import { useRouter } from "@/lib/navigation";
-
 import { SearchIcon } from "@primer/octicons-react";
 import clsx from "clsx";
 import { useCombobox } from "downshift";
+import { useEffect, useRef, useState } from "react";
 import { useLayer } from "react-laag";
 import { useDebounce } from "use-debounce";
-
 import * as api from "@/lib/api";
-import { scratchUrl, userHtmlUrl, presetUrl } from "@/lib/api/urls";
+import { presetUrl, scratchUrl, userHtmlUrl } from "@/lib/api/urls";
+import { useRouter } from "@/lib/navigation";
 
 import LoadingSpinner from "../loading.svg";
-import verticalMenuStyles from "../VerticalMenu.module.scss"; // eslint-disable-line css-modules/no-unused-class
+import { PlatformIcon } from "../PlatformSelect/PlatformIcon";
 
 import { getMatchPercentString, ScratchOwnerAvatar } from "../ScratchItem";
-
-import styles from "./Search.module.scss";
-import { PlatformIcon } from "../PlatformSelect/PlatformIcon";
 import UserAvatar from "../user/UserAvatar";
+import verticalMenuStyles from "../VerticalMenu.module.scss"; // eslint-disable-line css-modules/no-unused-class
+import styles from "./Search.module.scss";
 
 const SEARCH_DEBOUNCE_MS = 200;
 const SEARCH_MAX_LENGTH = 64;

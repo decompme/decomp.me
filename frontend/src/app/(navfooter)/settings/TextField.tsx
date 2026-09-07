@@ -1,6 +1,5 @@
-import { useId, type ReactNode, type CSSProperties } from "react";
-
 import clsx from "clsx";
+import { type CSSProperties, type ReactNode, useId } from "react";
 
 export type Props = {
     value: string;

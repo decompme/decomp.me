@@ -1,6 +1,6 @@
 import Link from "@/components/Link";
 
-import { isAnonUser, type User, type AnonymousUser } from "@/lib/api/types";
+import { type AnonymousUser, isAnonUser, type User } from "@/lib/api/types";
 
 import UserAvatar from "./UserAvatar";
 

@@ -1,9 +1,7 @@
-import { useMemo, useState } from "react";
-
-import Link from "@/components/Link";
-
 import clsx from "clsx";
+import { useMemo, useState } from "react";
 import useSWR from "swr";
+import Link from "@/components/Link";
 
 import { get } from "@/lib/api/request";
 import type { TerseScratch } from "@/lib/api/types";
@@ -11,9 +9,9 @@ import { scratchUrl } from "@/lib/api/urls";
 
 import { getScoreText } from "../ScoreBadge";
 import Sort, {
-    SortMode,
     compareScratchScores,
     produceSortFunction,
+    SortMode,
 } from "../SortScratch";
 import UserLink from "../user/UserLink";
 

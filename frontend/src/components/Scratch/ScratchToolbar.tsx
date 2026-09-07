@@ -1,15 +1,4 @@
 import {
-    useEffect,
-    useRef,
-    useState,
-    type FC,
-    type ClipboardEvent,
-    type KeyboardEvent,
-    type MouseEvent,
-    type JSX,
-} from "react";
-
-import {
     CheckIcon,
     DownloadIcon,
     FileIcon,
@@ -21,6 +10,16 @@ import {
     UploadIcon,
 } from "@primer/octicons-react";
 import clsx from "clsx";
+import {
+    type ClipboardEvent,
+    type FC,
+    type JSX,
+    type KeyboardEvent,
+    type MouseEvent,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import ContentEditable from "react-contenteditable";
 import Link from "@/components/Link";
 

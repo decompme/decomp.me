@@ -1,16 +1,14 @@
-import Link from "@/components/Link";
-
 import useSWR from "swr";
-
+import CopyButton from "@/components/CopyButton";
+import Link from "@/components/Link";
 import LoadingSpinner from "@/components/loading.svg";
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon";
 import PlatformName from "@/components/PlatformSelect/PlatformName";
 import { getScoreText } from "@/components/ScoreBadge";
 import TimeAgo from "@/components/TimeAgo";
 import UserLink from "@/components/user/UserLink";
-import CopyButton from "@/components/CopyButton";
-import { type Scratch, type PresetBase, get, usePreset } from "@/lib/api";
-import { presetUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls";
+import { get, type PresetBase, type Scratch, usePreset } from "@/lib/api";
+import { presetUrl, scratchParentUrl, scratchUrl } from "@/lib/api/urls";
 
 import styles from "./AboutPanel.module.scss";
 

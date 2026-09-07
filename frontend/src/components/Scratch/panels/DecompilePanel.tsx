@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-
 import type { EditorView } from "@codemirror/view";
+import { useEffect, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
 
 import CodeMirror from "@/components/Editor/CodeMirror";
