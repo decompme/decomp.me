@@ -1,5 +1,5 @@
-import type { SVGProps } from "react";
 import clsx from "clsx";
+import type { SVGProps } from "react";
 import type * as api from "@/lib/api";
 
 import Frog from "./Frog";

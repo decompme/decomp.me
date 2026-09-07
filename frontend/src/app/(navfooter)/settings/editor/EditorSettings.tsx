@@ -3,16 +3,16 @@ import { useEffect, useRef, useState } from "react";
 
 import LoadingSpinner from "@/components/loading.svg";
 import {
-    ThreeWayDiffBase,
-    useAutoRecompileSetting,
-    useAutoRecompileDelaySetting,
-    useMatchProgressBarEnabled,
-    useLanguageServerEnabled,
-    useVimModeEnabled,
-    useThreeWayDiffBase,
-    useDefaultDiffTab,
-    useSwapVerticalLayout,
     DefaultDiffTab,
+    ThreeWayDiffBase,
+    useAutoRecompileDelaySetting,
+    useAutoRecompileSetting,
+    useDefaultDiffTab,
+    useLanguageServerEnabled,
+    useMatchProgressBarEnabled,
+    useSwapVerticalLayout,
+    useThreeWayDiffBase,
+    useVimModeEnabled,
 } from "@/lib/settings";
 
 import Checkbox from "../Checkbox";

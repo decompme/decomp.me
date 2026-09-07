@@ -1,21 +1,18 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
-
-import Image from "next/image";
-import Link from "@/components/Link";
-
 import { RepoForkedIcon, TrashIcon } from "@primer/octicons-react";
 import clsx from "clsx";
+import Image from "next/image";
+import { type ReactNode, useState } from "react";
+import Link from "@/components/Link";
 
 import TimeAgo from "@/components/TimeAgo";
 import * as api from "@/lib/api";
 import { presetUrl, scratchUrl, userAvatarUrl } from "@/lib/api/urls";
 
 import getTranslation from "@/lib/i18n/translate";
-
-import AnonymousFrogAvatar from "./Frog/AnonymousFrog";
 import Button from "./Button";
+import AnonymousFrogAvatar from "./Frog/AnonymousFrog";
 import PlatformLink from "./PlatformLink";
 import { calculateScorePercent, percentToString } from "./ScoreBadge";
 import styles from "./ScratchItem.module.scss";

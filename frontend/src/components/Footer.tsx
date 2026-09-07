@@ -1,6 +1,5 @@
-import Link from "@/components/Link";
-
 import { MarkGithubIcon } from "@primer/octicons-react";
+import Link from "@/components/Link";
 
 import DiscordIcon from "./discord.svg";
 import GhostButton from "./GhostButton";

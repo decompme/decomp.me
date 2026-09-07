@@ -10,12 +10,12 @@ import {
     emptyDraft,
     filterDuplicateScratches,
     getLabels,
+    type NewScratchDraft,
     readStoredDraft,
+    type StoredNewScratchDraft,
     selectDraftCompiler,
     storedDraftFields,
     writeStoredDraft,
-    type NewScratchDraft,
-    type StoredNewScratchDraft,
 } from "./NewScratchForm.state";
 
 function preset(overrides: Partial<api.Preset> = {}): api.Preset {

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import clsx from "clsx";
 import { CopyIcon } from "@primer/octicons-react";
+import clsx from "clsx";
+import { useEffect, useRef, useState } from "react";
 
 interface CopyButtonProps {
     text: string | (() => string | Promise<string>);

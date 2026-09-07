@@ -1,3 +1,8 @@
+import { StreamLanguage } from "@codemirror/language";
+
+import type { EditorView } from "@codemirror/view";
+import { DotFillIcon } from "@primer/octicons-react";
+import { vim } from "@replit/codemirror-vim";
 import {
     useCallback,
     useEffect,
@@ -6,44 +11,40 @@ import {
     useRef,
     useState,
 } from "react";
-
-import type { EditorView } from "@codemirror/view";
-import { DotFillIcon } from "@primer/octicons-react";
-import { vim } from "@replit/codemirror-vim";
-
 import * as api from "@/lib/api";
 import basicSetup from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
+import { pascal } from "@/lib/codemirror/pascal";
 import useCompareExtension from "@/lib/codemirror/useCompareExtension";
 import { useSize } from "@/lib/hooks";
 import {
-    useAutoRecompileSetting,
-    useAutoRecompileDelaySetting,
-    useLanguageServerEnabled,
-    useVimModeEnabled,
-    useMatchProgressBarEnabled,
-    useDefaultDiffTab,
     DefaultDiffTab,
+    useAutoRecompileDelaySetting,
+    useAutoRecompileSetting,
+    useDefaultDiffTab,
+    useLanguageServerEnabled,
+    useMatchProgressBarEnabled,
     useSwapVerticalLayout,
+    useVimModeEnabled,
 } from "@/lib/settings";
-
-import CompilerOpts from "../compiler/CompilerOpts";
 import CustomLayout, {
     activateTabInLayout,
     type Layout,
     visitLayout,
 } from "../CustomLayout";
+import CompilerOpts from "../compiler/CompilerOpts";
 import CompilationPanel from "../Diff/CompilationPanel";
+import ObjdiffPanel from "../Diff/ObjdiffPanel";
 import CodeMirror from "../Editor/CodeMirror";
 import ErrorBoundary from "../ErrorBoundary";
 import ScoreBadge, { calculateScorePercent } from "../ScoreBadge";
 import { ScrollContext } from "../ScrollContext";
+import ScrollRestorer from "../ScrollRestorer";
 import {
-    useSelectedSourceLine,
     SelectedSourceLineProvider,
+    useSelectedSourceLine,
 } from "../SelectedSourceLineContext";
 import { Tab, TabCloseButton } from "../Tabs";
-
 import useLanguageServer from "./hooks/useLanguageServer";
 import AboutPanel from "./panels/AboutPanel";
 import DecompilationPanel from "./panels/DecompilePanel";
@@ -54,10 +55,6 @@ import ScratchMatchBanner from "./ScratchMatchBanner";
 import ScratchProgressBar from "./ScratchProgressBar";
 import ScratchToolbar from "./ScratchToolbar";
 import ScratchTour from "./ScratchTour";
-import { StreamLanguage } from "@codemirror/language";
-import { pascal } from "@/lib/codemirror/pascal";
-import ObjdiffPanel from "../Diff/ObjdiffPanel";
-import ScrollRestorer from "../ScrollRestorer";
 
 enum TabId {
     ABOUT = "scratch_about",

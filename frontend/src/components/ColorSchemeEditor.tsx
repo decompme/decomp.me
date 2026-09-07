@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-
 import isDarkColor from "is-dark-color";
-import { HexColorPicker, HexColorInput } from "react-colorful";
+import { useEffect, useState } from "react";
+import { HexColorInput, HexColorPicker } from "react-colorful";
 
 import {
     COLOR_NAMES,

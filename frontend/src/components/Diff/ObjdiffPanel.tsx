@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useRef } from "react";
 import type * as api from "@/lib/api";
 import { getColors } from "@/lib/codemirror/color-scheme";
 import {
@@ -7,7 +8,6 @@ import {
     useIsSiteThemeDark,
     useMonospaceFont,
 } from "@/lib/settings";
-import { useEffect, useMemo, useRef } from "react";
 
 export default function ObjdiffPanel({
     scratch,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Registry of subscribers per storage key
 type Subscriber<T> = (newValue: T | undefined) => void;

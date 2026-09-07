@@ -1,10 +1,8 @@
 "use client";
 
-import { type ForwardedRef, forwardRef } from "react";
-
-import Link from "@/components/Link";
-
 import clsx from "clsx";
+import { type ForwardedRef, forwardRef } from "react";
+import Link from "@/components/Link";
 
 import styles from "./Button.module.scss";
 

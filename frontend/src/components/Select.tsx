@@ -1,6 +1,5 @@
-import type { ReactNode, ChangeEventHandler } from "react";
-
 import { ChevronDownIcon } from "@primer/octicons-react";
+import type { ChangeEventHandler, ReactNode } from "react";
 
 export type Props = {
     className?: string;

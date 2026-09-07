@@ -1,7 +1,6 @@
-import { type ReactNode, useState } from "react";
-
 import { XIcon } from "@primer/octicons-react";
 import clsx from "clsx";
+import { type ReactNode, useState } from "react";
 
 import styles from "./DismissableBanner.module.scss";
 

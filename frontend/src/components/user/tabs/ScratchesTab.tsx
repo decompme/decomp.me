@@ -1,5 +1,5 @@
-import ScratchList from "@/components/ScratchList";
 import { ScratchItemNoOwner } from "@/components/ScratchItem";
+import ScratchList from "@/components/ScratchList";
 
 import { type User, useThisUserIsAdmin, useUserIsYou } from "@/lib/api";
 import { userUrl } from "@/lib/api/urls";

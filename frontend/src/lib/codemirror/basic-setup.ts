@@ -8,15 +8,15 @@ import {
 } from "@codemirror/language";
 //import { rectangularSelection, crosshairCursor } from "@codemirror/rectangular-selection"
 import { highlightSelectionMatches } from "@codemirror/search";
-import { type Extension, EditorState } from "@codemirror/state";
+import { EditorState, type Extension } from "@codemirror/state";
 import {
-    lineNumbers,
-    highlightActiveLineGutter,
-    keymap,
-    highlightSpecialChars,
     drawSelection,
-    highlightActiveLine,
     dropCursor,
+    highlightActiveLine,
+    highlightActiveLineGutter,
+    highlightSpecialChars,
+    keymap,
+    lineNumbers,
 } from "@codemirror/view";
 import { indentationMarkers } from "@replit/codemirror-indentation-markers";
 

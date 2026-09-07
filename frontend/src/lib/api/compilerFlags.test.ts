@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-
+import { resolveCompilersResponse, resolveFlags } from "./compilerFlags";
 import type { CompilersResponse, Flag } from "./types";
-import { resolveFlags, resolveCompilersResponse } from "./compilerFlags";
 
 const parentFlag: Flag = {
     type: "checkbox",

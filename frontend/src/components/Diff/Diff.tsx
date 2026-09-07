@@ -1,4 +1,7 @@
 /* eslint css-modules/no-unused-class: off */
+
+import { FoldIcon, SearchIcon } from "@primer/octicons-react";
+import clsx from "clsx";
 import {
     type CSSProperties,
     forwardRef,
@@ -9,9 +12,6 @@ import {
     useRef,
     useState,
 } from "react";
-
-import { FoldIcon, SearchIcon } from "@primer/octicons-react";
-import clsx from "clsx";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
 import { useDebounce } from "use-debounce";
@@ -19,22 +19,20 @@ import { useDebounce } from "use-debounce";
 import type * as api from "@/lib/api";
 import { useSize } from "@/lib/hooks";
 import {
+    diffCompressionContext,
     ThreeWayDiffBase,
     useCodeFontSize,
-    diffCompressionContext,
 } from "@/lib/settings";
-
+import CopyButton from "../CopyButton";
 import LoadingSpinner from "../loading.svg";
-
 import styles from "./Diff.module.scss";
 import * as AsmDiffer from "./DiffRowAsmDiffer";
 import { type DiffSearchMatch, findDiffSearchMatches } from "./DiffSearch";
 import DiffSearchPanel from "./DiffSearchPanel";
 import DragBar from "./DragBar";
 import { useHighlighters } from "./Highlighter";
-import CopyButton from "../CopyButton";
-import ToggleButton from "./ToggleButton";
 import { useResizableColumns } from "./hooks";
+import ToggleButton from "./ToggleButton";
 
 type ColumnKey = "base" | "current" | "previous";
 type ColumnState = Record<ColumnKey, boolean>;

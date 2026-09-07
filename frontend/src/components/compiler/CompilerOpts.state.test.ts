@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
     addLibrary,
-    applyDiffFlagEdits,
     applyCompilerFlagEdits,
+    applyDiffFlagEdits,
     getDiffFlagValue,
     getLibraryVersionOptions,
     hasCompilerFlag,

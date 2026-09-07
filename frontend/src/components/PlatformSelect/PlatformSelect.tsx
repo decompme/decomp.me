@@ -1,11 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-
-import { PlatformIcon } from "./PlatformIcon";
-import { useMediaQuery } from "@/lib/hooks";
-
 import { ChevronDownIcon } from "@primer/octicons-react";
-
 import clsx from "clsx";
+import { useEffect, useRef, useState } from "react";
+import { useMediaQuery } from "@/lib/hooks";
+import { PlatformIcon } from "./PlatformIcon";
 
 export type Props = {
     platforms: {

@@ -1,5 +1,6 @@
 "use client";
 
+import clsx from "clsx";
 import {
     useCallback,
     useEffect,
@@ -8,27 +9,23 @@ import {
     useRef,
     useState,
 } from "react";
-
-import Link from "@/components/Link";
-
-import clsx from "clsx";
 import { useDebounce } from "use-debounce";
-
 import AsyncButton from "@/components/AsyncButton";
 import PresetSelect from "@/components/compiler/PresetSelect";
 import CodeMirror from "@/components/Editor/CodeMirror";
+import Link from "@/components/Link";
 import PlatformSelect from "@/components/PlatformSelect";
-import Select from "@/components/Select2";
 import { SingleLineScratchItem } from "@/components/ScratchItem";
+import Select from "@/components/Select2";
 import * as api from "@/lib/api";
 import { useCompilers, usePresets } from "@/lib/api";
-import { useRouter } from "@/lib/navigation";
-import { ResponseError, get } from "@/lib/api/request";
-import { scratchUrl } from "@/lib/api/urls";
+import { get, ResponseError } from "@/lib/api/request";
 import type { TerseScratch } from "@/lib/api/types";
+import { scratchUrl } from "@/lib/api/urls";
 import basicSetup from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
 import getTranslation from "@/lib/i18n/translate";
+import { useRouter } from "@/lib/navigation";
 
 import {
     applyCompiler,
@@ -37,11 +34,11 @@ import {
     emptyDraft,
     filterDuplicateScratches,
     getLabels,
+    type NewScratchDraft,
     readStoredDraft,
     selectDraftCompiler,
     storedDraftFields,
     writeStoredDraft,
-    type NewScratchDraft,
 } from "./NewScratchForm.state";
 
 const SEARCH_MAX_LENGTH = 64;

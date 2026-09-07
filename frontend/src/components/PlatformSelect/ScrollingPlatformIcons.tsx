@@ -1,6 +1,6 @@
 import clsx from "clsx";
 
-import { PlatformIcon, PLATFORMS } from "./PlatformIcon";
+import { PLATFORMS, PlatformIcon } from "./PlatformIcon";
 import styles from "./ScrollingPlatformIcons.module.scss";
 
 function SingleSet() {

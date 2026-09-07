@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-
 import { SyncIcon } from "@primer/octicons-react";
+import { useEffect } from "react";
 
 import Button from "@/components/Button";
 import ErrorBoundary from "@/components/ErrorBoundary";

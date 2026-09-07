@@ -1,4 +1,4 @@
-import type { Compiler, FlagClass, CompilersResponse, Flag } from "./types";
+import type { Compiler, CompilersResponse, Flag, FlagClass } from "./types";
 
 export function resolveFlags(
     className: string,

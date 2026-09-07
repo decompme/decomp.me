@@ -1,4 +1,4 @@
-import { FileIcon, PaintbrushIcon, GearIcon } from "@primer/octicons-react";
+import { FileIcon, GearIcon, PaintbrushIcon } from "@primer/octicons-react";
 
 import NavItem from "./NavItem";
 

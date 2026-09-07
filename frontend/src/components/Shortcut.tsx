@@ -14,7 +14,7 @@ export type Key = string | SpecialKey;
 
 export type ShortcutCallback = (
     event: KeyboardEvent | MouseEvent,
-) => void | Promise<unknown>;
+) => undefined | Promise<unknown>;
 
 // In sort order (besides Shift on MacOS)
 export enum SpecialKey {

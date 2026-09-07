@@ -1,8 +1,7 @@
-import { useState } from "react";
+import clsx from "clsx";
 
 import Image from "next/image";
-
-import clsx from "clsx";
+import { useState } from "react";
 import { useLayer } from "react-laag";
 
 import * as api from "@/lib/api";

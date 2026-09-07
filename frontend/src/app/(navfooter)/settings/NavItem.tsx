@@ -1,10 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
+import clsx from "clsx";
 
 import { useSelectedLayoutSegment } from "next/navigation";
-
-import clsx from "clsx";
+import type { ReactNode } from "react";
 
 import GhostButton from "@/components/GhostButton";
 

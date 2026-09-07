@@ -1,6 +1,5 @@
-import type { RefObject } from "react";
-
 import type { EditorView } from "@codemirror/view";
+import type { RefObject } from "react";
 
 type Options = {
     select?: boolean;
