@@ -1,4 +1,3 @@
-import React from "react";
 import Frog from "./Frog";
 
 interface HolidayFrogProps {

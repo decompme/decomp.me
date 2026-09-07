@@ -66,7 +66,9 @@ function ChartRow({
 
 export default async function UserOG({
     params,
-}: { params: Promise<{ username: string }> }) {
+}: {
+    params: Promise<{ username: string }>;
+}) {
     const OpenSansSemiBold = fetch(
         new URL(
             "../../../../public/fonts/OpenSans-SemiBold.ttf",

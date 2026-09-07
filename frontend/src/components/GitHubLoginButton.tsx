@@ -12,7 +12,10 @@ const DEFAULT_SCOPE_STR = "";
 export default function GitHubLoginButton({
     label,
     className,
-}: { label?: string; className?: string }) {
+}: {
+    label?: string;
+    className?: string;
+}) {
     const user = useThisUser();
 
     if (user && !isAnonUser(user)) {

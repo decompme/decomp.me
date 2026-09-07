@@ -240,7 +240,7 @@ export type Props = {
     offline: boolean;
 };
 
-export default function Scratch({
+function ScratchInner({
     scratch,
     onChange,
     deleteScratch,
@@ -395,9 +395,9 @@ export default function Scratch({
         [CODEMIRROR_EXTENSIONS, contextCompareExtension, useVim],
     );
 
-    const renderTab = (id: string) => {
-        const { setSelectedSourceLine } = useSelectedSourceLine();
+    const { setSelectedSourceLine } = useSelectedSourceLine();
 
+    const renderTab = (id: string) => {
         switch (id as TabId) {
             case TabId.ABOUT:
                 return (
@@ -655,18 +655,14 @@ export default function Scratch({
     }, [container.width, container.height, layoutName, defaultDiffTab]);
 
     const offlineOverlay = offline ? (
-        <>
-            <div className="fixed top-10 self-center rounded bg-red-8 px-3 py-2">
-                <p className="text-sm">
-                    The scratch editor is in offline mode. We're attempting to
-                    reconnect to the backend – as long as this tab is open, your
-                    work is safe.
-                </p>
-            </div>
-        </>
-    ) : (
-        <></>
-    );
+        <div className="fixed top-10 self-center rounded bg-red-8 px-3 py-2">
+            <p className="text-sm">
+                The scratch editor is in offline mode. We're attempting to
+                reconnect to the backend – as long as this tab is open, your
+                work is safe.
+            </p>
+        </div>
+    ) : null;
 
     const matchPercent = calculateScorePercent(
         lastGoodScore.current,
@@ -699,18 +695,24 @@ export default function Scratch({
             </ErrorBoundary>
             <ErrorBoundary>
                 {layout && (
-                    <SelectedSourceLineProvider>
-                        <ScrollContext.Provider value={sourceEditor}>
-                            <CustomLayout
-                                layout={layout}
-                                onChange={setLayout}
-                                renderTab={renderTab}
-                            />
-                        </ScrollContext.Provider>
-                    </SelectedSourceLineProvider>
+                    <ScrollContext.Provider value={sourceEditor}>
+                        <CustomLayout
+                            layout={layout}
+                            onChange={setLayout}
+                            renderTab={renderTab}
+                        />
+                    </ScrollContext.Provider>
                 )}
             </ErrorBoundary>
             {offlineOverlay}
         </div>
+    );
+}
+
+export default function Scratch(props: Props) {
+    return (
+        <SelectedSourceLineProvider>
+            <ScratchInner {...props} />
+        </SelectedSourceLineProvider>
     );
 }

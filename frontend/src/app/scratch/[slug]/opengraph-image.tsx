@@ -25,7 +25,9 @@ export const runtime = "edge";
 
 export default async function ScratchOG({
     params,
-}: { params: Promise<{ slug: string }> }) {
+}: {
+    params: Promise<{ slug: string }>;
+}) {
     const OpenSansSemiBold = fetch(
         new URL(
             "../../../../public/fonts/OpenSans-SemiBold.ttf",
