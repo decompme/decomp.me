@@ -427,6 +427,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             )
         return data
 
+
 class TerseScratchSerializer(ScratchSerializer):
     owner = ProfileField(read_only=True)
     best_fork = serializers.SerializerMethodField()

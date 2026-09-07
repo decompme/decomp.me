@@ -113,7 +113,8 @@ def compile_scratch(scratch: Scratch, context: str | None = None) -> Compilation
     except (CromperError, APIException) as e:
         if isinstance(e, CromperUnavailableError):
             return CompilationResult(
-                b"", "The compiler service is unavailable. Please try again in a moment."
+                b"",
+                "The compiler service is unavailable. Please try again in a moment.",
             )
         return CompilationResult(b"", str(e))
 
@@ -134,7 +135,9 @@ def diff_compilation(
         return DiffResult(result["result"], result["errors"])
     except CromperError as e:
         if isinstance(e, CromperUnavailableError):
-            return DiffResult(None, "The diff service is unavailable. Please try again in a moment.")
+            return DiffResult(
+                None, "The diff service is unavailable. Please try again in a moment."
+            )
         return DiffResult(None, str(e))
 
 
@@ -462,7 +465,9 @@ class ScratchViewSet(
             def to_base64(obj: bytes) -> str:
                 return base64.b64encode(obj).decode("utf-8")
 
-            response["left_object"] = to_base64(bytes(scratch.target_assembly.elf_object))
+            response["left_object"] = to_base64(
+                bytes(scratch.target_assembly.elf_object)
+            )
             response["right_object"] = to_base64(compilation.elf_object)
 
         return Response(response)

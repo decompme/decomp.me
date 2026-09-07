@@ -209,6 +209,7 @@ class Scratch(models.Model):
         except itsdangerous.BadData:
             return False
 
+
 class ScratchAdmin(admin.ModelAdmin[Scratch]):
     raw_id_fields = ["owner", "parent", "family", "context_fk"]
     readonly_fields = ["target_assembly"]
