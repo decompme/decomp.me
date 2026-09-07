@@ -25,6 +25,7 @@ import {
     CompletionItemKind,
     CompletionTriggerKind,
     DiagnosticSeverity,
+    type PublishDiagnosticsParams,
 } from "vscode-languageserver-protocol";
 
 const timeout = 10000;
@@ -487,30 +488,43 @@ class LanguageServerPlugin implements PluginValue {
         }
     }
 
-    processDiagnostics(params: LSP.PublishDiagnosticsParams) {
-        if (params.uri !== this.documentUri) return;
+    public processDiagnostics(params: PublishDiagnosticsParams) {
+        if (params.uri !== this.documentUri) {
+            return;
+        }
 
         const diagnostics = params.diagnostics
-            .map(({ range, message, severity }) => ({
-                from: posToOffset(this.view.state.doc, range.start),
-                to: posToOffset(this.view.state.doc, range.end),
-                severity: (
+            .flatMap(({ range, message, severity }) => {
+                const from = posToOffset(this.view.state.doc, range.start);
+                const to = posToOffset(this.view.state.doc, range.end);
+                if (from === undefined || to === undefined) return [];
+
+                const severityMap: Record<
+                    number,
+                    "error" | "warning" | "info"
+                > = {
+                    [DiagnosticSeverity.Error]: "error",
+                    [DiagnosticSeverity.Warning]: "warning",
+                    [DiagnosticSeverity.Information]: "info",
+                    [DiagnosticSeverity.Hint]: "info",
+                };
+                const severityName =
+                    severity === undefined
+                        ? "info"
+                        : (severityMap[severity] ?? "info");
+
+                return [
                     {
-                        [DiagnosticSeverity.Error]: "error",
-                        [DiagnosticSeverity.Warning]: "warning",
-                        [DiagnosticSeverity.Information]: "info",
-                        [DiagnosticSeverity.Hint]: "info",
-                    } as const
-                )[severity],
-                message,
-            }))
-            .filter(
-                ({ from, to }) =>
-                    from !== null &&
-                    to !== null &&
-                    from !== undefined &&
-                    to !== undefined,
-            )
+                        from,
+                        to,
+                        severity: severityName,
+                        message:
+                            typeof message === "string"
+                                ? message
+                                : message.value,
+                    },
+                ];
+            })
             .sort((a, b) => {
                 switch (true) {
                     case a.from < b.from:
