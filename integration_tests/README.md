@@ -28,13 +28,7 @@ These tests require:
 
 ### Quick Start (Recommended)
 
-If you already have services running:
-```bash
-cd integration_tests
-./run_tests_manual.sh
-```
-
-Or directly:
+With services running:
 ```bash
 cd integration_tests
 uv run pytest
@@ -65,8 +59,6 @@ poetry run python manage.py runserver
 3. Run tests:
 ```bash
 cd integration_tests
-./run_tests_manual.sh
-# or
 uv run pytest
 ```
 
