@@ -153,6 +153,11 @@ jobs:
       - name: Check docker compose status (green)
         run: docker compose -f docker-compose.prod.yaml ps
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@10
+        with:
+          version: "latest"
+
       - name: Run integration tests
         run: |
           cd integration_tests
@@ -198,7 +203,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@10
         with:
           version: "latest"
       - name: Setup Python 3.14
@@ -219,7 +224,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@10
         with:
           version: "latest"
       - name: Setup Python 3.14
