@@ -1,0 +1,45 @@
+name: IT
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  integration-tests:
+    name: Integration Tests (cromper + Django)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          cd integration_tests
+          pip install uv
+          uv sync
+
+      - name: Start services with Docker Compose
+        run: |
+          docker-compose up -d cromper backend postgres
+          sleep 15  # Wait for services to be ready
+
+      - name: Check cromper health
+        run: |
+          curl --retry 5 --retry-delay 2 --retry-connrefused http://localhost:8888/health
+
+      - name: Run integration tests
+        run: |
+          cd integration_tests
+          uv run pytest -v
+
+      - name: Stop services
+        if: always()
+        run: |
+          docker-compose down

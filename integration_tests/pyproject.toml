@@ -2,7 +2,7 @@
 name = "integration-tests"
 version = "0.1.0"
 description = "Integration tests for decomp.me requiring cromper and Django backend"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "pytest>=8.0.0",
     "pytest-django>=4.9.0",
@@ -85,7 +85,7 @@ indent-style = "space"
 line-ending = "auto"
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 plugins = ["mypy_django_plugin.main"]
