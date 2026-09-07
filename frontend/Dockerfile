@@ -1,11 +1,15 @@
 FROM node:26-alpine AS dev
 
+RUN npm install --global yarn@1.22.22
+
 WORKDIR /frontend
 
 ENTRYPOINT ["/frontend/docker_entrypoint.sh"]
 
 
 FROM node:26-alpine AS builder
+
+RUN npm install --global yarn@1.22.22
 
 COPY package.json /frontend/
 COPY yarn.lock /frontend/
@@ -47,6 +51,8 @@ RUN yarn build && rm -rf .next/cache
 
 
 FROM node:26-alpine AS prod
+
+RUN npm install --global yarn@1.22.22
 
 WORKDIR /frontend
 
