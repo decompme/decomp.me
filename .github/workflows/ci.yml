@@ -162,6 +162,7 @@ jobs:
       - name: Run integration tests
         run: |
           cd integration_tests
+          uv sync --all-extras
           uv run pytest -v
 
       - name: Shut everything down

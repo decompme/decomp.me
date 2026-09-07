@@ -36,6 +36,3 @@ dmypy.json
 # OS
 .DS_Store
 Thumbs.db
-
-# UV
-uv.lock
