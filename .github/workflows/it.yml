@@ -27,7 +27,7 @@ jobs:
 
       - name: Start services with Docker Compose
         run: |
-          docker-compose up -d cromper backend postgres
+          docker compose up -d cromper backend postgres
           sleep 15  # Wait for services to be ready
 
       - name: Check cromper health
@@ -38,8 +38,3 @@ jobs:
         run: |
           cd integration_tests
           uv run pytest -v
-
-      - name: Stop services
-        if: always()
-        run: |
-          docker-compose down
