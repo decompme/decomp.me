@@ -157,6 +157,7 @@ jobs:
         run: |
           docker compose -f docker-compose.prod.yaml run --rm --no-deps \
             -v "$PWD/integration_tests:/integration_tests" \
+            --entrypoint /bin/bash \
             backend-blue \
             bash -lc 'cd /integration_tests && uv sync --all-extras && uv run pytest -v'
 
