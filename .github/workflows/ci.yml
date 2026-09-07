@@ -159,7 +159,7 @@ jobs:
             -v "$PWD/integration_tests:/integration_tests" \
             --entrypoint /bin/bash \
             backend-blue \
-            -lc 'cd /integration_tests && uv sync --all-extras && uv run pytest -v'
+            -lc 'export UV_PROJECT_ENVIRONMENT=/tmp/integration-venv && cd /integration_tests && uv sync --all-extras && uv run pytest -v'
 
       - name: Shut everything down
         if: always()
