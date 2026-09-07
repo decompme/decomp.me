@@ -235,9 +235,9 @@ function Actions({
         canSave ? saveScratch : forkCurrentScratch,
     );
 
-    const compileShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "J"], () => {
-        compile();
-    });
+    const compileShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "J"], () =>
+        compile(),
+    );
 
     const isAdmin = api.useThisUserIsAdmin();
 

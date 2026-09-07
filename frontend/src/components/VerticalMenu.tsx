@@ -134,6 +134,7 @@ export function LinkItem({
         shortcutKeys,
         useCallback(() => {
             if (!disabled) router.push(href);
+            return Promise.resolve();
         }, [disabled, router, href]),
     );
 
