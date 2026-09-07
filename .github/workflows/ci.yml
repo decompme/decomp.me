@@ -1,4 +1,4 @@
-name: PR
+name: Full Test
 on:
   push:
     branches:
@@ -152,6 +152,11 @@ jobs:
 
       - name: Check docker compose status (green)
         run: docker compose -f docker-compose.prod.yaml ps
+
+      - name: Run integration tests
+        run: |
+          cd integration_tests
+          uv run pytest -v
 
       - name: Shut everything down
         if: always()
