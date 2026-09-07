@@ -157,6 +157,7 @@ jobs:
         uses: astral-sh/setup-uv@v10.0.1
         with:
           version: "latest"
+          enable-cache: false
 
       - name: Run integration tests
         run: |
