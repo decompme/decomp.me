@@ -6,7 +6,7 @@ import logging
 import re
 import zipfile
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 import django_filters
 from django.core.files import File
@@ -126,7 +126,7 @@ def diff_compilation(
         cromper_client = get_cromper_client()
         result = cromper_client.diff(
             platform_id=scratch.platform,
-            target_elf=scratch.target_assembly.elf_object,
+            target_elf=bytes(scratch.target_assembly.elf_object),
             compiled_elf=compilation.elf_object,
             diff_label=scratch.diff_label,
             diff_flags=scratch.diff_flags,
@@ -462,7 +462,7 @@ class ScratchViewSet(
             def to_base64(obj: bytes) -> str:
                 return base64.b64encode(obj).decode("utf-8")
 
-            response["left_object"] = to_base64(scratch.target_assembly.elf_object)
+            response["left_object"] = to_base64(bytes(scratch.target_assembly.elf_object))
             response["right_object"] = to_base64(compilation.elf_object)
 
         return Response(response)
@@ -486,6 +486,8 @@ class ScratchViewSet(
         context = partial.get(
             "context", scratch.context_fk.text if scratch.context_fk else ""
         )
+        if not isinstance(context, str):
+            context = str(context)
         compiler_id = partial.get("compiler", scratch.compiler)
 
         cromper_client = get_cromper_client()
@@ -502,7 +504,7 @@ class ScratchViewSet(
     @action(detail=True, methods=["POST"])
     def claim(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
-        token: Any = request.data.get("token")
+        token: Any = cast(dict[str, Any], request.data).get("token")
 
         if (
             not isinstance(token, str)
@@ -537,9 +539,11 @@ class ScratchViewSet(
         if isinstance(request.data, QueryDict):
             request_data = request.data.dict()
         else:
-            request_data = request.data
+            request_data = cast(dict[str, Any], request.data)
 
-        parent_data = ScratchSerializer(parent, context={"request": request}).data
+        parent_data = cast(
+            dict[str, Any], ScratchSerializer(parent, context={"request": request}).data
+        )
         fork_data = {**parent_data, **request_data}
 
         ser = ScratchSerializer(data=fork_data, context={"request": request})

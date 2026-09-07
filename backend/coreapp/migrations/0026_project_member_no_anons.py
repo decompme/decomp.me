@@ -2,6 +2,8 @@
 
 import django.db.migrations.operations.special
 import django.db.models.deletion
+# mypy: ignore-errors
+
 from django.apps.registry import Apps
 from django.conf import settings
 from django.db import migrations, models

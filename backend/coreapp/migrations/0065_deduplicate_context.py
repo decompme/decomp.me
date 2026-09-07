@@ -1,3 +1,5 @@
+# mypy: ignore-errors
+
 import hashlib
 import logging
 from typing import Any
