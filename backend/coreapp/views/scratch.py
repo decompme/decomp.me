@@ -439,8 +439,10 @@ class ScratchViewSet(
             def to_base64(obj: bytes) -> str:
                 return base64.b64encode(obj).decode("utf-8")
 
-            response["left_object"] = to_base64(scratch.target_assembly.elf_object)
-            response["right_object"] = to_base64(compilation.elf_object)
+            response["left_object"] = to_base64(
+                bytes(scratch.target_assembly.elf_object)
+            )
+            response["right_object"] = to_base64(bytes(compilation.elf_object))
 
         return Response(response)
 
