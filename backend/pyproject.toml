@@ -57,7 +57,7 @@ packages = ["coreapp", "decompme"]
 include = ["coreapp/**/*.py", "decompme/**/*.py"]
 
 [tool.ruff.lint]
-extend-select = ["I"]
+select = ["E4", "E7", "E9", "F", "I"]
 fixable = ["ALL"]
 
 [tool.ruff.lint.isort]
