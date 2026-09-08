@@ -6,7 +6,7 @@ import logging
 import re
 import zipfile
 from datetime import datetime
-from typing import Any, cast
+from typing import Any
 
 import django_filters
 from django.core.files import File
@@ -509,7 +509,7 @@ class ScratchViewSet(
     @action(detail=True, methods=["POST"])
     def claim(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
-        token: Any = cast(dict[str, Any], request.data).get("token")
+        token: Any = request.data.get("token")
 
         if (
             not isinstance(token, str)
@@ -544,11 +544,9 @@ class ScratchViewSet(
         if isinstance(request.data, QueryDict):
             request_data = request.data.dict()
         else:
-            request_data = cast(dict[str, Any], request.data)
+            request_data = request.data
 
-        parent_data = cast(
-            dict[str, Any], ScratchSerializer(parent, context={"request": request}).data
-        )
+        parent_data = ScratchSerializer(parent, context={"request": request}).data
         fork_data = {**parent_data, **request_data}
 
         ser = ScratchSerializer(data=fork_data, context={"request": request})
