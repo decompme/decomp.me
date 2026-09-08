@@ -34,8 +34,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "debugpy>=1.8.20",
-    "django-stubs==5.2.9",
-    "djangorestframework-stubs==3.16.8",
+    "django-stubs>=5.2.9",
+    "djangorestframework-stubs>=3.16.8",
     "mypy>=1.19.1",
     "ruff>=0.15.2",
     "types-requests>=2.32.4.20260107",
