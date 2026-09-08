@@ -1,8 +1,8 @@
-import { useRouter } from "@/lib/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { mutate, type Revalidator, type RevalidatorOptions } from "swr";
 import useSWRImmutable from "swr/immutable";
 import { useDebouncedCallback } from "use-debounce";
+import { useRouter } from "@/lib/navigation";
 import { resolveCompilersResponse } from "./api/compilerFlags";
 import { get, getPublic, patch, post, ResponseError } from "./api/request";
 import { getScratch, resolveScratchLanguage } from "./api/scratchLanguage";
