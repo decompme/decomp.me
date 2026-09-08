@@ -1,5 +1,3 @@
-from typing import Any, cast
-
 import django_filters
 from django.contrib.auth import logout
 from django.db.models import Count
@@ -37,9 +35,8 @@ class CurrentUser(APIView):
         Login if the 'code' parameter is provided. Log out otherwise.
         """
 
-        code = cast(dict[str, Any], request.data).get("code")
-        if isinstance(code, str):
-            GitHubUser.login(request, code)
+        if "code" in request.data:
+            GitHubUser.login(request, request.data["code"])
             assert not request.profile.is_anonymous()
             return self.get(request)
         else:
