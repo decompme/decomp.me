@@ -89,6 +89,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Allow nsjail user namespaces
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Fetch compilers and libraries
         run: |
           python3 -m pip install requests
