@@ -46,11 +46,14 @@ class BaseHandler(tornado.web.RequestHandler):
         self.write({"error": error_message})
 
     def get_json_body(self) -> Dict[str, Any]:
-        """Parse JSON body."""
+        """Parse a JSON object body."""
         try:
-            return json.loads(self.request.body)
-        except json.JSONDecodeError as e:
-            raise tornado.web.HTTPError(400, f"Invalid JSON: {e}")
+            body = json.loads(self.request.body)
+        except (json.JSONDecodeError, UnicodeDecodeError) as e:
+            raise tornado.web.HTTPError(400, reason=f"Invalid JSON: {e}")
+        if not isinstance(body, dict):
+            raise tornado.web.HTTPError(400, reason="JSON body must be an object")
+        return body
 
 
 class HealthHandler(BaseHandler):
