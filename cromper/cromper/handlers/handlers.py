@@ -71,7 +71,17 @@ class PlatformHandler(BaseHandler):
           returns a dictionary containing a single Platform
         """
         compilers_instance = self.config.compilers_instance
-        available_platforms = self.config.platforms_instance.available_platforms()
+
+        available_compiler_platforms = {
+            compiler.platform.id for compiler in compilers_instance.available_compilers()
+        }
+
+        available_platforms = {
+            platform_id: platform
+            for platform_id, platform in self.config.platforms_instance.all_platforms().items()
+            if platform_id in available_compiler_platforms
+        }
+
         if id is not None:
             if id in available_platforms:
                 return self.write(

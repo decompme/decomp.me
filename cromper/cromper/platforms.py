@@ -67,7 +67,7 @@ class Platforms:
     def __init__(self) -> None:
         pass
 
-    def available_platforms(self):
+    def all_platforms(self):
         return _platforms
 
     @staticmethod

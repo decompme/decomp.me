@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useRouter } from "@/lib/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { mutate, type Revalidator, type RevalidatorOptions } from "swr";
 import useSWRImmutable from "swr/immutable";
