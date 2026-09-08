@@ -73,7 +73,8 @@ class PlatformHandler(BaseHandler):
         compilers_instance = self.config.compilers_instance
 
         available_compiler_platforms = {
-            compiler.platform.id for compiler in compilers_instance.available_compilers()
+            compiler.platform.id
+            for compiler in compilers_instance.available_compilers()
         }
 
         available_platforms = {
