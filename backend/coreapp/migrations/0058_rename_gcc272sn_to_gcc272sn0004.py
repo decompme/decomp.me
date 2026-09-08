@@ -1,3 +1,5 @@
+# mypy: ignore-errors
+
 import django.db.migrations.operations.special
 from django.apps.registry import Apps
 from django.db import migrations
