@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 class SafeCursorPagination(CursorPagination):
     def paginate_queryset(
         self,
-        queryset: QuerySet[Any],
+        queryset: QuerySet[Any, Any],
         request: Request,
         view: APIView | None = None,
     ) -> list[Any] | None:
