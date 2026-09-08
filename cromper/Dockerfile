@@ -244,6 +244,7 @@ WORKDIR /cromper
 
 COPY pyproject.toml uv.lock /cromper/
 COPY cromper/ /cromper/cromper/
+COPY asm_preludes/ /cromper/asm_preludes/
 
 RUN uv sync --locked --no-dev
 
@@ -256,6 +257,7 @@ COPY --chown=ubuntu:ubuntu pyproject.toml uv.lock /cromper/
 COPY --chown=ubuntu:ubuntu compilers/ /cromper/compilers/
 COPY --chown=ubuntu:ubuntu libraries/ /cromper/libraries/
 COPY --chown=ubuntu:ubuntu cromper/ /cromper/cromper/
+COPY --chown=ubuntu:ubuntu asm_preludes/ /cromper/asm_preludes/
 COPY --chown=ubuntu:ubuntu docker_entrypoint.sh /cromper/
 
 ENTRYPOINT ["/cromper/docker_entrypoint.sh"]
