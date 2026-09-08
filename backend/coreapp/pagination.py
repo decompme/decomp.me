@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from typing import Any
 
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -12,7 +11,7 @@ from rest_framework.views import APIView
 class SafeCursorPagination(CursorPagination):
     def paginate_queryset(
         self,
-        queryset: QuerySet[Any] | Sequence[Any],
+        queryset: QuerySet[Any],
         request: Request,
         view: APIView | None = None,
     ) -> list[Any] | None:
