@@ -28,11 +28,12 @@ class CromperConfig:
         ).lower() in ("true", "on", "1")
 
         # Paths
+        service_root = Path(__file__).resolve().parent.parent
         self.compiler_base_path = Path(
-            os.getenv("COMPILER_BASE_PATH", "/cromper/compilers")
+            os.getenv("COMPILER_BASE_PATH", str(service_root / "compilers"))
         )
         self.library_base_path = Path(
-            os.getenv("LIBRARY_BASE_PATH", "/cromper/libraries")
+            os.getenv("LIBRARY_BASE_PATH", str(service_root / "libraries"))
         )
         self.sandbox_tmp_path = Path(os.getenv("SANDBOX_TMP_PATH", "/tmp/sandbox"))
         self.sandbox_chroot_path = Path(
