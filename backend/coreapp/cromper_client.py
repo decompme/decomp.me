@@ -31,7 +31,7 @@ class CromperError(Exception):
 
 
 class CromperUnavailableError(CromperError):
-    """Raised when the Cromper service cannot be reached or read."""
+    """Raised when cromper cannot be reached or read."""
 
     pass
 
@@ -49,7 +49,7 @@ logger = logging.getLogger(__name__)
 
 
 class CromperClient:
-    """Client for communicating with the cromper service."""
+    """Client for communicating with cromper."""
 
     def __init__(self, base_url: str, timeout: int = 10):
         self.base_url = base_url.rstrip("/")
@@ -57,30 +57,47 @@ class CromperClient:
         self.session = requests.Session()
         self._compilers_cache: Optional[Dict[str, Compiler]] = None
         self._platforms_cache: Optional[Dict[str, Platform]] = None
+        self._service_available = True
+
+    def _invalidate_caches(self) -> None:
+        self._compilers_cache = None
+        self._platforms_cache = None
+
+    def _probe_recovery(self) -> None:
+        """Confirm cromper has recovered before using cached metadata."""
+        if not self._service_available:
+            self._make_request("GET", "/health")
+            logger.info("connection to cromper restored, invalidating caches")
+            self._invalidate_caches()
+            self._service_available = True
 
     def _make_request(
         self, method: str, endpoint: str, **kwargs: Any
     ) -> Dict[str, Any]:
-        """Make a request to the cromper service."""
+        """Make a request to cromper."""
         url = f"{self.base_url}{endpoint}"
         try:
             response = self.session.request(method, url, timeout=self.timeout, **kwargs)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.Timeout as e:
-            logger.error(f"Timeout communicating with cromper service: {e}")
-            raise CromperTimeoutError(f"cromper service timeout: {e}")
+            self._service_available = False
+            logger.error(f"Timeout communicating with cromper: {e}")
+            raise CromperTimeoutError(f"cromper timeout: {e}")
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error communicating with cromper service: {e}")
-            raise CromperUnavailableError(f"cromper service error: {e}")
+            self._service_available = False
+            logger.error(f"Error communicating with cromper: {e}")
+            raise CromperUnavailableError(f"cromper error: {e}")
         except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON response from cromper service: {e}")
-            raise CromperUnavailableError("Invalid response from cromper service")
+            self._service_available = False
+            logger.error(f"Invalid JSON response from cromper: {e}")
+            raise CromperUnavailableError("Invalid response from cromper")
 
     def get_compilers(self) -> Dict[str, Compiler]:
-        """Get all compilers from cromper service, with caching."""
+        """Get all compilers from cromper, with caching."""
+        self._probe_recovery()
         if self._compilers_cache is None:
-            logger.info("Fetching compilers from cromper service...")
+            logger.info("Fetching compilers from cromper...")
             response = self._make_request("GET", "/compiler")
             response_json = response.get("compilers", {})
 
@@ -111,16 +128,17 @@ class CromperClient:
         return self._compilers_cache
 
     def get_platforms(self) -> Dict[str, Platform]:
-        """Get all platforms from cromper service, with caching."""
+        """Get all platforms from cromper, with caching."""
+        self._probe_recovery()
         if self._platforms_cache is None:
-            logger.info("Fetching platforms from cromper service...")
+            logger.info("Fetching platforms from cromper...")
             response = self._make_request("GET", "/platform")
             self._platforms_cache = {k: Platform(**v) for (k, v) in response.items()}
             logger.info(f"Cached {len(self._platforms_cache)} platforms")
         return self._platforms_cache
 
     def get_libraries(self, platform: str = "") -> list[dict[str, Any]]:
-        """Get available libraries from the cromper service."""
+        """Get available libraries from cromper."""
         params = {}
         if platform:
             params["platform"] = platform
@@ -164,9 +182,7 @@ class CromperClient:
 
     def refresh_cache(self) -> None:
         """Force refresh of compilers and platforms cache."""
-        self._compilers_cache = None
-        self._platforms_cache = None
-        # Trigger reload
+        self._invalidate_caches()
         self.get_compilers()
         self.get_platforms()
 
@@ -179,7 +195,7 @@ class CromperClient:
         function: str = "",
         libraries: list[dict[str, str]] = [],
     ) -> Dict[str, Any]:
-        """Compile code using the cromper service."""
+        """Compile code using cromper."""
         data = {
             "compiler_id": compiler_id,
             "compiler_flags": compiler_flags,
@@ -201,7 +217,7 @@ class CromperClient:
         return {"elf_object": elf_object, "errors": response.get("errors", "")}
 
     def assemble_asm(self, platform_id: str, asm: "Asm") -> Dict[str, Any]:
-        """Assemble assembly using the cromper service."""
+        """Assemble assembly using cromper."""
         data = {
             "platform_id": platform_id,
             "asm_data": asm.data,
@@ -232,7 +248,7 @@ class CromperClient:
         diff_label: str = "",
         diff_flags: list[str] = [],
     ) -> Dict[str, Any]:
-        """Generate diff using the cromper service."""
+        """Generate diff using cromper."""
         # Encode elf object as base64
         target_elf_b64 = base64.b64encode(target_elf).decode("utf-8")
         compiled_elf_b64 = base64.b64encode(compiled_elf).decode("utf-8")
@@ -264,7 +280,7 @@ class CromperClient:
         default_source_code: str = "",
         context: str = "",
     ) -> str:
-        """Decompile assembly using the cromper service."""
+        """Decompile assembly using cromper."""
         data = {
             "platform_id": platform_id,
             "compiler_id": compiler_id,

@@ -37,7 +37,7 @@ env = environ.Env(
     SESSION_TIMEOUT_REDIRECT=(str, "/"),
     CONN_MAX_AGE=(int, 0),  # default: a new connection for each request
     CONN_HEALTH_CHECKS=(bool, False),
-    CROMPER_URL=(str, "http://localhost:8888"),  # cromper service URL
+    CROMPER_URL=(str, "http://localhost:8888"),  # cromper URL
 )
 
 for stem in [".env.local", ".env"]:

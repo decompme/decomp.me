@@ -96,7 +96,7 @@ def main():
 
     config = CromperConfig()
 
-    logger.info(f"Starting cromper service on port {config.port}")
+    logger.info(f"Starting cromper on port {config.port}")
     logger.info(f"Debug mode: {config.debug}")
     logger.info(f"Use sandbox jail: {config.use_sandbox_jail}")
     logger.info(f"Compiler base path: {config.compiler_base_path}")
@@ -104,7 +104,7 @@ def main():
     app = make_app(config)
     app.listen(config.port)
 
-    logger.info("cromper service started successfully")
+    logger.info("cromper started successfully")
 
     ioloop = tornado.ioloop.IOLoop.current()
     ioloop.start()

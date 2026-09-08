@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import requests
 from django.test import SimpleTestCase
@@ -107,3 +107,44 @@ class CromperClientCompilerTests(SimpleTestCase):
         ):
             with self.assertRaises(CromperUnavailableError):
                 client._make_request("GET", "/compiler")
+
+    def test_service_recovery_reloads_metadata_after_outage(self) -> None:
+        client = CromperClient("http://cromper")
+        client._compilers_cache = {"stale": Mock()}
+        client._platforms_cache = {"stale": Mock()}
+
+        with patch.object(
+            client.session,
+            "request",
+            side_effect=requests.exceptions.ConnectionError("connection refused"),
+        ):
+            with self.assertRaises(CromperUnavailableError):
+                client._make_request("GET", "/compiler")
+
+        self.assertIn("stale", client._compilers_cache)
+        self.assertIn("stale", client._platforms_cache)
+
+        health_response = Mock()
+        health_response.json.return_value = {"status": "ok"}
+        health_response.raise_for_status.return_value = None
+        compiler_response = Mock()
+        compiler_response.json.return_value = {"compilers": {}}
+        compiler_response.raise_for_status.return_value = None
+        with patch.object(
+            client.session,
+            "request",
+            side_effect=[health_response, compiler_response],
+        ) as request:
+            self.assertEqual(client.get_compilers(), {})
+
+        self.assertEqual(client._compilers_cache, {})
+        self.assertIsNone(client._platforms_cache)
+
+        self.assertTrue(client._service_available)
+        self.assertEqual(
+            [call.args[1] for call in request.call_args_list],
+            [
+                "http://cromper/health",
+                "http://cromper/compiler",
+            ],
+        )

@@ -79,10 +79,6 @@ class Compiler:
     type: ClassVar[CompilerType] = CompilerType.OTHER
     language: flags.Language = flags.Language.C
 
-    @property
-    def path(self) -> Path:
-        raise NotImplementedError("Use get_path(base) in the Cromper service")
-
     def get_path(self, base: Path) -> Path:
         if self.base_compiler is not None:
             return base / self.base_compiler.platform.id / self.base_compiler.id

@@ -6,7 +6,7 @@ from cromper import compilers, libraries, platforms
 
 
 class CromperConfig:
-    """Configuration for the cromper service."""
+    """Configuration for cromper"""
 
     def __init__(self):
         # Server settings
