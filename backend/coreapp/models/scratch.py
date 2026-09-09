@@ -67,7 +67,7 @@ class LibrariesField(models.JSONField):
                     return super().default(obj)
 
         kwargs.pop("encoder", None)
-        return super().__init__(encoder=MyEncoder, **kwargs)
+        super().__init__(encoder=MyEncoder, **kwargs)
 
     def deconstruct(self) -> tuple[str, str, Sequence[Any], dict[str, Any]]:
         name, path, args, kwargs = super().deconstruct()

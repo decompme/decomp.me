@@ -266,10 +266,10 @@ class DiffWrapper:
                 None, elf_object, basedump, config
             )
         except AssertionError as e:
-            logger.exception("Error preprocessing dump: %s", e)
+            logger.exception("Error preprocessing dump")
             raise DiffError(f"Error preprocessing dump: {e}")
         except Exception as e:
-            logger.exception("Error preprocessing dump: %s", e)
+            logger.exception("Error preprocessing dump")
             raise DiffError(f"Error preprocessing dump: {e}")
 
         return basedump
@@ -309,7 +309,7 @@ class DiffWrapper:
                 objdump_flags,
             )
         except Exception as e:
-            logger.exception("Error dumping target assembly: %s", e)
+            logger.exception("Error dumping target assembly")
             raise DiffError(f"Error dumping target assembly: {e}")
         if compiled_elf:
             try:
@@ -317,7 +317,7 @@ class DiffWrapper:
                     compiled_elf, platform, diff_label, config, objdump_flags
                 )
             except Exception as e:
-                logger.exception("Error dumping compiled assembly: %s", e)
+                logger.exception("Error dumping compiled assembly")
                 mydump = ""
                 warnings.append(f"Warning: Error dumping compiled assembly: {e}")
         else:
@@ -328,15 +328,18 @@ class DiffWrapper:
             my_lines = asm_differ.process(mydump, config)
             result = DiffWrapper.run_diff(base_lines, my_lines, config)
             diff_result = DiffResult(result)
-            if any(x.startswith("--disassemble=") for x in objdump_flags):
-                if len(base_lines) and len(my_lines) == 0:
-                    warnings.append(
-                        "Warning: No diff rows. Is your function signature correct?"
-                    )
+            if (
+                any(x.startswith("--disassemble=") for x in objdump_flags)
+                and len(base_lines)
+                and len(my_lines) == 0
+            ):
+                warnings.append(
+                    "Warning: No diff rows. Is your function signature correct?"
+                )
             if warnings:
                 diff_result.errors = "\n".join(warnings)
         except Exception as e:
-            logger.exception("Error running asm-differ: %s", e)
+            logger.exception("Error running asm-differ")
             raise DiffError(f"Error running asm-differ: {e}")
 
         return diff_result

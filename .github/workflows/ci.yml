@@ -24,7 +24,7 @@ jobs:
             -e DATABASE_URL=sqlite:///:memory: \
             -e SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key \
             decompme_backend \
-              -c 'cd /decomp.me/backend && uv sync && uv run python manage.py test'
+              -c 'cd /decomp.me/backend && uv sync --locked && uv run python manage.py test'
 
   backend_test_docker_prod:
     name: backend tests (docker prod container)
@@ -163,7 +163,7 @@ jobs:
             -v "$PWD/integration_tests:/integration_tests" \
             --entrypoint /bin/bash \
             backend-blue \
-            -lc 'export UV_PROJECT_ENVIRONMENT=/tmp/integration-venv && cd /integration_tests && uv sync --all-extras && uv run pytest -v'
+            -lc 'export UV_PROJECT_ENVIRONMENT=/tmp/integration-venv && cd /integration_tests && uv sync --locked --all-extras && uv run pytest -v'
 
       - name: Shut everything down
         if: always()
@@ -214,7 +214,7 @@ jobs:
           python-version: "3.14"
       - run: |-
           cd backend
-          uv sync --all-extras
+          uv sync --locked --all-extras
           uv run mypy
           uv run ruff check
           uv run ruff format --check

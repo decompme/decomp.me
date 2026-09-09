@@ -121,8 +121,7 @@ def backfill_best_forks(
     processed = 0
     candidate_count = 0
     ancestor_count = 0
-    for candidate in qs.iterator(chunk_size=chunk_size):
-        processed += 1
+    for processed, candidate in enumerate(qs.iterator(chunk_size=chunk_size), 1):
         candidate_count += 1
         scratch_cache[candidate.pk] = candidate
 

@@ -2,7 +2,7 @@ import base64
 import json
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any
 
 import requests
 from django.conf import settings
@@ -22,7 +22,7 @@ class CompilationResult:
 class DiffResult:
     """Result of a diff operation."""
 
-    result: Optional[dict[str, Any]]
+    result: dict[str, Any] | None
     errors: str
 
 
@@ -33,13 +33,9 @@ class CromperError(Exception):
 class CromperUnavailableError(CromperError):
     """Raised when cromper cannot be reached or read."""
 
-    pass
-
 
 class CromperTimeoutError(CromperUnavailableError):
     """Exception raised when a cromper request times out."""
-
-    pass
 
 
 if TYPE_CHECKING:
@@ -55,8 +51,8 @@ class CromperClient:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.session = requests.Session()
-        self._compilers_cache: Optional[Dict[str, Compiler]] = None
-        self._platforms_cache: Optional[Dict[str, Platform]] = None
+        self._compilers_cache: dict[str, Compiler] | None = None
+        self._platforms_cache: dict[str, Platform] | None = None
         self._service_available = True
 
     def _invalidate_caches(self) -> None:
@@ -73,7 +69,7 @@ class CromperClient:
 
     def _make_request(
         self, method: str, endpoint: str, **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Make a request to cromper."""
         url = f"{self.base_url}{endpoint}"
         try:
@@ -93,7 +89,7 @@ class CromperClient:
             logger.error(f"Invalid JSON response from cromper: {e}")
             raise CromperUnavailableError("Invalid response from cromper")
 
-    def get_compilers(self) -> Dict[str, Compiler]:
+    def get_compilers(self) -> dict[str, Compiler]:
         """Get all compilers from cromper, with caching."""
         self._probe_recovery()
         if self._compilers_cache is None:
@@ -101,7 +97,7 @@ class CromperClient:
             response = self._make_request("GET", "/compiler")
             response_json = response.get("compilers", {})
 
-            compilers: Dict[str, Compiler] = {}
+            compilers: dict[str, Compiler] = {}
             for compiler_id, compiler_data in response_json.items():
                 try:
                     response_id = compiler_data.get("id", compiler_id)
@@ -127,7 +123,7 @@ class CromperClient:
             logger.info(f"Cached {len(self._compilers_cache)} compilers")
         return self._compilers_cache
 
-    def get_platforms(self) -> Dict[str, Platform]:
+    def get_platforms(self) -> dict[str, Platform]:
         """Get all platforms from cromper, with caching."""
         self._probe_recovery()
         if self._platforms_cache is None:
@@ -193,9 +189,11 @@ class CromperClient:
         code: str,
         context: str,
         function: str = "",
-        libraries: list[dict[str, str]] = [],
-    ) -> Dict[str, Any]:
+        libraries: list[dict[str, str]] | None = None,
+    ) -> dict[str, Any]:
         """Compile code using cromper."""
+        if libraries is None:
+            libraries = []
         data = {
             "compiler_id": compiler_id,
             "compiler_flags": compiler_flags,
@@ -216,7 +214,7 @@ class CromperClient:
 
         return {"elf_object": elf_object, "errors": response.get("errors", "")}
 
-    def assemble_asm(self, platform_id: str, asm: "Asm") -> Dict[str, Any]:
+    def assemble_asm(self, platform_id: str, asm: "Asm") -> dict[str, Any]:
         """Assemble assembly using cromper."""
         data = {
             "platform_id": platform_id,
@@ -246,10 +244,12 @@ class CromperClient:
         target_elf: bytes,
         compiled_elf: bytes,
         diff_label: str = "",
-        diff_flags: list[str] = [],
-    ) -> Dict[str, Any]:
+        diff_flags: list[str] | None = None,
+    ) -> dict[str, Any]:
         """Generate diff using cromper."""
         # Encode elf object as base64
+        if diff_flags is None:
+            diff_flags = []
         target_elf_b64 = base64.b64encode(target_elf).decode("utf-8")
         compiled_elf_b64 = base64.b64encode(compiled_elf).decode("utf-8")
 
@@ -299,7 +299,7 @@ class CromperClient:
 
 
 # Global cromper client instance
-_cromper_client: Optional[CromperClient] = None
+_cromper_client: CromperClient | None = None
 
 
 def get_cromper_client() -> CromperClient:

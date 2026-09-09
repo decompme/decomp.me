@@ -5,7 +5,7 @@ import shlex
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Self
+from typing import Self
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         self.path = Path(self.temp_dir.name)
         return self
 
-    def __exit__(self, *exc: Any) -> None:
+    def __exit__(self, *exc: object) -> None:
         self.temp_dir.cleanup()
 
     @staticmethod

@@ -11,7 +11,7 @@ def custom_exception_handler(exc: Exception, context: Any) -> Response | None:
     # to get the standard error response.
     response = exception_handler(exc, context)
 
-    if isinstance(exc, AssertionError) or isinstance(exc, IntegrityError):
+    if isinstance(exc, (AssertionError, IntegrityError)):
         response = Response(
             data={
                 "detail": str(exc),

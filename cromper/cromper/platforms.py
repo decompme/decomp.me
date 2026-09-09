@@ -33,7 +33,7 @@ class Platform:
         return flags.resolve_flags(self.diff_flag_class)
 
     @property
-    @functools.lru_cache
+    @functools.lru_cache  # noqa: B019
     def asm_prelude(self) -> str:
         asm_prelude_path: Path = (
             Path(__file__).parent.parent / "asm_preludes" / f"{self.id}.s"

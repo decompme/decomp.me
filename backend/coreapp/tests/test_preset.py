@@ -32,7 +32,7 @@ class PresetTests(BaseTestCase):
     def create_admin(self) -> None:
         self.username = "admin"
         self.password = "testpassword"
-        user, created = User.objects.get_or_create(username=self.username)
+        user, _created = User.objects.get_or_create(username=self.username)
         user.set_password(self.password)
         user.is_staff = True
         user.is_superuser = True
@@ -43,7 +43,7 @@ class PresetTests(BaseTestCase):
     def create_user(self, username: str = "dummy-user") -> User:
         self.username = username
         self.password = "testpassword"
-        user, created = User.objects.get_or_create(username=self.username)
+        user, _created = User.objects.get_or_create(username=self.username)
         user.set_password(self.password)
         user.save()
         self.user = user

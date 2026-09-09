@@ -152,9 +152,11 @@ class MockCromperClient:
         code: str,
         context: str,
         function: str = "",
-        libraries: list[dict[str, str]] = [],
+        libraries: list[dict[str, str]] | None = None,
     ) -> dict[str, Any]:
         """Return mock compilation result."""
+        if libraries is None:
+            libraries = []
         return {"elf_object": code.encode(), "errors": ""}
 
     def diff(
@@ -163,9 +165,11 @@ class MockCromperClient:
         target_elf: bytes,
         compiled_elf: bytes,
         diff_label: str = "",
-        diff_flags: list[str] = [],
+        diff_flags: list[str] | None = None,
     ) -> dict[str, Any]:
         """Return mock diff result."""
+        if diff_flags is None:
+            diff_flags = []
         is_exact_match = (
             b"li $v0,2" in bytes(target_elf) and b"return 2" in compiled_elf
         )

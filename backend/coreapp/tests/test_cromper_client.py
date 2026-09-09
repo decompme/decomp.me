@@ -100,26 +100,30 @@ class CromperClientCompilerTests(SimpleTestCase):
     def test_connection_failure_is_marked_as_service_unavailable(self) -> None:
         client = CromperClient("http://cromper")
 
-        with patch.object(
-            client.session,
-            "request",
-            side_effect=requests.exceptions.ConnectionError("connection refused"),
+        with (
+            patch.object(
+                client.session,
+                "request",
+                side_effect=requests.exceptions.ConnectionError("connection refused"),
+            ),
+            self.assertRaises(CromperUnavailableError),
         ):
-            with self.assertRaises(CromperUnavailableError):
-                client._make_request("GET", "/compiler")
+            client._make_request("GET", "/compiler")
 
     def test_service_recovery_reloads_metadata_after_outage(self) -> None:
         client = CromperClient("http://cromper")
         client._compilers_cache = {"stale": Mock()}
         client._platforms_cache = {"stale": Mock()}
 
-        with patch.object(
-            client.session,
-            "request",
-            side_effect=requests.exceptions.ConnectionError("connection refused"),
+        with (
+            patch.object(
+                client.session,
+                "request",
+                side_effect=requests.exceptions.ConnectionError("connection refused"),
+            ),
+            self.assertRaises(CromperUnavailableError),
         ):
-            with self.assertRaises(CromperUnavailableError):
-                client._make_request("GET", "/compiler")
+            client._make_request("GET", "/compiler")
 
         self.assertIn("stale", client._compilers_cache)
         self.assertIn("stale", client._platforms_cache)
