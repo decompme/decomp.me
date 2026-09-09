@@ -1,15 +1,14 @@
 import base64
-
-from typing import Any, Dict
+from typing import Any
 
 import tornado.web
 
-from .handlers import BaseHandler
 from ..config import CromperConfig
 from ..wrappers.diff_wrapper import DiffWrapper
+from .handlers import BaseHandler
 
 
-def generate_diff(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]:
+def generate_diff(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
     """Synchronous diff generation that runs in process pool."""
     platform_id = data.get("platform_id")
     if not platform_id:

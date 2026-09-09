@@ -1,11 +1,10 @@
 import unittest
 
-from cromper.compilers import CYGNUS_2_7_96Q3, GCC281PM, IDO53, MWCC_247_92
-from cromper.compilers import Compiler
+from cromper.compilers import CYGNUS_2_7_96Q3, GCC281PM, IDO53, MWCC_247_92, Compiler
 from cromper.platforms import GC_WII, N64, SATURN, Platform
 from cromper.wrappers.decompiler_wrapper import (
-    DecompilerWrapper,
     DECOMP_WITH_CONTEXT_FAILED_PREAMBLE,
+    DecompilerWrapper,
 )
 from cromper.wrappers.m2c_wrapper import M2CWrapper
 

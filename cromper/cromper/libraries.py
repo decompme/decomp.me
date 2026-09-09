@@ -1,7 +1,6 @@
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ class Library:
 @dataclass(frozen=True)
 class LibraryVersions:
     name: str
-    supported_versions: List[str]
+    supported_versions: list[str]
     platform: str
 
     @property
@@ -44,9 +43,9 @@ class LibraryVersions:
         return LIBRARY_BASE_PATH / self.platform / self.name
 
 
-def available_libraries() -> List[LibraryVersions]:
+def available_libraries() -> list[LibraryVersions]:
     """Get all available libraries across all platforms."""
-    results: List[LibraryVersions] = []
+    results: list[LibraryVersions] = []
 
     if not LIBRARY_BASE_PATH.exists():
         logger.warning(f"Library base path does not exist: {LIBRARY_BASE_PATH}")
@@ -82,6 +81,6 @@ def available_libraries() -> List[LibraryVersions]:
     return results
 
 
-def libraries_for_platform(platform: str) -> List[LibraryVersions]:
+def libraries_for_platform(platform: str) -> list[LibraryVersions]:
     """Get available libraries for a specific platform."""
     return [lib for lib in available_libraries() if lib.platform == platform]

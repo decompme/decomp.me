@@ -1,13 +1,13 @@
-from typing import Any, Dict
+from typing import Any
 
 import tornado
 
-from .handlers import BaseHandler
 from ..config import CromperConfig
 from ..wrappers.decompiler_wrapper import DecompilerWrapper
+from .handlers import BaseHandler
 
 
-def decompile(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]:
+def decompile(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
     """Synchronous decompilation that runs in process pool."""
     platform_id = data.get("platform_id")
     compiler_id = data.get("compiler_id")

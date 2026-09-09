@@ -4,8 +4,6 @@ import subprocess
 class CompilationError(Exception):
     """Exception raised when compilation fails."""
 
-    pass
-
 
 class AssemblyError(Exception):
     """Exception raised when assembly fails."""
@@ -19,13 +17,9 @@ class AssemblyError(Exception):
 class SandboxError(Exception):
     """Exception raised when sandbox execution fails."""
 
-    pass
-
 
 class DiffError(Exception):
     """Exception raised when diff generation fails."""
-
-    pass
 
 
 class NmError(Exception):
@@ -48,5 +42,3 @@ class ObjdumpError(Exception):
 
 class M2CError(Exception):
     """Exception raised when m2c decompilation fails."""
-
-    pass

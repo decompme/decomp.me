@@ -4,10 +4,11 @@ Test cromper API endpoints.
 
 import json
 import unittest
+
 from tornado.testing import AsyncHTTPTestCase
 
-from cromper.platforms import N64
 from cromper.main import CromperConfig, make_app
+from cromper.platforms import N64
 
 
 class CromperAPITests(AsyncHTTPTestCase):

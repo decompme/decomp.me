@@ -1,16 +1,15 @@
 import base64
-
-from typing import Any, Dict
+from typing import Any
 
 import tornado.web
 
-from .handlers import BaseHandler
 from ..config import CromperConfig
-from ..wrappers.compiler_wrapper import CompilerWrapper, AssemblyData
 from ..error import AssemblyError
+from ..wrappers.compiler_wrapper import AssemblyData, CompilerWrapper
+from .handlers import BaseHandler
 
 
-def assemble_asm(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]:
+def assemble_asm(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
     """Synchronous assembly that runs in process pool."""
     platform_id = data.get("platform_id")
     if not platform_id:

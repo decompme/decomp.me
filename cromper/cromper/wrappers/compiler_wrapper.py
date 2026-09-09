@@ -71,8 +71,10 @@ class CompilerWrapper:
         compiler_flags: str,
         code: str,
         context: str,
-        libraries: list[Library] = [],  # Library type would be defined separately
+        libraries: list[Library] | None = None,
     ) -> CompilationResult:
+        if libraries is None:
+            libraries = []
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
 

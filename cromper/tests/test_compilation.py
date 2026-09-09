@@ -4,7 +4,7 @@ Test compilation functionality in cromper.
 
 import unittest
 
-from cromper.wrappers.compiler_wrapper import CompilationResult
+from cromper import platforms
 from cromper.compilers import (
     GCC281PM,
     IDO53,
@@ -12,11 +12,11 @@ from cromper.compilers import (
     PBX_GCC3,
     WATCOM_105_C,
 )
-from cromper import platforms
-from cromper.wrappers.diff_wrapper import DiffWrapper
 from cromper.flags import Language
+from cromper.wrappers.compiler_wrapper import CompilationResult
+from cromper.wrappers.diff_wrapper import DiffWrapper
 
-from .common import CromperTestCase, requiresCompiler, compilers
+from .common import CromperTestCase, compilers, requiresCompiler
 
 
 def _make_compiler_test(compiler):

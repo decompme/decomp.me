@@ -32,6 +32,13 @@ build-backend = "hatchling.build"
 [tool.hatch.metadata]
 allow-direct-references = true
 
+[tool.ruff]
+include = ["cromper/**/*.py", "tests/**/*.py"]
+exclude = ["compilers", "libraries"]
+
+[tool.ruff.lint]
+ignore = ["BLE001", "B019", "C408", "EXE001", "FLY002"]
+
 [tool.mypy]
 ignore_missing_imports = true
 strict_optional = true

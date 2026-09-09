@@ -1,17 +1,16 @@
 import base64
-
-from typing import Any, Dict
+from typing import Any
 
 import tornado.web
 
-from .handlers import BaseHandler
 from ..config import CromperConfig
 from ..error import CompilationError
 from ..libraries import Library
 from ..wrappers.compiler_wrapper import CompilerWrapper
+from .handlers import BaseHandler
 
 
-def compile(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]:
+def compile(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
     """Synchronous compilation that runs in process pool."""
     compiler_id = data.get("compiler_id")
     if not compiler_id:

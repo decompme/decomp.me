@@ -5,8 +5,9 @@ Test utilities and common functionality for cromper tests.
 import os
 import tempfile
 import unittest
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 from unittest import skip, skipIf
 
 from cromper.compilers import Compiler, Compilers
@@ -59,9 +60,7 @@ class CromperTestCase(unittest.TestCase):
         )
         return wrapper
 
-    def assertIsValidElfObject(
-        self, elf_object: bytes, msg: Optional[str] = None
-    ) -> None:
+    def assertIsValidElfObject(self, elf_object: bytes, msg: str | None = None) -> None:
         """Assert that the given bytes represent a valid ELF object."""
         if msg is None:
             msg = "ELF object should be valid"

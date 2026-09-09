@@ -2,19 +2,18 @@
 
 import asyncio
 import logging
-
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+
+import tornado.web
 
 # Load environment variables from .env file before importing other modules
 from dotenv import load_dotenv
 
-import tornado.web
-
+from .config import CromperConfig
 from .handlers.assemble import AssembleHandler
 from .handlers.compile import CompileHandler
 from .handlers.decompile import DecompileHandler
 from .handlers.diff import DiffHandler
-
 from .handlers.handlers import (
     CompilerExtensionHandler,
     CompilerHandler,
@@ -23,8 +22,6 @@ from .handlers.handlers import (
     LibrariesHandler,
     PlatformHandler,
 )
-
-from .config import CromperConfig
 
 
 def make_app(config: CromperConfig) -> tornado.web.Application:

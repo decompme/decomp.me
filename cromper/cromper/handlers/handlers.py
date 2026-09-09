@@ -1,13 +1,13 @@
 import json
 import traceback
-from typing import Any, Dict
-
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from typing import Any
 
 import tornado.web
 
-from ..config import CromperConfig
 from cromper import flags, libraries
+
+from ..config import CromperConfig
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -45,7 +45,7 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_status(status_code)
         self.write({"error": error_message})
 
-    def get_json_body(self) -> Dict[str, Any]:
+    def get_json_body(self) -> dict[str, Any]:
         """Parse a JSON object body."""
         try:
             body = json.loads(self.request.body)
