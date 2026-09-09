@@ -8,9 +8,9 @@ authors = [
 license = {text = "MIT"}
 requires-python = ">=3.10"
 dependencies = [
-    "tornado>=6.5.2",
-    "requests>=2.32.5",
-    "python-dotenv>=1.0.0",
+    "tornado>=6.5.8",
+    "requests>=2.34.2",
+    "python-dotenv>=1.2.3",
     "m2c @ git+https://github.com/matt-kempster/m2c.git@1d1c4454a445326541305f83f2b0cb680a9ecb2d",
     "asm-differ @ git+https://github.com/simonlindholm/asm-differ.git@f49f9b26a7b91f3da6c8d555a87218efb28bbea7",
     "pyyaml>=6.0.3",
@@ -18,11 +18,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "mypy>=1.18.2",
-    "pytest>=8.4.2",
-    "pytest-asyncio>=1.2.0",
+    "mypy>=2.3.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
     "pytest-tornado>=0.8.1",
-    "ruff>=0.13.1",
+    "ruff>=0.16.6",
 ]
 
 [build-system]
