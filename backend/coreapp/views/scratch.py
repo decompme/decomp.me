@@ -162,7 +162,7 @@ def compile_scratch_update_score(
         diff = diff_compilation(scratch, compilation)
         update_scratch_score(scratch, diff)
     except Exception:
-        pass
+        logger.exception("Failed to compile and score scratch")
 
 
 def scratch_last_modified(
@@ -186,10 +186,7 @@ def is_contentful_asm(asm: Asm | None) -> bool:
 
     asm_text = asm.data.strip()
 
-    if asm_text == "" or asm_text == "nop":
-        return False
-
-    return True
+    return not (asm_text == "" or asm_text == "nop")
 
 
 def update_needs_recompile(partial: dict[str, Any]) -> bool:
@@ -482,7 +479,9 @@ class ScratchViewSet(
     @action(detail=True, methods=["POST"])
     def claim(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
-        token: Any = request.data.get("token")
+        token: Any = (
+            request.data.get("token") if isinstance(request.data, dict) else None
+        )
 
         if (
             not isinstance(token, str)
@@ -516,8 +515,10 @@ class ScratchViewSet(
         # TODO Needed for test_fork_scratch test?
         if isinstance(request.data, QueryDict):
             request_data = request.data.dict()
-        else:
+        elif isinstance(request.data, dict):
             request_data = request.data
+        else:
+            request_data = {}
 
         parent_data = ScratchSerializer(parent, context={"request": request}).data
         fork_data = {**parent_data, **request_data}

@@ -20,7 +20,7 @@ def custom_exception_handler(exc: Exception, context: Any) -> Response | None:
             },
             status=HTTP_400_BAD_REQUEST,
         )
-    elif isinstance(exc, AssertionError) or isinstance(exc, IntegrityError):
+    elif isinstance(exc, (AssertionError, IntegrityError)):
         response = Response(
             data={
                 "detail": str(exc),

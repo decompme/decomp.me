@@ -36,10 +36,10 @@ def compiler_response_json(
     return {
         "compilers": compiler_metadata_json(selected_compilers),
         "flags": flags.compiler_flag_classes_to_json(
-            (compiler.flag_class for compiler in selected_compilers)
+            compiler.flag_class for compiler in selected_compilers
         ),
         "diff_flags": flags.diff_flag_classes_to_json(
-            (compiler.platform.diff_flag_class for compiler in selected_compilers)
+            compiler.platform.diff_flag_class for compiler in selected_compilers
         ),
     }
 
