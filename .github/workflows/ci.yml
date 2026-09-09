@@ -4,6 +4,8 @@ on:
       - main
   pull_request:
 
+name: "CI"
+
 jobs:
   backend_test_docker_dev:
     name: backend tests (docker dev container)
