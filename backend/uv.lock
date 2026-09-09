@@ -103,6 +103,7 @@ dependencies = [
     { name = "django-filter" },
     { name = "django-resized" },
     { name = "django-session-timeout" },
+    { name = "django-stubs-ext" },
     { name = "djangorestframework" },
     { name = "drf-extensions" },
     { name = "gunicorn" },
@@ -123,7 +124,6 @@ dependencies = [
 dev = [
     { name = "debugpy" },
     { name = "django-stubs" },
-    { name = "django-stubs-ext" },
     { name = "djangorestframework-stubs" },
     { name = "mypy" },
     { name = "ruff" },
@@ -140,6 +140,7 @@ requires-dist = [
     { name = "django-filter", specifier = ">=26.1" },
     { name = "django-resized", specifier = ">=1.0.3" },
     { name = "django-session-timeout", specifier = ">=0.1.0" },
+    { name = "django-stubs-ext", specifier = ">=6.1.0" },
     { name = "djangorestframework", specifier = ">=3.18.1" },
     { name = "drf-extensions", git = "https://github.com/chibisov/drf-extensions.git" },
     { name = "gunicorn", specifier = ">=26.2.0" },
@@ -160,7 +161,6 @@ requires-dist = [
 dev = [
     { name = "debugpy", specifier = ">=1.8.20" },
     { name = "django-stubs", specifier = ">=6.1.0" },
-    { name = "django-stubs-ext", specifier = ">=6.1.0" },
     { name = "djangorestframework-stubs", specifier = ">=3.18.1" },
     { name = "mypy", specifier = ">=2.3.1" },
     { name = "ruff", specifier = ">=0.16.6" },
