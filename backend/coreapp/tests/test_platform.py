@@ -125,7 +125,7 @@ class PlatformAssembleRoundtripTests(unittest.TestCase):
             with self.subTest(platform=platform.id):
                 try:
                     asm_obj = assemble_asm(platform, asm_code)
-                    dump = disassemble_obj(platform, asm_obj.elf_object)
+                    dump = disassemble_obj(platform, bytes(asm_obj.elf_object))
                     self.assertIsNotNone(
                         dump, f"Disassembly for {platform.id} was None"
                     )

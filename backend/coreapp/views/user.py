@@ -35,8 +35,9 @@ class CurrentUser(APIView):
         Login if the 'code' parameter is provided. Log out otherwise.
         """
 
-        if "code" in request.data:
-            GitHubUser.login(request, request.data["code"])
+        code = request.data.get("code") if isinstance(request.data, dict) else None
+        if isinstance(code, str):
+            GitHubUser.login(request, code)
             assert not request.profile.is_anonymous()
             return self.get(request)
         else:

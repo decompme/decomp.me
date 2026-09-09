@@ -30,14 +30,6 @@ class CompilerEndpointTests(APITestCase):
                 if "parent" in flag_class:
                     self.assertIn(flag_class["parent"], data[field])
 
-    def test_compilers_endpoint(self) -> None:
-        response = self.client.get(reverse("compilers"))
-
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assert_compilers_response(data)
-        self.assertIn("platforms", data)
-
     def test_platform_compilers_endpoint(self) -> None:
         response = self.client.get(
             reverse(

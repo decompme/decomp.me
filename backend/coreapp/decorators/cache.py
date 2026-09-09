@@ -5,7 +5,7 @@ from typing import ParamSpec, TypeVar
 
 from rest_framework.response import Response
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 # Generic types for a view function
 P = ParamSpec("P")

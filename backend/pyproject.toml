@@ -10,37 +10,37 @@ requires-python = ">=3.12"
 dependencies = [
     "asm-differ @ git+https://github.com/simonlindholm/asm-differ.git",
     "m2c @ git+https://github.com/matt-kempster/m2c.git",
+    "drf-extensions @ git+https://github.com/chibisov/drf-extensions.git",
     "django-cleanup>=9.0.0",
-    "django-cors-headers>=4.6.0",
-    "django-environ>=0.13.0",
-    "django-filter>=24.3",
+    "django-cors-headers>=4.9.0",
+    "django-environ>=0.14.0",
+    "django-filter>=26.1",
     "django-resized>=1.0.3",
     "django-session-timeout>=0.1.0",
-    "django-stubs-ext>=5.2.9",
-    "django==5.2.11",
-    "djangorestframework>=3.15.2",
-    "drf-extensions>=0.7.1",
-    "gunicorn>=25.1.0",
+    "django-stubs-ext>=6.1.0",
+    "django==6.1.1",
+    "djangorestframework>=3.18.1",
+    "gunicorn>=26.2.0",
     "html-json-forms>=1.1.1",
     "itsdangerous==2.2.0",
     "parameterized>=0.9.0",
-    "Pillow==12.1.1",
-    "psycopg2-binary>=2.9.10",
-    "PyGithub>=2.5.0",
+    "Pillow==12.3.0",
+    "psycopg2-binary>=2.9.12",
+    "PyGithub>=2.10.0",
     "pyyaml>=6.0.3",
-    "requests>=2.32.3",
-    "responses==0.26.0",
-    "sentry-sdk>=2.53.0",
+    "requests>=2.34.2",
+    "responses==0.26.3",
+    "sentry-sdk>=2.69.1",
 ]
 
 [dependency-groups]
 dev = [
     "debugpy>=1.8.20",
-    "django-stubs>=5.2.9",
-    "djangorestframework-stubs>=3.16.8",
-    "mypy>=1.19.1",
-    "ruff>=0.15.2",
-    "types-requests>=2.32.4.20260107",
+    "django-stubs>=6.1.0",
+    "djangorestframework-stubs>=3.18.1",
+    "mypy>=2.3.1",
+    "ruff>=0.16.6",
+    "types-requests>=2.33.0.20260906",
 ]
 
 [build-system]
@@ -57,7 +57,7 @@ packages = ["coreapp", "decompme"]
 include = ["coreapp/**/*.py", "decompme/**/*.py"]
 
 [tool.ruff.lint]
-extend-select = ["I"]
+ignore = ["BLE001", "RUF012"]
 fixable = ["ALL"]
 
 [tool.ruff.lint.isort]

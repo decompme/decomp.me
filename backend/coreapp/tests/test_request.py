@@ -129,10 +129,12 @@ class TimeoutTests(BaseTestCase):
     def test_sandbox_subprocess_error_preserves_output(self) -> None:
         missing_command = "definitely-not-a-real-command"
 
-        with self.settings(DEBUG=False):
-            with Sandbox() as sandbox:
-                with self.assertRaises(subprocess.CalledProcessError) as cm:
-                    sandbox.run_subprocess([missing_command], shell=True)
+        with (
+            self.settings(DEBUG=False),
+            Sandbox() as sandbox,
+            self.assertRaises(subprocess.CalledProcessError) as cm,
+        ):
+            sandbox.run_subprocess([missing_command], shell=True)
 
         error = ObjdumpError.from_process_error(cm.exception)
 

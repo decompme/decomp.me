@@ -257,7 +257,7 @@ def available_compilers() -> list[Compiler]:
 
 @cache
 def available_platforms() -> list[Platform]:
-    pset = set(compiler.platform for compiler in available_compilers())
+    pset = {compiler.platform for compiler in available_compilers()}
 
     return sorted(pset, key=lambda p: p.name)
 
@@ -414,7 +414,7 @@ CLANG_900 = ClangCompiler(
 )
 
 # PS1
-PSYQ_COMPILE_BAT = "\r\n".join(
+PSYQ_COMPILE_BAT = "\r\n".join(  # noqa: FLY002
     [
         "@echo off",
         "SET TMPDIR=D:\\Temp",

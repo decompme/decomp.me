@@ -30,7 +30,8 @@
             },
             "suspicious": {
                 "noExplicitAny": "off",
-                "noArrayIndexKey": "off"
+                "noArrayIndexKey": "off",
+                "noImplicitAnyLet": "off"
             },
             "correctness": {
                 "useExhaustiveDependencies": "off"

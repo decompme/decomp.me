@@ -14,9 +14,6 @@ from .models.profile import Profile
 
 logger = logging.getLogger(__name__)
 
-if TYPE_CHECKING:
-    pass
-
 
 class AnonymousUser(auth.models.AnonymousUser):
     profile: Profile
@@ -36,7 +33,7 @@ def disable_csrf(
     get_response: Callable[[HttpRequest], Response],
 ) -> Callable[[HttpRequest], Response]:
     def middleware(request: HttpRequest) -> Response:
-        setattr(request, "_dont_enforce_csrf_checks", True)
+        request._dont_enforce_csrf_checks = True  # type: ignore[attr-defined]
         return get_response(request)
 
     return middleware
@@ -169,14 +166,16 @@ def strip_cookie_vary(
 ) -> Callable[[Request], Response]:
     def middleware(request: Request) -> Response:
         response = get_response(request)
-        if response.headers.pop("X-Globally-Cacheable", False):
-            if "Vary" in response.headers:
-                vary_headers = [h.strip() for h in response.headers["Vary"].split(",")]
-                vary_headers = [h for h in vary_headers if h.lower() != "cookie"]
-                if vary_headers:
-                    response.headers["Vary"] = ", ".join(vary_headers)
-                else:
-                    del response.headers["Vary"]
+        if (
+            response.headers.pop("X-Globally-Cacheable", False)
+            and "Vary" in response.headers
+        ):
+            vary_headers = [h.strip() for h in response.headers["Vary"].split(",")]
+            vary_headers = [h for h in vary_headers if h.lower() != "cookie"]
+            if vary_headers:
+                response.headers["Vary"] = ", ".join(vary_headers)
+            else:
+                del response.headers["Vary"]
         return response
 
     return middleware

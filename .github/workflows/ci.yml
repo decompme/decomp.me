@@ -46,7 +46,7 @@ jobs:
             -e DUMMY_COMPILER=1 \
             decompme_backend \
               -c 'cd /decomp.me/backend && \
-              uv sync && \
+              uv sync --locked && \
               uv run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
               uv run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
               uv run python manage.py test'
@@ -218,7 +218,7 @@ jobs:
           python-version: "3.14"
       - run: |-
           cd backend
-          uv sync
+          uv sync --locked
           uv run mypy
 
   ruff:
@@ -236,6 +236,6 @@ jobs:
           python-version: "3.14"
       - run: |-
           cd backend
-          uv sync
+          uv sync --locked
           uv run ruff check .
           uv run ruff format --check .

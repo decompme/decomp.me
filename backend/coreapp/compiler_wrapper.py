@@ -10,8 +10,7 @@ from typing import (
 
 from django.conf import settings
 
-import coreapp.util as util
-from coreapp import compilers, platforms
+from coreapp import compilers, platforms, util
 from coreapp.compilers import Compiler, CompilerType
 from coreapp.flags import Language
 from coreapp.platforms import Platform

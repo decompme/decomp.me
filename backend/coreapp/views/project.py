@@ -79,7 +79,7 @@ class IsProjectMemberOrReadOnly(permissions.BasePermission):
         elif isinstance(obj, ProjectMember):
             project = obj.project
         else:
-            raise ValueError("Object must be a Project or ProjectMember")
+            raise TypeError("Object must be a Project or ProjectMember")
 
         return request.method in permissions.SAFE_METHODS or project.is_member(
             request.profile
@@ -156,16 +156,16 @@ def make_pr_name(files_to_funcs: dict[str, list[str]]) -> str:
     num_files = len(files_to_funcs)
     if num_funcs == 1:
         assert num_files == 1
-        file, func = list(files_to_funcs.items())[0]
+        file, func = next(iter(files_to_funcs.items()))
         return f"Match {func[0]} from {file}"
     elif num_files == 1:
-        file = list(files_to_funcs.keys())[0]
+        file = next(iter(files_to_funcs))
         func_list = truncate_comma_separate(files_to_funcs[file], 70)
         return f"Match {num_funcs} funcs ({func_list}) from {file}"
     else:
         file_list = truncate_comma_separate(list(files_to_funcs.keys()), 40)
         all_funcs: list[str] = []
-        for _, funcs in files_to_funcs.items():
+        for funcs in files_to_funcs.values():
             all_funcs.extend(funcs)
         func_list = truncate_comma_separate(all_funcs, 60)
         return (
