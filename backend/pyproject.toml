@@ -17,6 +17,7 @@ dependencies = [
     "django-filter>=26.1",
     "django-resized>=1.0.3",
     "django-session-timeout>=0.1.0",
+    "django-stubs-ext>=6.1.0",
     "django==6.1.1",
     "djangorestframework>=3.18.1",
     "gunicorn>=26.2.0",
@@ -36,7 +37,6 @@ dependencies = [
 dev = [
     "debugpy>=1.8.20",
     "django-stubs>=6.1.0",
-    "django-stubs-ext>=6.1.0",
     "djangorestframework-stubs>=3.18.1",
     "mypy>=2.3.1",
     "ruff>=0.16.6",
