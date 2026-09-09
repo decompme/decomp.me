@@ -163,6 +163,7 @@ jobs:
         run: |
           docker compose -f docker-compose.prod.yaml run --rm --no-deps \
             -v "$PWD/integration_tests:/integration_tests" \
+            -v "$PWD/cromper:/cromper" \
             --entrypoint /bin/bash \
             backend-blue \
             -lc 'export UV_PROJECT_ENVIRONMENT=/tmp/integration-venv && cd /integration_tests && uv sync --locked --all-extras && uv run pytest -v'
