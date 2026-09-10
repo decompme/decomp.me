@@ -4,27 +4,29 @@ from pathlib import Path
 from cromper import compilers, libraries, platforms
 
 
+def env_flag(name: str, default: bool = False) -> bool:
+    """Read a boolean environment variable using the common truthy values."""
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "on", "yes"}
+
+
 class CromperConfig:
     """Configuration for cromper"""
 
     def __init__(self):
         # Server settings
         self.port = int(os.getenv("CROMPER_PORT", "8888"))
-        self.debug = os.getenv("CROMPER_DEBUG", "false").lower() == "true"
+        self.debug = env_flag("CROMPER_DEBUG")
 
         # CPU settings
         self.num_processes = int(os.getenv("CROMPER_NUM_PROCESSES", "4"))
         self.num_threads = int(os.getenv("CROMPER_NUM_THREADS", "8"))
 
         # Sandbox settings
-        self.use_sandbox_jail = os.getenv("USE_SANDBOX_JAIL", "false").lower() in (
-            "true",
-            "on",
-            "1",
-        )
-        self.sandbox_disable_proc = os.getenv(
-            "SANDBOX_DISABLE_PROC", "false"
-        ).lower() in ("true", "on", "1")
+        self.use_sandbox_jail = env_flag("USE_SANDBOX_JAIL")
+        self.sandbox_disable_proc = env_flag("SANDBOX_DISABLE_PROC")
 
         # Paths
         service_root = Path(__file__).resolve().parent.parent
