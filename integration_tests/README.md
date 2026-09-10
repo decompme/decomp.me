@@ -47,13 +47,13 @@ uv sync
 1. Start cromper:
 ```bash
 cd cromper
-poetry run python -m cromper.main
+uv run python -m cromper.main
 ```
 
 2. Start Django:
 ```bash
 cd backend
-poetry run python manage.py runserver
+uv run python manage.py runserver
 ```
 
 3. Run tests:

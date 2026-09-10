@@ -4,6 +4,7 @@ import subprocess
 import time
 from dataclasses import dataclass
 
+from cromper import libraries as library_paths
 from cromper import util
 
 from ..compilers import Compiler, CompilerType
@@ -76,6 +77,11 @@ class CompilerWrapper:
     ) -> CompilationResult:
         if libraries is None:
             libraries = []
+        # Process-pool workers may be started without inheriting module state.
+        # Set the configured root in the worker before resolving include paths.
+        library_base_path = self.sandbox_kwargs.get("library_base_path")
+        if library_base_path is not None:
+            library_paths.set_library_base_path(library_base_path)
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
 

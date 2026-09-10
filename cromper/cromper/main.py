@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import asyncio
 import logging
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
@@ -28,7 +27,7 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
     """Create and configure the Tornado application."""
 
     process_executor = ProcessPoolExecutor(max_workers=config.num_processes)
-    thread_executor = ThreadPoolExecutor(max_workers=config.num_processes)
+    thread_executor = ThreadPoolExecutor(max_workers=config.num_threads)
 
     return tornado.web.Application(
         [
@@ -108,4 +107,4 @@ def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
