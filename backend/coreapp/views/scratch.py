@@ -107,6 +107,7 @@ def compile_scratch(scratch: Scratch, context: str | None = None) -> Compilation
             compiler_flags=scratch.compiler_flags,
             code=scratch.source_code,
             context=scratch_context,
+            function=scratch.diff_label,
             libraries=libraries,
         )
         return CompilationResult(result["elf_object"], result["errors"])

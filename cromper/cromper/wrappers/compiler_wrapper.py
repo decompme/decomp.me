@@ -71,6 +71,7 @@ class CompilerWrapper:
         compiler_flags: str,
         code: str,
         context: str,
+        function: str = "",
         libraries: list[Library] | None = None,
     ) -> CompilationResult:
         if libraries is None:
@@ -122,8 +123,8 @@ class CompilerWrapper:
             if compiler.type == CompilerType.IDO and "-KPIC" in compiler_flags:
                 cc_cmd = cc_cmd.replace("-non_shared", "")
 
-            # Generate a function label when the request does not provide one.
-            fname = util.random_string()
+            # Some compiler wrappers need the symbol selected by the caller.
+            fname = function or util.random_string()
 
             # Run compiler
             try:

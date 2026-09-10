@@ -23,6 +23,7 @@ def compile(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
 
     code = data.get("code", "")
     context = data.get("context", "")
+    function = data.get("function", "")
     compiler_flags = data.get("compiler_flags", "")
     libraries = [Library(**lib) for lib in data.get("libraries", [])]
 
@@ -44,6 +45,7 @@ def compile(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
             compiler_flags=compiler_flags,
             code=code,
             context=context,
+            function=function,
             libraries=libraries,
         )
 

@@ -53,11 +53,10 @@ class Compilers:
     def is_compiler_available(self, compiler: "Compiler") -> bool:
         return compiler.available(self.base_path)
 
-    @staticmethod
-    def from_id(compiler_id: str) -> "Compiler":
-        for compiler in _all_compilers:
-            if compiler.id == compiler_id:
-                return compiler
+    def from_id(self, compiler_id: str) -> "Compiler":
+        compiler = self._available_compilers.get(compiler_id)
+        if compiler is not None:
+            return compiler
         raise ValueError(f"Unknown compiler: {compiler_id}")
 
 

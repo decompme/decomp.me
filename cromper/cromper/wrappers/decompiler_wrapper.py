@@ -32,17 +32,13 @@ class DecompilerWrapper:
 
         try:
             ret = self.m2c_wrapper.decompile(asm, context, platform.id, compiler)
-        except M2CError:
-            # Attempt to decompile the source without context as a last-ditch effort
+        except M2CError as context_error:
+            # Retry without context as a last-ditch fallback.
             try:
-                ret = self.m2c_wrapper.decompile(asm, context, platform.id, compiler)
-            except M2CError as e:
-                # Attempt to decompile the source without context as a last-ditch effort
-                try:
-                    ret = self.m2c_wrapper.decompile(asm, "", platform.id, compiler)
-                    ret = f"{e}\n{DECOMP_WITH_CONTEXT_FAILED_PREAMBLE}\n{ret}"
-                except M2CError as e:
-                    ret = f"{e}\n{default_source_code}"
+                ret = self.m2c_wrapper.decompile(asm, "", platform.id, compiler)
+                ret = f"{context_error}\n{DECOMP_WITH_CONTEXT_FAILED_PREAMBLE}\n{ret}"
+            except M2CError as fallback_error:
+                ret = f"{context_error}\n{fallback_error}\n{default_source_code}"
             except Exception:
                 logger.exception("Error running m2c")
                 ret = f"/* Internal error while running m2c */\n{default_source_code}"
