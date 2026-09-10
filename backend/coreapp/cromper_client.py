@@ -62,7 +62,7 @@ class CromperClient:
     def _probe_recovery(self) -> None:
         """Confirm cromper has recovered before using cached metadata."""
         if not self._service_available:
-            self._make_request("GET", "/health")
+            self._make_request("GET", "/healthz")
             logger.info("connection to cromper restored, invalidating caches")
             self._invalidate_caches()
             self._service_available = True

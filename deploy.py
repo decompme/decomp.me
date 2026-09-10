@@ -234,7 +234,7 @@ def smoke_test(slot, env):
     print(f"Smoke testing {slot} from nginx...")
     nginx_fetch(f"http://backend-{slot}:8000/api/healthz", env)
     nginx_fetch(f"http://frontend-{slot}:8080/healthz", env)
-    nginx_fetch("http://cromper:8888/health", env)
+    nginx_fetch("http://cromper:8888/healthz", env)
 
 
 def nginx_test_and_reload(env):

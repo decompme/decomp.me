@@ -37,7 +37,7 @@ MAX_RETRIES=30
 RETRY_COUNT=0
 echo -n "Checking cromper health..."
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if curl -sf http://localhost:8888/health > /dev/null 2>&1; then
+    if curl -sf http://localhost:8888/healthz > /dev/null 2>&1; then
         echo -e " ${GREEN}OK${NC}"
         break
     fi

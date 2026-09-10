@@ -10,7 +10,7 @@ uv creates a virtual environment where packages for the site are installed. You 
 
 <img width="454" alt="image" src="https://user-images.githubusercontent.com/2985314/190146241-9df7da65-9425-465c-9143-c7a8afeb4e53.png">
 
-2. Click `Enter interpreter path...` and paste your copied path from before.
+3. Click `Enter interpreter path...` and paste your copied path from before.
 
 <img width="459" alt="image" src="https://user-images.githubusercontent.com/2985314/190146308-bd4559a8-8587-4896-93a2-64f48ff50b76.png">
 <img width="449" alt="image" src="https://user-images.githubusercontent.com/2985314/190146714-b2feb535-d6cd-4113-a889-37cfaa65e7bb.png">

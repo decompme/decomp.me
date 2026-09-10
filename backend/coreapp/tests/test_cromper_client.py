@@ -148,7 +148,7 @@ class CromperClientCompilerTests(SimpleTestCase):
         self.assertEqual(
             [call.args[1] for call in request.call_args_list],
             [
-                "http://cromper/health",
+                "http://cromper/healthz",
                 "http://cromper/compiler",
             ],
         )

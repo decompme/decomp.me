@@ -125,9 +125,6 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         env = env if env is not None else {}
         timeout = None if timeout == 0 else timeout
 
-        print("Running ", args)
-        print("With env:", env)
-
         try:
             wrapper = self.sandbox_command(mounts, env)
         except Exception as e:

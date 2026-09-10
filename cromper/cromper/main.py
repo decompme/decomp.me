@@ -32,7 +32,7 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
 
     return tornado.web.Application(
         [
-            (r"/health", HealthHandler, dict(config=config, executor=thread_executor)),
+            (r"/healthz", HealthHandler, dict(config=config, executor=thread_executor)),
             (
                 r"/platform(?:/([^/]+))?",
                 PlatformHandler,

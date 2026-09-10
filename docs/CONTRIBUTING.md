@@ -36,7 +36,7 @@ We officially support running decomp.me on Linux (we use Ubuntu 24.04 LTS) on th
 ### Prerequisites
 
 Dependencies:
-- Python >=3.12 (Production uses 3.12)
+- Python >=3.12 (Production uses 3.14)
 - Node.js >=14 <=24 (Production uses 24)
 - [Yarn](https://yarnpkg.com/getting-started/install)
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)

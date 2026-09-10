@@ -21,7 +21,7 @@ class CromperAPITests(AsyncHTTPTestCase):
 
     def test_health_endpoint(self):
         """Test the health check endpoint."""
-        response = self.fetch("/health")
+        response = self.fetch("/healthz")
         self.assertEqual(response.code, 200)
 
         data = json.loads(response.body)
@@ -280,7 +280,7 @@ class CromperAPITests(AsyncHTTPTestCase):
 
     def test_cors_headers(self):
         """Test that CORS headers are properly set."""
-        response = self.fetch("/health")
+        response = self.fetch("/healthz")
 
         self.assertEqual(response.headers.get("Access-Control-Allow-Origin"), "*")
         self.assertEqual(
