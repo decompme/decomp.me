@@ -15,7 +15,7 @@ done
 
 if [ -z "$CI" ]; then
   uv run manage.py clearsessions
-  uv run /backend/housekeeping.py
+  uv run /backend/db_housekeeping.py
 else
   echo "Skipping housekeeping: running in CI environment"
 fi

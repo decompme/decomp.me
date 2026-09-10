@@ -1,0 +1,88 @@
+[project]
+name = "integration-tests"
+version = "0.1.0"
+description = "Integration tests for decomp.me requiring cromper and Django backend"
+requires-python = ">=3.12"
+dependencies = [
+    "backend",
+    "cromper",
+    "pytest>=8.0.0",
+    "pytest-django>=4.9.0",
+    "pytest-env>=1.1.0",
+]
+
+[tool.uv.sources]
+backend = { path = "../backend" }
+cromper = { path = "../cromper" }
+
+[tool.uv]
+# Backend and Cromper both depend on these git packages, but Cromper pins the
+# revisions used by the compiler service. Resolve both projects to those pins.
+override-dependencies = [
+    "m2c @ git+https://github.com/matt-kempster/m2c.git@1d1c4454a445326541305f83f2b0cb680a9ecb2d",
+    "asm-differ @ git+https://github.com/simonlindholm/asm-differ.git@f49f9b26a7b91f3da6c8d555a87218efb28bbea7",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "django-stubs[compatible-mypy]>=6.1.0",
+    "djangorestframework-stubs>=3.18.1",
+    "types-requests>=2.33.0.20260906",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-v --tb=short --strict-markers"
+testpaths = ["."]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+markers = [
+    "integration: marks tests as integration tests (requires cromper + Django)",
+]
+# Django test database settings
+DJANGO_SETTINGS_MODULE = "decompme.settings"
+pythonpath = ["../backend"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["__pycache__"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "DTZ", # flake8-datetimez
+    "PIE", # flake8-pie
+    "PT",  # flake8-pytest-style
+    "RUF", # ruff-specific rules
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"test_*.py" = ["PT009", "PT027"]  # Allow pytest fixtures and assertions
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+plugins = ["mypy_django_plugin.main"]
+disable_error_code = ["var-annotated", "import-untyped"]
+
+[tool.django-stubs]
+django_settings_module = "decompme.settings"

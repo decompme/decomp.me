@@ -1,14 +1,18 @@
+import logging
 from dataclasses import dataclass
-from functools import cache
 from pathlib import Path
-from typing import TYPE_CHECKING
 
-from django.conf import settings
+logger = logging.getLogger(__name__)
 
-if TYPE_CHECKING:
-    LIBRARY_BASE_PATH: Path
-else:
-    LIBRARY_BASE_PATH: Path = settings.LIBRARY_BASE_PATH
+# Global library base path - will be set by main.py config
+LIBRARY_BASE_PATH: Path = Path("/opt/libraries")
+
+
+def set_library_base_path(path: Path) -> None:
+    """Set the library base path."""
+    global LIBRARY_BASE_PATH
+    LIBRARY_BASE_PATH = path
+    logger.info(f"Library base path set to: {LIBRARY_BASE_PATH}")
 
 
 @dataclass(frozen=True)
@@ -22,7 +26,9 @@ class Library:
     def available(self, platform: str) -> bool:
         include_path = self.get_include_path(platform)
         if not include_path.exists():
-            print(f"Library {self.name} {self.version} not found at {include_path}")
+            logger.debug(
+                f"Library {self.name} {self.version} not found at {include_path}"
+            )
         return include_path.exists()
 
 
@@ -37,9 +43,13 @@ class LibraryVersions:
         return LIBRARY_BASE_PATH / self.platform / self.name
 
 
-@cache
 def available_libraries() -> list[LibraryVersions]:
-    results = []
+    """Get all available libraries across all platforms."""
+    results: list[LibraryVersions] = []
+
+    if not LIBRARY_BASE_PATH.exists():
+        logger.warning(f"Library base path does not exist: {LIBRARY_BASE_PATH}")
+        return results
 
     for platform_dir in LIBRARY_BASE_PATH.iterdir():
         if not platform_dir.is_dir():
@@ -60,9 +70,17 @@ def available_libraries() -> list[LibraryVersions]:
                 results.append(
                     LibraryVersions(
                         name=lib_dir.name,
-                        supported_versions=versions,
+                        supported_versions=sorted(
+                            versions
+                        ),  # Sort versions for consistency
                         platform=platform_dir.name,
                     )
                 )
 
+    logger.info(f"Found {len(results)} library collections")
     return results
+
+
+def libraries_for_platform(platform: str) -> list[LibraryVersions]:
+    """Get available libraries for a specific platform."""
+    return [lib for lib in available_libraries() if lib.platform == platform]

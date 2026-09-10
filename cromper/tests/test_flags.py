@@ -1,7 +1,7 @@
 import unittest
 from typing import cast
 
-from coreapp.flags import (
+from cromper.flags import (
     COMMON_DIFF_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_MIPS_DIFF_FLAGS,

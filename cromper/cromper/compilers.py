@@ -1,17 +1,12 @@
 import enum
 import logging
-import platform as platform_stdlib
 from collections import OrderedDict
 from dataclasses import dataclass
-from functools import cache
 from pathlib import Path
 from typing import ClassVar
 
-from django.conf import settings
-from rest_framework.exceptions import ValidationError
-
-from coreapp import flags, platforms
-from coreapp.platforms import (
+from . import flags
+from .platforms import (
     ANDROID_X86,
     DREAMCAST,
     GBA,
@@ -35,7 +30,34 @@ from coreapp.platforms import (
 
 logger = logging.getLogger(__name__)
 
-CONFIG_PY = "config.py"
+
+class Compilers:
+    def __init__(self, base_path: Path) -> None:
+        self.base_path = base_path
+        self._available_compilers = OrderedDict(
+            (c.id, c) for c in _all_compilers if c.available(base_path)
+        )
+
+        logger.info(
+            "Enabled %d compiler(s): %s",
+            len(self._available_compilers),
+            ", ".join(self._available_compilers),
+        )
+
+    def all_compilers(self) -> list["Compiler"]:
+        return list(_all_compilers)
+
+    def available_compilers(self) -> list["Compiler"]:
+        return list(self._available_compilers.values())
+
+    def is_compiler_available(self, compiler: "Compiler") -> bool:
+        return compiler.available(self.base_path)
+
+    def from_id(self, compiler_id: str) -> "Compiler":
+        compiler = self._available_compilers.get(compiler_id)
+        if compiler is not None:
+            return compiler
+        raise ValueError(f"Unknown compiler: {compiler_id}")
 
 
 class CompilerType(enum.Enum):
@@ -56,21 +78,16 @@ class Compiler:
     type: ClassVar[CompilerType] = CompilerType.OTHER
     language: flags.Language = flags.Language.C
 
-    @property
-    def path(self) -> Path:
+    def get_path(self, base: Path) -> Path:
         if self.base_compiler is not None:
-            return (
-                settings.COMPILER_BASE_PATH
-                / self.base_compiler.platform.id
-                / self.base_compiler.id
-            )
-        return settings.COMPILER_BASE_PATH / self.platform.id / self.id
+            return base / self.base_compiler.platform.id / self.base_compiler.id
+        return base / self.platform.id / self.id
 
-    def available(self) -> bool:
+    def available(self, base: Path) -> bool:
         # consider compiler binaries present if the compiler's directory is found
-        if not self.path.exists():
-            print(f"Compiler {self.id} not found at {self.path}")
-        return self.path.exists()
+        if not self.get_path(base).exists():
+            print(f"Compiler {self.id} not found at {self.get_path(base)}")
+        return self.get_path(base).exists()
 
     def get_language(self, compiler_flags: str = "") -> flags.Language:
         language_flag_set = next(
@@ -92,22 +109,15 @@ class Compiler:
         if not matches:
             return self.language
 
-        # Taking the longest avoids detecting C++ as C.
         return max(matches, key=lambda match: len(match[0]))[1]
 
-
-@dataclass(frozen=True)
-class DummyCompiler(Compiler):
-    library_include_flag: str = ""
-
-    def available(self) -> bool:
-        return settings.DUMMY_COMPILER
-
-
-@dataclass(frozen=True)
-class DummyLongRunningCompiler(DummyCompiler):
-    def available(self) -> bool:
-        return settings.DUMMY_COMPILER and platform_stdlib.system() != "Windows"
+    def to_json(self) -> dict[str, object]:
+        return {
+            "id": self.id,
+            "platform": self.platform.id,
+            "flags_class": self.flag_class.name,
+            "diff_flags_class": self.platform.diff_flag_class.name,
+        }
 
 
 @dataclass(frozen=True)
@@ -243,30 +253,6 @@ class MicrosoftCCompiler(Compiler):
     flag_class: ClassVar[flags.FlagClass] = flags.MICROSOFT_C_FLAGS
     library_include_flag: str = ""
 
-
-def from_id(compiler_id: str) -> Compiler:
-    if compiler_id not in _compilers:
-        raise ValidationError(f"Unknown compiler: {compiler_id}")
-    return _compilers[compiler_id]
-
-
-@cache
-def available_compilers() -> list[Compiler]:
-    return list(_compilers.values())
-
-
-@cache
-def available_platforms() -> list[Platform]:
-    pset = {compiler.platform for compiler in available_compilers()}
-
-    return sorted(pset, key=lambda p: p.name)
-
-
-DUMMY = DummyCompiler(id="dummy", platform=platforms.DUMMY, cc="")
-
-DUMMY_LONGRUNNING = DummyLongRunningCompiler(
-    id="dummy_longrunning", platform=platforms.DUMMY, cc="sleep 3600"
-)
 
 # GBA
 AGBCC = GCCCompiler(
@@ -414,7 +400,7 @@ CLANG_900 = ClangCompiler(
 )
 
 # PS1
-PSYQ_COMPILE_BAT = "\r\n".join(  # noqa: FLY002
+PSYQ_COMPILE_BAT = "\r\n".join(
     [
         "@echo off",
         "SET TMPDIR=D:\\Temp",
@@ -1728,8 +1714,6 @@ ANDROID_R8E_47_C = GCCCompiler(
 )
 
 _all_compilers: list[Compiler] = [
-    DUMMY,
-    DUMMY_LONGRUNNING,
     # GBA
     AGBCC,
     OLD_AGBCC,
@@ -1990,10 +1974,3 @@ _all_compilers: list[Compiler] = [
     ANDROID_R8E_443_C,
     ANDROID_R8E_47_C,
 ]
-
-_compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})
-
-logger.info(f"Enabled {len(_compilers)} compiler(s): {', '.join(_compilers.keys())}")
-logger.info(
-    f"Available platform(s): {', '.join([platform.id for platform in available_platforms()])}"
-)

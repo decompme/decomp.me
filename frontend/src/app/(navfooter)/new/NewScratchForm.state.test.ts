@@ -45,7 +45,6 @@ function scratch(overrides: Partial<TerseScratch>): TerseScratch {
         compiler: "ido5.3",
         preset: null as number,
         name: "func",
-        language: "C",
         score: -1,
         max_score: -1,
         match_override: false,
