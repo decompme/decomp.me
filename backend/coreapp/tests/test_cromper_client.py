@@ -1,8 +1,10 @@
+from typing import cast
 from unittest.mock import Mock, patch
 
 import requests
 from django.test import SimpleTestCase
 
+from coreapp.compiler_utils import Compiler
 from coreapp.cromper_client import (
     CromperClient,
     CromperError,
@@ -110,6 +112,28 @@ class CromperClientCompilerTests(SimpleTestCase):
         ):
             client._make_request("GET", "/compiler")
 
+    def test_failed_recovery_probe_propagates_and_preserves_cached_metadata(
+        self,
+    ) -> None:
+        client = CromperClient("http://cromper")
+        client._service_available = False
+        cached_compilers = {"stale": cast(Compiler, Mock())}
+        client._compilers_cache = cached_compilers
+
+        with (
+            patch.object(
+                client,
+                "_make_request",
+                side_effect=CromperUnavailableError("connection still refused"),
+            ) as request,
+            self.assertRaises(CromperUnavailableError),
+        ):
+            client.get_compilers()
+
+        request.assert_called_once_with("GET", "/healthz")
+        self.assertIs(client._compilers_cache, cached_compilers)
+        self.assertFalse(client._service_available)
+
     def test_service_recovery_reloads_metadata_after_outage(self) -> None:
         client = CromperClient("http://cromper")
         client._compilers_cache = {"stale": Mock()}
@@ -152,3 +176,65 @@ class CromperClientCompilerTests(SimpleTestCase):
                 "http://cromper/compiler",
             ],
         )
+
+    def test_recovery_refreshes_cache_with_new_compiler(self) -> None:
+        client = CromperClient("http://cromper")
+        initial_compiler_response = {
+            "compilers": {
+                "ido7.1": {
+                    "id": "ido7.1",
+                    "platform": "n64",
+                    "flags_class": "ido",
+                    "diff_flags_class": "mips",
+                }
+            }
+        }
+        updated_compiler_response = {
+            "compilers": {
+                **initial_compiler_response["compilers"],
+                "ido7.2": {
+                    "id": "ido7.2",
+                    "platform": "n64",
+                    "flags_class": "ido",
+                    "diff_flags_class": "mips",
+                },
+            }
+        }
+
+        initial_compilers = Mock()
+        initial_compilers.json.return_value = initial_compiler_response
+        initial_compilers.raise_for_status.return_value = None
+        initial_platforms = Mock()
+        initial_platforms.json.return_value = self.platform_response
+        initial_platforms.raise_for_status.return_value = None
+
+        health_response = Mock()
+        health_response.json.return_value = {"status": "ok"}
+        health_response.raise_for_status.return_value = None
+        updated_compilers = Mock()
+        updated_compilers.json.return_value = updated_compiler_response
+        updated_compilers.raise_for_status.return_value = None
+        updated_platforms = Mock()
+        updated_platforms.json.return_value = self.platform_response
+        updated_platforms.raise_for_status.return_value = None
+
+        with patch.object(
+            client.session,
+            "request",
+            side_effect=[
+                initial_compilers,
+                initial_platforms,
+                requests.exceptions.ConnectionError("connection refused"),
+                health_response,
+                updated_compilers,
+                updated_platforms,
+            ],
+        ):
+            self.assertEqual(set(client.get_compilers()), {"ido7.1"})
+            with self.assertRaises(CromperUnavailableError):
+                client.get_libraries()
+
+            self.assertEqual(set(client.get_compilers()), {"ido7.1", "ido7.2"})
+
+        self.assertEqual(set(client._compilers_cache or {}), {"ido7.1", "ido7.2"})
+        self.assertTrue(client._service_available)
