@@ -11,12 +11,27 @@ from django.db.models import ProtectedError
 from django.urls import reverse
 from rest_framework import status
 
-from coreapp import compilers, platforms
-from coreapp.compilers import EE_GCC29_991111, GCC281PM, IDO53, IDO71, MWCC_242_81
-from coreapp.libraries import Library
-from coreapp.models.scratch import Assembly, Context, LibrariesField, Scratch
-from coreapp.platforms import GC_WII, N64
+from coreapp.models.scratch import (
+    Assembly,
+    Context,
+    LibrariesField,
+    Library,
+    Scratch,
+)
+from coreapp.tests import (
+    mock_cromper_client as compilers,
+    mock_cromper_client as platforms,
+)
 from coreapp.tests.common import BaseTestCase, requiresCompiler
+from coreapp.tests.mock_cromper_client import (
+    EE_GCC29_991111,
+    GC_WII,
+    GCC281PM,
+    IDO53,
+    IDO71,
+    MWCC_242_81,
+    N64,
+)
 from coreapp.views.scratch import compile_scratch_update_score
 
 
@@ -44,6 +59,33 @@ class ScratchListTests(BaseTestCase):
 
 
 class ScratchCreationTests(BaseTestCase):
+    def test_create_filters_compiler_flags(self) -> None:
+        test_cases = [
+            ("-O2 -g", "-O2 -g"),
+            ("-O2 -B/path -g", "-O2 -g"),
+            ("-I/include -O2", "-O2"),
+            ("-ffreestanding -O2", "-O2"),
+            ("-O2 -non_shared -g", "-O2 -g"),
+            ("-Xcpluscomm -O2", "-O2"),
+            ("-Wab,-r4300_mul -O2", "-O2"),
+            ("-c -O2", "-O2"),
+            ("-B/path/to/dir -I/inc -U MACRO -O2", "-O2"),
+        ]
+
+        for compiler_flags, expected in test_cases:
+            with self.subTest(compiler_flags=compiler_flags):
+                scratch = self.create_scratch(
+                    {
+                        "compiler": compilers.DUMMY.id,
+                        "platform": platforms.DUMMY.id,
+                        "compiler_flags": compiler_flags,
+                        "context": "",
+                        "target_asm": "jr $ra\nnop\n",
+                    }
+                )
+
+                self.assertEqual(scratch.compiler_flags, expected)
+
     def test_create_drops_blank_diff_flags(self) -> None:
         scratch = self.create_scratch(
             {
@@ -511,6 +553,17 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotIn("left_object", response.json())
         self.assertNotIn("right_object", response.json())
+
+    def test_compile_drops_blank_diff_flags(self) -> None:
+        scratch = self.create_nop_scratch()
+
+        response = self.client.post(
+            reverse("scratch-compile", kwargs={"pk": scratch.slug}),
+            {"diff_flags": [""]},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @requiresCompiler(GCC281PM, EE_GCC29_991111)
     def test_compile_post_rejects_mismatched_compiler_platform(self) -> None:
