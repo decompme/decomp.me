@@ -40,7 +40,6 @@ export interface TerseScratch {
     compiler: string;
     preset: number;
     platform: string;
-    language: string;
     score: number; // -1 = doesn't compile
     max_score: number;
     match_override: boolean;
@@ -58,13 +57,21 @@ export interface BestFork {
     updated_at: string;
 }
 
-export interface Scratch extends TerseScratch {
+export interface ScratchData extends TerseScratch {
     description: string;
     compiler_flags: string;
     diff_flags: string[];
     source_code: string;
     context: string;
     diff_label: string;
+}
+
+export interface Scratch extends ScratchData {
+    language: string;
+}
+
+export interface ClaimableScratchData extends ScratchData {
+    claim_token: string;
 }
 
 export interface ClaimableScratch extends Scratch {

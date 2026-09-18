@@ -7,13 +7,19 @@ import PlatformName from "@/components/PlatformSelect/PlatformName";
 import { getScoreText } from "@/components/ScoreBadge";
 import TimeAgo from "@/components/TimeAgo";
 import UserLink from "@/components/user/UserLink";
-import { get, type PresetBase, type Scratch, usePreset } from "@/lib/api";
+import {
+    get,
+    type PresetBase,
+    type Scratch,
+    type TerseScratch,
+    usePreset,
+} from "@/lib/api";
 import { presetUrl, scratchParentUrl, scratchUrl } from "@/lib/api/urls";
 
 import styles from "./AboutPanel.module.scss";
 
 function ScratchLink({ url }: { url: string }) {
-    const { data: scratch, error } = useSWR<Scratch>(url, get);
+    const { data: scratch, error } = useSWR<TerseScratch>(url, get);
 
     if (error) {
         throw error;
