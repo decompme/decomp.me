@@ -4,6 +4,7 @@ import type { EditorView } from "@codemirror/view";
 import { DotFillIcon } from "@primer/octicons-react";
 import { vim } from "@replit/codemirror-vim";
 import {
+    type ComponentProps,
     useCallback,
     useEffect,
     useMemo,
@@ -228,6 +229,14 @@ function applyDefaultDiffTab(
     return layout;
 }
 
+function SourceCodeMirror(props: ComponentProps<typeof CodeMirror>) {
+    const { setSelectedSourceLine } = useSelectedSourceLine();
+
+    return (
+        <CodeMirror {...props} onSelectedLineChange={setSelectedSourceLine} />
+    );
+}
+
 export type Props = {
     scratch: Readonly<api.Scratch>;
     onChange: (scratch: Partial<api.Scratch>) => void;
@@ -392,8 +401,6 @@ function ScratchInner({
         [CODEMIRROR_EXTENSIONS, contextCompareExtension, useVim],
     );
 
-    const { setSelectedSourceLine } = useSelectedSourceLine();
-
     const renderTab = (id: string) => {
         switch (id as TabId) {
             case TabId.ABOUT:
@@ -427,7 +434,7 @@ function ScratchInner({
                             saveContext();
                         }}
                     >
-                        <CodeMirror
+                        <SourceCodeMirror
                             viewRef={sourceEditor}
                             className={styles.editor}
                             value={scratch.source_code}
@@ -435,7 +442,6 @@ function ScratchInner({
                             onChange={(value) => {
                                 setScratch({ source_code: value });
                             }}
-                            onSelectedLineChange={setSelectedSourceLine}
                             extensions={cmExtensionsSource}
                             placeholder="Write the code for the function you are matching here."
                             dataTour="scratch-source-editor"
