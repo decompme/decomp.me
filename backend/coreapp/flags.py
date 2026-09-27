@@ -238,6 +238,20 @@ SHC_FLAGS = FlagClass(
     ],
     parent=COMMON_SHC_OLD_FLAGS,
 )
+
+SHC_SH2_FLAGS = FlagClass(
+    name="shc-sh2",
+    flags=[
+        FlagSet(
+            id="shc_division",
+            flags=["-division=cpu", "-division=peripheral", "-division=nomask"],
+        ),
+        FlagSet(id="shc_macsave", flags=["-macsave=0", "-macsave=1"]),
+        Checkbox(id="shc_aggressive", flag="-aggressive=2"),
+    ],
+    parent=COMMON_SHC_OLD_FLAGS,
+)
+
 COMMON_GCC_FLAGS = FlagClass(
     name="gcc",
     flags=[

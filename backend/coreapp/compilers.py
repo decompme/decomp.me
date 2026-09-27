@@ -135,6 +135,13 @@ class SHCOldCompiler(Compiler):
 
 
 @dataclass(frozen=True)
+class SHCSaturnCompiler(Compiler):
+    platform: Platform = SATURN
+    flag_class: ClassVar[flags.FlagClass] = flags.SHC_SH2_FLAGS
+    library_include_flag: str = ""
+
+
+@dataclass(frozen=True)
 class GCCCompiler(Compiler):
     type: ClassVar[CompilerType] = CompilerType.GCC
     flag_class: ClassVar[flags.FlagClass] = flags.COMMON_GCC_FLAGS
@@ -618,6 +625,17 @@ SHC_V51R04 = SHCCompiler(id="shc-v5.1r04", platform=DREAMCAST, cc=DREAMCAST_CC)
 SHC_V51R08 = SHCCompiler(id="shc-v5.1r08", platform=DREAMCAST, cc=DREAMCAST_CC)
 SHC_V51R11 = SHCCompiler(id="shc-v5.1r11", platform=DREAMCAST, cc=DREAMCAST_CC)
 SHC_V51R13 = SHCCompiler(id="shc-v5.1r13", platform=DREAMCAST, cc=DREAMCAST_CC)
+
+SATURN_SHC_CC = (
+    'cat "$INPUT" | unix2dos > dos_src.c && '
+    "cp -r ${COMPILER_DIR}/bin/* . && "
+    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c -comment=nonest -cpu=sh2 -endian=big -sjis -string=const ${COMPILER_FLAGS} -object=dos_src.obj) && "
+    "python3 ${COMPILER_DIR}/rof2elf.py dos_src.obj ${OUTPUT} --isa=sh2 --padding 0xff"
+)
+
+SHC_V50R32_SH2 = SHCSaturnCompiler(
+    id="shc-v5.0r32-sh2", cc=SATURN_SHC_CC, base_compiler=SHC_V50R32
+)
 
 # PS2
 IOP_GCC281 = GCCPS2Compiler(
@@ -1797,6 +1815,7 @@ _all_compilers: list[Compiler] = [
     MWCCPSP_3_0_1_219,
     # Saturn
     CYGNUS_2_7_96Q3,
+    SHC_V50R32_SH2,
     # Dreamcast
     SHC_V50R10,
     SHC_V50R26,
