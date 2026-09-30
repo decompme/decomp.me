@@ -97,10 +97,7 @@ def compile_scratch(scratch: Scratch, context: str | None = None) -> Compilation
             if context is None and scratch.context_fk
             else context
         ) or ""
-        libraries = [
-            lib.to_json() if isinstance(lib, Library) else lib
-            for lib in scratch.libraries
-        ]
+        libraries = [lib.to_json() for lib in scratch.libraries]
         cromper_client = get_cromper_client()
         result = cromper_client.compile_code(
             compiler_id=scratch.compiler,
