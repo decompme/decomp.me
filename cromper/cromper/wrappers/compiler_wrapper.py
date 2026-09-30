@@ -129,9 +129,6 @@ class CompilerWrapper:
             if compiler.type == CompilerType.IDO and "-KPIC" in compiler_flags:
                 cc_cmd = cc_cmd.replace("-non_shared", "")
 
-            # Some compiler wrappers need the symbol selected by the caller.
-            fname = function or util.random_string()
-
             # Run compiler
             try:
                 st = round(time.time() * 1000)
@@ -160,7 +157,7 @@ class CompilerWrapper:
                         "COMPILER_FLAGS": sandbox.quote_options(
                             compiler_flags + " " + libraries_compiler_flags
                         ),
-                        "FUNCTION": fname,
+                        "FUNCTION": function,
                         "MWCIncludes": "/tmp",
                         "TMPDIR": "/tmp",
                     },

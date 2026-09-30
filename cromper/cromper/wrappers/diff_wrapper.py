@@ -3,7 +3,6 @@ import re
 import shlex
 import subprocess
 from dataclasses import dataclass
-from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -181,7 +180,6 @@ class DiffWrapper:
 
         return ret
 
-    @lru_cache(maxsize=100)
     def run_objdump(
         self,
         target_data: bytes,
