@@ -5,7 +5,6 @@ import time
 from dataclasses import dataclass
 
 from cromper import libraries as library_paths
-from cromper import util
 
 from ..compilers import Compiler, CompilerType
 from ..error import AssemblyError, CompilationError
