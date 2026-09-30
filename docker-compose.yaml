@@ -21,10 +21,6 @@ services:
       - setuid
       - setgid
       - setfcap
-    environment:
-      CROMPER_PORT: 8888
-      USE_SANDBOX_JAIL: "true"
-      SANDBOX_DISABLE_PROC: "true"
     env_file:
       - cromper/docker.dev.env
     ports:

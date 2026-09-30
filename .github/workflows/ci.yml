@@ -74,7 +74,7 @@ jobs:
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/cromper/compilers \
             -e LIBRARY_BASE_PATH=/cromper/libraries \
-            -e USE_SANDBOX_JAIL=true \
+            -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             decompme_cromper \
               -c 'cd /cromper && \
