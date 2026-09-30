@@ -69,6 +69,10 @@ class LibrarySerializer(serializers.Serializer[Library]):
     name = serializers.CharField()
     version = serializers.CharField()
 
+    def to_internal_value(self, data: Any) -> Library:
+        validated_data = super().to_internal_value(data)
+        return Library(**validated_data)
+
 
 class DiffFlagsField(serializers.ListField):
     child = serializers.CharField(allow_blank=True)
