@@ -6,12 +6,13 @@ x-backend-base: &backend-base
     - docker.prod.env
   restart: unless-stopped
   healthcheck:
-    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/api/healthz"]
+    test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8000/api/healthz" ]
     interval: 15s
     timeout: 3s
     retries: 10
     start_period: 20s
   volumes:
+    # static files for django /admin control panel
     - ./backend/static:/backend/static
   networks:
     - decompme
@@ -24,7 +25,7 @@ x-frontend-base: &frontend-base
     - docker.prod.env
   restart: unless-stopped
   healthcheck:
-    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
+    test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz" ]
     interval: 15s
     timeout: 3s
     retries: 10
@@ -56,7 +57,7 @@ services:
     tmpfs:
       - /tmp/sandbox:exec,uid=1000,gid=1000,size=256M,mode=0700
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8888/healthz"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8888/healthz" ]
       interval: 15s
       timeout: 3s
       retries: 10
@@ -91,7 +92,7 @@ services:
     build:
       context: nginx
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/nginx-healthz"]
+      test: [ "CMD", "wget", "-q", "--spider", "http://127.0.0.1/nginx-healthz" ]
       interval: 15s
       timeout: 3s
       retries: 10
@@ -101,12 +102,19 @@ services:
       - "443:443"
     restart: unless-stopped
     volumes:
+      # repo files
       - ./nginx/production/:/etc/nginx/conf.d/:ro
       - ./frontend/down.html:/var/www/decomp.me/down.html:ro
+      # certbot
       - ./certbot:/var/www/certbot
       - ./letsencrypt:/etc/letsencrypt
-      - ./backend/media:/media
+      # static files for django /admin control panel
       - ./backend/static:/var/www/decomp.me/static
+      # TODO: mount static + public files from frontend
+      # BOOTSTRAP: allow nginx to start before backend/frontend containers are up
+      #extra_hosts:
+      #  - "backend-blue=172.17.0.1"   # docker0 bridge
+      #  - "frontend-blue=172.17.0.1"  # docker0 bridge
     networks:
       - decompme
 
@@ -129,11 +137,20 @@ services:
     restart: unless-stopped
     volumes:
       - ./postgres:/var/lib/postgresql/data
+      # BOOTSTRAP: for dumping/restoring db
       - ./pgdump:/pgdump
     networks:
       - decompme
     command: >
-      postgres -c shared_buffers=8GB -c work_mem=128MB -c maintenance_work_mem=2GB -c effective_cache_size=16GB -c wal_buffers=32MB -c checkpoint_completion_target=0.9 -c random_page_cost=1.1 -c effective_io_concurrency=300
+      postgres
+       -c shared_buffers=8GB
+       -c work_mem=128MB
+       -c maintenance_work_mem=2GB
+       -c effective_cache_size=16GB
+       -c wal_buffers=32MB
+       -c checkpoint_completion_target=0.9
+       -c random_page_cost=1.1
+       -c effective_io_concurrency=300
 
 networks:
   decompme:

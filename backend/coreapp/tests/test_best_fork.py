@@ -3,7 +3,7 @@ from rest_framework import status
 
 from coreapp.models.scratch import Scratch
 from coreapp.serializers import TerseScratchSerializer
-from coreapp.tests.common import BaseTestCase, requiresCompiler
+from coreapp.tests.common import BaseTestCase
 from coreapp.tests.mock_cromper_client import IDO71, N64
 from coreapp.views.scratch import update_scratch_score
 from coreapp.wrapper_result import DiffResult
@@ -35,7 +35,6 @@ class BestForkTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         return Scratch.objects.get(slug=response.json()["slug"])
 
-    @requiresCompiler(IDO71)
     def test_fork_score_improvement_updates_best_fork(self) -> None:
         parent = self.create_best_fork_scratch()
         parent.score = 200
@@ -61,7 +60,6 @@ class BestForkTests(BaseTestCase):
         self.assertEqual(data["best_fork"]["slug"], fork.slug)
         self.assertEqual(data["best_fork"]["score"], 100)
 
-    @requiresCompiler(IDO71)
     def test_original_score_improvement_clears_stale_best_fork(self) -> None:
         parent = self.create_best_fork_scratch()
         parent.score = 200
@@ -87,7 +85,6 @@ class BestForkTests(BaseTestCase):
         parent.refresh_from_db()
         self.assertFalse(hasattr(parent, "best_fork"))
 
-    @requiresCompiler(IDO71)
     def test_unscored_fork_does_not_update_best_fork(self) -> None:
         parent = self.create_best_fork_scratch()
         parent.score = 200
@@ -107,7 +104,6 @@ class BestForkTests(BaseTestCase):
         parent.refresh_from_db()
         self.assertFalse(hasattr(parent, "best_fork"))
 
-    @requiresCompiler(IDO71)
     def test_matched_override_can_be_improved_by_lower_scoring_match(self) -> None:
         parent = self.create_best_fork_scratch()
         parent.score = 100
@@ -131,7 +127,6 @@ class BestForkTests(BaseTestCase):
         self.assertEqual(parent.best_fork.score, 50)
         self.assertTrue(parent.best_fork.is_match)
 
-    @requiresCompiler(IDO71)
     def test_best_fork_regression_promotes_next_best_fork(self) -> None:
         parent = self.create_best_fork_scratch()
         parent.score = 200
@@ -167,7 +162,6 @@ class BestForkTests(BaseTestCase):
         self.assertEqual(parent.best_fork.fork, next_best_fork)
         self.assertEqual(parent.best_fork.score, 150)
 
-    @requiresCompiler(IDO71)
     def test_original_regression_finds_existing_best_fork(self) -> None:
         parent = self.create_best_fork_scratch()
         parent.score = 100
@@ -194,7 +188,6 @@ class BestForkTests(BaseTestCase):
         self.assertEqual(parent.best_fork.fork, fork)
         self.assertEqual(parent.best_fork.score, 150)
 
-    @requiresCompiler(IDO71)
     def test_recompute_finds_best_fork_below_unscored_intermediate(self) -> None:
         parent = self.create_best_fork_scratch()
         parent.score = 200

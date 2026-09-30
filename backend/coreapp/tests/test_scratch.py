@@ -22,7 +22,7 @@ from coreapp.tests import (
     mock_cromper_client as compilers,
     mock_cromper_client as platforms,
 )
-from coreapp.tests.common import BaseTestCase, requiresCompiler
+from coreapp.tests.common import BaseTestCase
 from coreapp.tests.mock_cromper_client import (
     EE_GCC29_991111,
     GC_WII,
@@ -99,7 +99,6 @@ class ScratchCreationTests(BaseTestCase):
 
         self.assertEqual(scratch.diff_flags, ["-DIFFdifflib"])
 
-    @requiresCompiler(IDO71)
     def test_accept_late_rodata(self) -> None:
         """
         Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
@@ -119,7 +118,6 @@ nop""",
         }
         self.create_scratch(scratch_dict)
 
-    @requiresCompiler(IDO53)
     def test_n64_func(self) -> None:
         """
         Ensure that functions with t6/t7 registers can be assembled.
@@ -140,7 +138,6 @@ sb  $t6, %lo(D_801D702C)($at)
         }
         self.create_scratch(scratch_dict)
 
-    @requiresCompiler(IDO71)
     def test_fpr_reg_names(self) -> None:
         """
         Ensure that functions with O32 register names can be assembled.
@@ -232,7 +229,6 @@ nop
         scratch = Scratch.objects.get(slug=response.json()["slug"])
         self.assertEqual(scratch.diff_flags, diff_flags)
 
-    @requiresCompiler(IDO71)
     def test_max_score(self) -> None:
         """
         Ensure that max_score is available upon scratch creation even if the initial compilation fails
@@ -246,7 +242,6 @@ nop
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.max_score, 200)
 
-    @requiresCompiler(IDO71)
     def test_import_scratch(self) -> None:
         """
         Ensure that creating a scratch created via permuter import.py is successful
@@ -263,7 +258,6 @@ nop
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.name, "imported_function")
 
-    @requiresCompiler(MWCC_242_81)
     def test_mwcc_242_81(self) -> None:
         """
         Ensure that MWCC works
@@ -276,7 +270,6 @@ nop
         }
         self.create_scratch(scratch_dict)
 
-    @requiresCompiler(EE_GCC29_991111)
     def test_ps2_platform(self) -> None:
         """
         Ensure that we can create scratches with the ps2 platform and compiler
@@ -462,7 +455,6 @@ class ScratchModificationTests(BaseTestCase):
         scratch.refresh_from_db()
         self.assertEqual(scratch.compiler, compilers.DUMMY.id)
 
-    @requiresCompiler(GCC281PM, IDO53)
     def test_update_scratch_score(self) -> None:
         """
         Ensure that a scratch's score gets updated when the code changes.
@@ -501,7 +493,6 @@ class ScratchModificationTests(BaseTestCase):
         assert scratch is not None
         self.assertEqual(scratch.score, 200)
 
-    @requiresCompiler(GCC281PM)
     def test_update_scratch_score_on_compile_get(self) -> None:
         """
         Ensure that a scratch's score gets updated on a GET to compile
@@ -565,7 +556,6 @@ class ScratchModificationTests(BaseTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    @requiresCompiler(GCC281PM, EE_GCC29_991111)
     def test_compile_post_rejects_mismatched_compiler_platform(self) -> None:
         scratch = self.create_scratch(
             {
@@ -583,7 +573,6 @@ class ScratchModificationTests(BaseTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @requiresCompiler(IDO71)
     def test_create_scratch_score(self) -> None:
         """
         Ensure that a scratch's score gets set upon creation.
@@ -598,7 +587,6 @@ class ScratchModificationTests(BaseTestCase):
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.score, 0)
 
-    @requiresCompiler(IDO71)
     def test_update_scratch_score_does_not_affect_last_updated(self) -> None:
         """
         Ensure that a scratch's last_updated field does not get updated when the max_score changes.
@@ -883,7 +871,6 @@ class ScratchDetailTests(BaseTestCase):
 
 
 class ScratchExportTests(BaseTestCase):
-    @requiresCompiler(IDO71)
     def test_export_asm_scratch(self) -> None:
         """
         Ensure that a scratch can be exported as a zip
@@ -908,7 +895,6 @@ class ScratchExportTests(BaseTestCase):
         self.assertIn("ctx.c", file_names)
         self.assertIn("current.o", file_names)
 
-    @requiresCompiler(IDO71)
     def test_export_asm_scratch_target_only(self) -> None:
         """
         Ensure that a scratch can be exported as a zip

@@ -1,22 +1,15 @@
-from collections.abc import Callable
 from typing import Any
-from unittest import skipIf
 
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from coreapp.compiler_utils import Compiler
 from coreapp.models.scratch import Scratch
 from coreapp.tests import (
     mock_cromper_client as compilers,
     mock_cromper_client as platforms,
 )
 from coreapp.tests.mock_cromper_client import patch_cromper
-
-
-def requiresCompiler(*compilers: Compiler) -> Callable[..., Any]:
-    return skipIf(False, "")
 
 
 class BaseTestCase(APITestCase):
