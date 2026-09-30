@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import base64
 import json
 import logging
@@ -44,7 +45,79 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class CromperClient:
+class AbstractCromperClient(ABC):
+    """Interface shared by real and test cromper clients."""
+
+    @abstractmethod
+    def get_compilers(self) -> dict[str, Compiler]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_platforms(self) -> dict[str, Platform]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_libraries(self, platform: str = "") -> list[dict[str, Any]]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_compiler_by_id(self, compiler_id: str) -> Compiler:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_platform_by_id(self, platform_id: str) -> Platform:
+        raise NotImplementedError
+
+    @abstractmethod
+    def resolve_language_extension(
+        self, compiler_id: str, compiler_flags: str = ""
+    ) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    def refresh_cache(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def compile_code(
+        self,
+        compiler_id: str,
+        compiler_flags: str,
+        code: str,
+        context: str,
+        function: str = "",
+        libraries: list[dict[str, str]] | None = None,
+    ) -> dict[str, Any]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def assemble_asm(self, platform_id: str, asm: "Asm") -> dict[str, Any]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def diff(
+        self,
+        platform_id: str,
+        target_elf: bytes,
+        compiled_elf: bytes,
+        diff_label: str = "",
+        diff_flags: list[str] | None = None,
+    ) -> dict[str, Any]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def decompile(
+        self,
+        platform_id: str,
+        compiler_id: str,
+        asm: str,
+        default_source_code: str = "",
+        context: str = "",
+    ) -> str:
+        raise NotImplementedError
+
+
+class CromperClient(AbstractCromperClient):
     """Client for communicating with cromper."""
 
     def __init__(self, base_url: str, timeout: int = 10):

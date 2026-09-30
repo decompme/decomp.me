@@ -5,6 +5,7 @@ from typing import Any
 from unittest.mock import patch
 
 from coreapp.compiler_utils import Compiler, Platform
+from coreapp.cromper_client import AbstractCromperClient
 
 _DUMMY_PLATFORM = Platform(
     id="dummy",
@@ -97,8 +98,20 @@ def mock_cromper(func: Callable[..., Any]) -> Callable[..., Any]:
     return wrapper
 
 
-class MockCromperClient:
+class MockCromperClient(AbstractCromperClient):
     """Mock cromper client for testing."""
+
+    def get_compilers(self) -> dict[str, Compiler]:
+        return _COMPILERS.copy()
+
+    def get_platforms(self) -> dict[str, Platform]:
+        return _PLATFORMS.copy()
+
+    def get_libraries(self, platform: str = "") -> list[dict[str, Any]]:
+        return []
+
+    def refresh_cache(self) -> None:
+        return None
 
     def get_compiler_by_id(self, compiler_id: str) -> Compiler:
         try:
