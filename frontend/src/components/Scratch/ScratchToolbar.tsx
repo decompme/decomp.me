@@ -12,10 +12,10 @@ import {
 import clsx from "clsx";
 import {
     type ClipboardEvent,
-    type FC,
     type JSX,
     type KeyboardEvent,
     type MouseEvent,
+    type RefObject,
     useEffect,
     useRef,
     useState,
@@ -354,7 +354,7 @@ enum ActionsLocation {
     BELOW_NAV = 1,
 }
 
-function useActionsLocation(): [ActionsLocation, FC<Props>] {
+function useActionsLocation(): [ActionsLocation, RefObject<HTMLDivElement>] {
     const inNavActions = useSize<HTMLDivElement>();
 
     let location = ActionsLocation.BELOW_NAV;
@@ -366,21 +366,7 @@ function useActionsLocation(): [ActionsLocation, FC<Props>] {
         }
     }
 
-    return [
-        location,
-        (props: Props) => (
-            <div
-                ref={inNavActions.ref}
-                aria-hidden={location !== ActionsLocation.IN_NAV}
-                className={styles.inNavActionsContainer}
-            >
-                <Actions
-                    {...props}
-                    tourTargetsEnabled={location === ActionsLocation.IN_NAV}
-                />
-            </div>
-        ),
-    ];
+    return [location, inNavActions.ref] as const;
 }
 
 export type Props = {
@@ -398,7 +384,7 @@ export default function ScratchToolbar(props: Props) {
     const { scratch, setScratch } = props;
     const userIsYou = api.useUserIsYou();
 
-    const [actionsLocation, InNavActions] = useActionsLocation();
+    const [actionsLocation, inNavActionsRef] = useActionsLocation();
 
     return (
         <>
@@ -450,7 +436,18 @@ export default function ScratchToolbar(props: Props) {
                             },
                         ].filter(Boolean)}
                     />
-                    <InNavActions {...props} />
+                    <div
+                        ref={inNavActionsRef}
+                        aria-hidden={actionsLocation !== ActionsLocation.IN_NAV}
+                        className={styles.inNavActionsContainer}
+                    >
+                        <Actions
+                            {...props}
+                            tourTargetsEnabled={
+                                actionsLocation === ActionsLocation.IN_NAV
+                            }
+                        />
+                    </div>
                 </div>
             </Nav>
             {actionsLocation === ActionsLocation.BELOW_NAV && (

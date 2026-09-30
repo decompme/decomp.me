@@ -266,6 +266,7 @@
     "msc5.1": "Microsoft C Compiler 5.1",
 
     "cygnus-2.7-96Q3": "cygnus-2.7-96Q3 SOA-960904",
+    "shc-v5.0r32-sh2": "SHC v5.0 (Release 32)",
 
     "ndk-r8e-gcc-4.4.3": "Android NDK r8e (GCC 4.4.3)",
     "ndk-r8e-gcc-4.7": "Android NDK r8e (GCC 4.7)",
@@ -504,6 +505,13 @@
     "shc_aggressive": "Use float multiplication for division with constant",
     "shc_loop": "Loop unrolling",
     "shc_inline": "Inline static functions",
+    "shc_division": "Division code expansion",
+    "shc_division.-division=cpu": "Division: CPU",
+    "shc_division.-division=peripheral": "Division: on-chip divider, interrupts masked",
+    "shc_division.-division=nomask": "Division: on-chip divider, interrupts not masked",
+    "shc_macsave": "MACL/MACH save rules",
+    "shc_macsave.-macsave=0": "Don't save MACL/MACH",
+    "shc_macsave.-macsave=1": "Save MACL/MACH (callee-saved)",
 
     "psyq_opt_level": "Optimization level",
     "psyq_opt_level.-O0": "No optimization",
