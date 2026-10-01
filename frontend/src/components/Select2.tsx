@@ -9,9 +9,10 @@ export type Props = {
 };
 
 export default function Select({ options, value, onChange, className }: Props) {
+    const firstOption = Object.keys(options)[0];
     useEffect(() => {
-        if (!value) onChange(Object.keys(options)[0]);
-    }, [value, options, onChange]);
+        if (!value && firstOption) onChange(firstOption);
+    }, [value, firstOption, onChange]);
 
     return (
         <div

@@ -159,7 +159,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "debugpy", specifier = ">=1.8.20" },
+    { name = "debugpy", specifier = ">=1.8.21" },
     { name = "django-stubs", specifier = ">=6.1.0" },
     { name = "djangorestframework-stubs", specifier = ">=3.18.1" },
     { name = "mypy", specifier = ">=2.3.1" },

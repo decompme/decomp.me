@@ -32,8 +32,52 @@ function ScratchEditorInner({
     const { mutate } = useSWRConfig();
     const currentScratchUrl = scratchUrl(scratch);
     const initialScratchUrl = scratchUrl(initialScratch);
+    const resolvedLanguageInputs = useRef(
+        JSON.stringify([
+            initialScratch.compiler,
+            initialScratch.compiler_flags,
+        ]),
+    );
 
     useWarnBeforeScratchUnload(scratch, !isDeleting);
+
+    useEffect(() => {
+        const compiler = scratch.compiler;
+        const compilerFlags = scratch.compiler_flags;
+        const inputs = JSON.stringify([compiler, compilerFlags]);
+        if (resolvedLanguageInputs.current === inputs) return;
+
+        resolvedLanguageInputs.current = inputs;
+        let isCurrent = true;
+
+        api.resolveCompilerLanguage(compiler, compilerFlags)
+            .then((language) => {
+                if (!isCurrent) return;
+
+                setScratch((currentScratch) => {
+                    if (
+                        currentScratch.compiler !== compiler ||
+                        currentScratch.compiler_flags !== compilerFlags ||
+                        currentScratch.language === language
+                    ) {
+                        return currentScratch;
+                    }
+                    return { ...currentScratch, language };
+                });
+            })
+            .catch((error) => {
+                if (isCurrent) {
+                    console.error(
+                        "Failed to resolve the scratch language",
+                        error,
+                    );
+                }
+            });
+
+        return () => {
+            isCurrent = false;
+        };
+    }, [scratch.compiler, scratch.compiler_flags]);
 
     // If the server scratch owner changes (i.e. scratch was claimed), update local scratch owner.
     // You can trigger this by:
@@ -42,7 +86,7 @@ function ScratchEditorInner({
     // 3. Logging in
     // 4. Notice the scratch owner (in the About panel) has changed to your newly-logged-in user
     const ownerMayChange = !scratch.owner || scratch.owner.is_anonymous;
-    const cached = useSWR<api.Scratch>(
+    const cached = useSWR<api.ScratchData>(
         ownerMayChange && !isDeleting && currentScratchUrl,
         api.get,
     )?.data;
@@ -67,8 +111,8 @@ function ScratchEditorInner({
 
         let isCurrent = true;
 
-        api.get(initialScratchUrl)
-            .then((updatedScratch: api.Scratch) => {
+        api.getScratch(initialScratchUrl)
+            .then((updatedScratch) => {
                 if (!isCurrent) return;
 
                 const updateTime = new Date(updatedScratch.last_updated);

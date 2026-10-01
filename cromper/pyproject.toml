@@ -1,0 +1,54 @@
+[project]
+name = "cromper"
+version = "0.1.0"
+description = "Async compilation and assembly service for decomp.me"
+authors = [
+    {name = "decomp.me team"}
+]
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "tornado>=6.5.8",
+    "requests>=2.34.2",
+    "python-dotenv>=1.2.3",
+    "m2c @ git+https://github.com/matt-kempster/m2c.git@1d1c4454a445326541305f83f2b0cb680a9ecb2d",
+    "asm-differ @ git+https://github.com/simonlindholm/asm-differ.git@f49f9b26a7b91f3da6c8d555a87218efb28bbea7",
+    "pyyaml>=6.0.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=2.3.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-tornado>=0.8.1",
+    "ruff>=0.16.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.ruff]
+include = ["cromper/**/*.py", "tests/**/*.py"]
+exclude = ["compilers", "libraries"]
+
+[tool.ruff.lint]
+ignore = ["BLE001", "B019", "C408", "EXE001", "FLY002"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+ignore_missing_imports = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+exclude = [
+    "compilers/.*",
+    "libraries/.*",
+]
