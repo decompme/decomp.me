@@ -34,7 +34,7 @@ services:
       - ./cromper/compilers:/cromper/compilers
       - ./cromper/libraries:/cromper/libraries
     tmpfs:
-      - /tmp/sandbox:exec,uid=1000,gid=1000,size=256M,mode=0700
+      - /sandbox/tmp:exec,uid=1000,gid=1000,size=256M,mode=0700
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8888/healthz" ]
       interval: 15s

@@ -17,23 +17,21 @@ class SandboxError(Exception):
 class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
     def __init__(
         self,
-        use_jail: bool = False,
-        sandbox_tmp_path: Path | None = None,
-        sandbox_chroot_path: Path | None = None,
-        compiler_base_path: Path | None = None,
-        library_base_path: Path | None = None,
+        sandbox_tmp_path: Path,
+        sandbox_chroot_path: Path,
+        compiler_base_path: Path,
+        library_base_path: Path,
+        use_jail: bool = True,
         nsjail_bin_path: Path | None = None,
         sandbox_disable_proc: bool = False,
         debug: bool = True,
     ):
         self.use_jail = use_jail
-        self.sandbox_tmp_path = sandbox_tmp_path or Path("/tmp/sandbox")
-        # Keep the read-only chroot off Docker's sandbox tmpfs: its locked mount
-        # flags prevent nsjail from remounting the root in a user namespace.
-        self.sandbox_chroot_path = sandbox_chroot_path or Path("/sandbox/root")
-        self.compiler_base_path = compiler_base_path or Path("compilers")
-        self.library_base_path = library_base_path or Path("libraries")
-        self.nsjail_bin_path = nsjail_bin_path or Path("/bin/nsjail")
+        self.sandbox_tmp_path = sandbox_tmp_path
+        self.sandbox_chroot_path = sandbox_chroot_path
+        self.compiler_base_path = compiler_base_path
+        self.library_base_path = library_base_path
+        self.nsjail_bin_path = nsjail_bin_path
         self.sandbox_disable_proc = sandbox_disable_proc
         self.debug = debug
 

@@ -36,7 +36,7 @@ class CromperConfig:
         self.library_base_path = Path(
             os.getenv("LIBRARY_BASE_PATH", str(service_root / "libraries"))
         )
-        self.sandbox_tmp_path = Path(os.getenv("SANDBOX_TMP_PATH", "/tmp/sandbox"))
+        self.sandbox_tmp_path = Path(os.getenv("SANDBOX_TMP_PATH", "/sandbox/tmp"))
         self.sandbox_chroot_path = Path(
             os.getenv("SANDBOX_CHROOT_PATH", "/sandbox/root")
         )
