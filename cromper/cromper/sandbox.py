@@ -17,10 +17,10 @@ class SandboxError(Exception):
 class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
     def __init__(
         self,
-        sandbox_tmp_path: Path,
-        sandbox_chroot_path: Path,
-        compiler_base_path: Path,
-        library_base_path: Path,
+        sandbox_tmp_path: Path | None = None,
+        sandbox_chroot_path: Path | None = None,
+        compiler_base_path: Path | None = None,
+        library_base_path: Path | None = None,
         use_jail: bool = True,
         nsjail_bin_path: Path | None = None,
         sandbox_disable_proc: bool = False,
