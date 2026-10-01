@@ -8,6 +8,7 @@ from typing import Any
 
 import diff as asm_differ
 
+from ..config import CromperConfig
 from ..error import AssemblyError, DiffError, NmError, ObjdumpError
 from ..flags import ASMDIFF_FLAG_PREFIX
 from ..platforms import Platform
@@ -37,9 +38,6 @@ def parse_flag(flag: str) -> ParsedFlag:
     return ParsedFlag(name=flag)
 
 
-DEFAULT_OBJDUMP_TIMEOUT_SECONDS = 3
-
-
 @dataclass
 class DiffResult:
     result: dict[str, Any] | None = None
@@ -47,13 +45,8 @@ class DiffResult:
 
 
 class DiffWrapper:
-    def __init__(
-        self,
-        objdump_timeout_seconds: int = DEFAULT_OBJDUMP_TIMEOUT_SECONDS,
-        **sandbox_kwargs,
-    ):
-        self.objdump_timeout_seconds = objdump_timeout_seconds
-        self.sandbox_kwargs = sandbox_kwargs
+    def __init__(self, config: CromperConfig):
+        self.config = config
 
     @staticmethod
     def filter_objdump_flags(compiler_flags: str) -> str:
@@ -137,7 +130,7 @@ class DiffWrapper:
             nm_proc = sandbox.run_subprocess(
                 [platform.nm_cmd] + [sandbox.rewrite_path(target_path)],
                 shell=True,
-                timeout=self.objdump_timeout_seconds,
+                timeout=self.config.objdump_timeout_seconds,
             )
         except subprocess.TimeoutExpired:
             raise NmError("Timeout expired")
@@ -200,7 +193,7 @@ class DiffWrapper:
         if platform.id != "msdos":
             flags += ["--reloc"]
 
-        with Sandbox(**self.sandbox_kwargs) as sandbox:
+        with Sandbox(self.config) as sandbox:
             target_path = sandbox.path / "out.s"
             target_path.write_bytes(target_data)
 
@@ -225,7 +218,7 @@ class DiffWrapper:
                         + list(map(shlex.quote, flags))
                         + [sandbox.rewrite_path(target_path)],
                         shell=True,
-                        timeout=self.objdump_timeout_seconds,
+                        timeout=self.config.objdump_timeout_seconds,
                     )
                 except subprocess.TimeoutExpired:
                     raise ObjdumpError("Timeout expired")

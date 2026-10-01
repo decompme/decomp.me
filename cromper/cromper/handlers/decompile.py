@@ -27,16 +27,7 @@ def decompile(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
     if not asm:
         raise tornado.web.HTTPError(400, "asm is required")
 
-    wrapper = DecompilerWrapper(
-        use_jail=config.use_sandbox_jail,
-        sandbox_tmp_path=config.sandbox_tmp_path,
-        sandbox_chroot_path=config.sandbox_chroot_path,
-        compiler_base_path=config.compiler_base_path,
-        library_base_path=config.library_base_path,
-        nsjail_bin_path=config.nsjail_bin_path,
-        sandbox_disable_proc=config.sandbox_disable_proc,
-        debug=config.debug,
-    )
+    wrapper = DecompilerWrapper(config)
 
     try:
         result = wrapper.decompile(

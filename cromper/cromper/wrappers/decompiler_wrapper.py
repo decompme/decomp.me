@@ -1,6 +1,7 @@
 import logging
 
 from ..compilers import Compiler
+from ..config import CromperConfig
 from ..platforms import Platform
 from .m2c_wrapper import M2CError, M2CWrapper
 
@@ -12,8 +13,8 @@ DECOMP_WITH_CONTEXT_FAILED_PREAMBLE = "/* Decompilation with context failed; her
 
 
 class DecompilerWrapper:
-    def __init__(self, **sandbox_kwargs):
-        self.m2c_wrapper = M2CWrapper(**sandbox_kwargs)
+    def __init__(self, config: CromperConfig):
+        self.m2c_wrapper = M2CWrapper(config)
 
     def decompile(
         self,

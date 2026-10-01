@@ -29,17 +29,7 @@ def assemble_asm(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
     # Create assembly data object
     asm = AssemblyData(data=asm_data, hash=asm_hash)
 
-    wrapper = CompilerWrapper(
-        use_sandbox_jail=config.use_sandbox_jail,
-        assembly_timeout_seconds=config.assembly_timeout_seconds,
-        sandbox_tmp_path=config.sandbox_tmp_path,
-        sandbox_chroot_path=config.sandbox_chroot_path,
-        compiler_base_path=config.compiler_base_path,
-        library_base_path=config.library_base_path,
-        nsjail_bin_path=config.nsjail_bin_path,
-        sandbox_disable_proc=config.sandbox_disable_proc,
-        debug=config.debug,
-    )
+    wrapper = CompilerWrapper(config)
 
     try:
         result = wrapper.assemble_asm(platform=platform, asm=asm)

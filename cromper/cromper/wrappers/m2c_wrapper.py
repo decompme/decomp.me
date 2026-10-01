@@ -5,6 +5,7 @@ import logging
 from m2c.main import parse_flags, run
 
 from ..compilers import Compiler, CompilerType
+from ..config import CromperConfig
 from ..error import M2CError
 from ..sandbox import Sandbox
 
@@ -31,8 +32,8 @@ PLATFORM_ID_TO_M2C_ARCH = {
 
 
 class M2CWrapper:
-    def __init__(self, **sandbox_kwargs):
-        self.sandbox_kwargs = sandbox_kwargs
+    def __init__(self, config: CromperConfig):
+        self.config = config
 
     @staticmethod
     def is_platform_supported(platform_id: str) -> bool:
@@ -53,7 +54,7 @@ class M2CWrapper:
     def decompile(
         self, asm: str, context: str, platform_id: str, compiler: Compiler
     ) -> str:
-        with Sandbox(**self.sandbox_kwargs) as sandbox:
+        with Sandbox(self.config) as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
 
             flags.append(f"--target={M2CWrapper.get_triple(platform_id, compiler)}")

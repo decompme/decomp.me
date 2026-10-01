@@ -37,7 +37,7 @@ class DecompilationTests(CromperTestCase):
     @requiresCompiler(GCC281PM)
     def test_default_decompilation(self) -> None:
         """Test basic decompilation functionality."""
-        wrapper = DecompilerWrapper()
+        wrapper = DecompilerWrapper(self.config)
         platform = N64
 
         # Simple MIPS assembly that should decompile to a return statement
@@ -57,7 +57,7 @@ class DecompilationTests(CromperTestCase):
     @requiresCompiler(GCC281PM)
     def test_decompilation_with_context(self) -> None:
         """Test decompilation with context code."""
-        wrapper = DecompilerWrapper()
+        wrapper = DecompilerWrapper(self.config)
         platform = N64
 
         asm = "glabel return_2\njr $ra\nli $v0,2"
@@ -77,7 +77,7 @@ class DecompilationTests(CromperTestCase):
     @requiresCompiler(GCC281PM)
     def test_decompilation_with_broken_context(self) -> None:
         """Test decompilation with broken context code."""
-        wrapper = DecompilerWrapper()
+        wrapper = DecompilerWrapper(self.config)
         platform = N64
 
         asm = "glabel return_2\njr $ra\nli $v0,2"
@@ -101,7 +101,7 @@ class DecompilationTests(CromperTestCase):
 
     def test_unsupported_architecture(self) -> None:
         """Test decompilation with unsupported architecture."""
-        wrapper = DecompilerWrapper()
+        wrapper = DecompilerWrapper(self.config)
 
         asm = "some assembly"
         default_source = "/* default source */"
@@ -120,7 +120,7 @@ class DecompilationTests(CromperTestCase):
 
     def test_too_many_lines(self) -> None:
         """Test decompilation with too many lines of assembly."""
-        wrapper = DecompilerWrapper()
+        wrapper = DecompilerWrapper(self.config)
         platform = N64
 
         # Create assembly with too many lines
@@ -144,7 +144,7 @@ class M2CTests(CromperTestCase):
 
     def test_left_pointer_style(self) -> None:
         """Ensure that pointers are next to types (left style)."""
-        wrapper = M2CWrapper()
+        wrapper = M2CWrapper(self.config)
 
         c_code = wrapper.decompile(
             asm="""
@@ -167,7 +167,7 @@ class M2CTests(CromperTestCase):
 
     def test_ppc_decompilation(self) -> None:
         """Ensure that we can decompile PPC code."""
-        wrapper = M2CWrapper()
+        wrapper = M2CWrapper(self.config)
 
         c_code = wrapper.decompile(
             asm="""
@@ -187,7 +187,7 @@ class M2CTests(CromperTestCase):
 
     def test_superh_decompilation(self) -> None:
         """Ensure that we can decompile SuperH code."""
-        wrapper = M2CWrapper()
+        wrapper = M2CWrapper(self.config)
 
         c_code = wrapper.decompile(
             asm="""

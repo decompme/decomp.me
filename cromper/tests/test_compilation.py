@@ -183,7 +183,7 @@ class CompilationTests(CromperTestCase):
     def test_compilation_with_diff(self) -> None:
         """Test compilation combined with diff generation."""
         wrapper = self.create_compiler_wrapper()
-        diff_wrapper = DiffWrapper()
+        diff_wrapper = DiffWrapper(self.config)
 
         compiler = GCC281PM
         platform = platforms.N64  # TODO test all available platforms

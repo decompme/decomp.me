@@ -11,6 +11,7 @@ from typing import Any
 from unittest import skip, skipIf
 
 from cromper.compilers import Compiler, Compilers
+from cromper.config import CromperConfig
 
 # Create global compilers instance for tests
 compilers = Compilers(Path(os.getenv("COMPILER_BASE_PATH", "./compilers")))
@@ -31,6 +32,7 @@ class CromperTestCase(unittest.TestCase):
         super().setUp()
         # Set up test environment
         self.test_dir = Path(tempfile.mkdtemp())
+        self.config = CromperConfig()
 
     def tearDown(self) -> None:
         # Clean up test directory
@@ -42,23 +44,9 @@ class CromperTestCase(unittest.TestCase):
 
     def create_compiler_wrapper(self):
         """Create a CompilerWrapper with proper test configuration."""
-        from cromper.main import CromperConfig
         from cromper.wrappers.compiler_wrapper import CompilerWrapper
 
-        config = CromperConfig()
-        wrapper = CompilerWrapper(
-            use_sandbox_jail=config.use_sandbox_jail,
-            compilation_timeout_seconds=config.compilation_timeout_seconds,
-            assembly_timeout_seconds=config.assembly_timeout_seconds,
-            sandbox_tmp_path=config.sandbox_tmp_path,
-            sandbox_chroot_path=config.sandbox_chroot_path,
-            compiler_base_path=config.compiler_base_path,
-            library_base_path=config.library_base_path,
-            nsjail_bin_path=config.nsjail_bin_path,
-            sandbox_disable_proc=config.sandbox_disable_proc,
-            debug=config.debug,
-        )
-        return wrapper
+        return CompilerWrapper(self.config)
 
     def assertIsValidElfObject(self, elf_object: bytes, msg: str | None = None) -> None:
         """Assert that the given bytes represent a valid ELF object."""

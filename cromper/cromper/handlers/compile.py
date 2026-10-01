@@ -27,17 +27,7 @@ def compile(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
     compiler_flags = data.get("compiler_flags", "")
     libraries = [Library(**lib) for lib in data.get("libraries", [])]
 
-    wrapper = CompilerWrapper(
-        use_sandbox_jail=config.use_sandbox_jail,
-        compilation_timeout_seconds=config.compilation_timeout_seconds,
-        sandbox_tmp_path=config.sandbox_tmp_path,
-        sandbox_chroot_path=config.sandbox_chroot_path,
-        compiler_base_path=config.compiler_base_path,
-        library_base_path=config.library_base_path,
-        nsjail_bin_path=config.nsjail_bin_path,
-        sandbox_disable_proc=config.sandbox_disable_proc,
-        debug=config.debug,
-    )
+    wrapper = CompilerWrapper(config)
 
     try:
         result = wrapper.compile_code(

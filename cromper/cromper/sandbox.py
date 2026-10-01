@@ -7,6 +7,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Self
 
+from .config import CromperConfig
+
 logger = logging.getLogger(__name__)
 
 
@@ -15,33 +17,16 @@ class SandboxError(Exception):
 
 
 class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
-    def __init__(
-        self,
-        sandbox_tmp_path: Path | None = None,
-        sandbox_chroot_path: Path | None = None,
-        compiler_base_path: Path | None = None,
-        library_base_path: Path | None = None,
-        use_jail: bool = True,
-        nsjail_bin_path: Path | None = None,
-        sandbox_disable_proc: bool = False,
-        debug: bool = True,
-    ):
-        self.use_jail = use_jail
-        self.sandbox_tmp_path = sandbox_tmp_path
-        self.sandbox_chroot_path = sandbox_chroot_path
-        self.compiler_base_path = compiler_base_path
-        self.library_base_path = library_base_path
-        self.nsjail_bin_path = nsjail_bin_path
-        self.sandbox_disable_proc = sandbox_disable_proc
-        self.debug = debug
+    def __init__(self, config: CromperConfig):
+        self.config = config
 
     def __enter__(self) -> Self:
         tmpdir: str | None = None
-        if self.use_jail:
+        if self.config.use_sandbox_jail:
             # Only use sandbox_tmp_path if USE_SANDBOX_JAIL is enabled,
             # otherwise use the system default
-            self.sandbox_tmp_path.mkdir(parents=True, exist_ok=True)
-            tmpdir = str(self.sandbox_tmp_path)
+            self.config.sandbox_tmp_path.mkdir(parents=True, exist_ok=True)
+            tmpdir = str(self.config.sandbox_tmp_path)
 
         self.temp_dir = TemporaryDirectory(dir=tmpdir, ignore_cleanup_errors=True)
         self.path = Path(self.temp_dir.name)
@@ -55,23 +40,23 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         return shlex.join(shlex.split(opts))
 
     def rewrite_path(self, path: Path) -> str:
-        if self.use_jail and path.is_relative_to(self.path):
+        if self.config.use_sandbox_jail and path.is_relative_to(self.path):
             path = Path("/tmp") / path.relative_to(self.path)
         return str(path)
 
     def sandbox_command(self, mounts: list[Path], env: dict[str, str]) -> list[str]:
-        if not self.use_jail:
+        if not self.config.use_sandbox_jail:
             return []
 
-        self.sandbox_chroot_path.mkdir(parents=True, exist_ok=True)
+        self.config.sandbox_chroot_path.mkdir(parents=True, exist_ok=True)
 
         assert ":" not in str(self.path)
 
         # fmt: off
         wrapper = [
-            str(self.nsjail_bin_path),
+            str(self.config.nsjail_bin_path),
             "--mode", "o",
-            "--chroot", str(self.sandbox_chroot_path),
+            "--chroot", str(self.config.sandbox_chroot_path),
             "--bindmount", f"{self.path}:/tmp",
             "--bindmount", f"{self.path}:/run/user/{os.getuid()}",
             "--bindmount", f"{self.path}:/var/tmp",
@@ -86,8 +71,8 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/usr",
             "--bindmount_ro", "/proc",
             "--bindmount_ro", "/sys",
-            "--bindmount_ro", str(self.compiler_base_path),
-            "--bindmount_ro", str(self.library_base_path),
+            "--bindmount_ro", str(self.config.compiler_base_path),
+            "--bindmount_ro", str(self.config.library_base_path),
             "--env", "PATH=/usr/bin:/bin",
             "--cwd", "/tmp",
             # NOTE: "soft" resolves to a near-infinite RLIMIT_FSIZE in nsjail >=3.6,
@@ -97,11 +82,11 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--rlimit_nofile", "soft",
         ]
         # fmt: on
-        if self.sandbox_disable_proc:
+        if self.config.sandbox_disable_proc:
             wrapper.append("--disable_proc")  # needed for running inside Docker
 
         # Informational nsjail logs would be mixed into compiler/objdump output.
-        wrapper.append("--quiet" if self.debug else "--really_quiet")
+        wrapper.append("--quiet" if self.config.debug else "--really_quiet")
         for mount in mounts:
             wrapper.extend(["--bindmount_ro", str(mount)])
         for key, value in env.items():

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from cromper import libraries as library_paths
 
 from ..compilers import Compiler, CompilerType
+from ..config import CromperConfig
 from ..error import AssemblyError, CompilationError
 from ..flags import Language
 from ..libraries import Library
@@ -40,17 +41,8 @@ class AssemblyResult:
 
 
 class CompilerWrapper:
-    def __init__(
-        self,
-        use_sandbox_jail: bool = False,
-        compilation_timeout_seconds: int = 10,
-        assembly_timeout_seconds: int = 3,
-        **sandbox_kwargs,
-    ):
-        self.use_sandbox_jail = use_sandbox_jail
-        self.compilation_timeout_seconds = compilation_timeout_seconds
-        self.assembly_timeout_seconds = assembly_timeout_seconds
-        self.sandbox_kwargs = sandbox_kwargs
+    def __init__(self, config: CromperConfig):
+        self.config = config
 
     @staticmethod
     def filter_compile_errors(input: str) -> str:
@@ -78,13 +70,11 @@ class CompilerWrapper:
             libraries = []
         # Process-pool workers may be started without inheriting module state.
         # Set the configured root in the worker before resolving include paths.
-        library_base_path = self.sandbox_kwargs.get("library_base_path")
-        if library_base_path is not None:
-            library_paths.set_library_base_path(library_base_path)
+        library_paths.set_library_base_path(self.config.library_base_path)
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
 
-        with Sandbox(use_jail=self.use_sandbox_jail, **self.sandbox_kwargs) as sandbox:
+        with Sandbox(self.config) as sandbox:
             ext = compiler.get_language(compiler_flags).get_file_extension()
             code_file = f"code.{ext}"
             src_file = f"src.{ext}"
@@ -136,14 +126,10 @@ class CompilerWrapper:
                     + str(lib.get_include_path(compiler.platform.id))
                     for lib in libraries
                 )
-                wibo_path = (
-                    self.sandbox_kwargs["compiler_base_path"] / "common" / "wibo_dlls"
-                )
+                wibo_path = self.config.compiler_base_path / "common" / "wibo_dlls"
                 compile_proc = sandbox.run_subprocess(
                     cc_cmd,
-                    mounts=(
-                        [compiler.get_path(self.sandbox_kwargs["compiler_base_path"])]
-                    ),
+                    mounts=([compiler.get_path(self.config.compiler_base_path)]),
                     shell=True,
                     env={
                         "WIBO": "wibo",
@@ -151,7 +137,7 @@ class CompilerWrapper:
                         "INPUT": sandbox.rewrite_path(code_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
                         "COMPILER_DIR": sandbox.rewrite_path(
-                            compiler.get_path(self.sandbox_kwargs["compiler_base_path"])
+                            compiler.get_path(self.config.compiler_base_path)
                         ),
                         "COMPILER_FLAGS": sandbox.quote_options(
                             compiler_flags + " " + libraries_compiler_flags
@@ -160,7 +146,7 @@ class CompilerWrapper:
                         "MWCIncludes": "/tmp",
                         "TMPDIR": "/tmp",
                     },
-                    timeout=self.compilation_timeout_seconds,
+                    timeout=self.config.compilation_timeout_seconds,
                 )
                 et = round(time.time() * 1000)
                 logger.debug(f"Compilation finished in: {et - st} ms")
@@ -199,7 +185,7 @@ class CompilerWrapper:
                 f"Assemble command for platform {platform.id} not found"
             )
 
-        with Sandbox(use_jail=self.use_sandbox_jail, **self.sandbox_kwargs) as sandbox:
+        with Sandbox(self.config) as sandbox:
             asm_prelude_path = sandbox.path / "prelude.s"
             asm_prelude_path.write_text(platform.asm_prelude)
 
@@ -220,10 +206,10 @@ class CompilerWrapper:
                         "INPUT": sandbox.rewrite_path(asm_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
                         "COMPILER_BASE_PATH": sandbox.rewrite_path(
-                            sandbox.compiler_base_path
+                            self.config.compiler_base_path
                         ),
                     },
-                    timeout=self.assembly_timeout_seconds,
+                    timeout=self.config.assembly_timeout_seconds,
                 )
             except subprocess.CalledProcessError as e:
                 raise AssemblyError.from_process_error(e)
