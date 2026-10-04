@@ -206,7 +206,7 @@ class LibrariesHandler(BaseHandler):
                     "supported_versions": lib.supported_versions,
                     "platform": lib.platform,
                 }
-                for lib in libraries.libraries_for_platform(platform)
+                for lib in libraries.libraries_for_platform(platform, self.config)
             ]
         else:
             libraries_data = [
@@ -215,7 +215,7 @@ class LibrariesHandler(BaseHandler):
                     "supported_versions": lib.supported_versions,
                     "platform": lib.platform,
                 }
-                for lib in libraries.available_libraries()
+                for lib in libraries.available_libraries(self.config)
             ]
 
         self.write({"libraries": libraries_data})

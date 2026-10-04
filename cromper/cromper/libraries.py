@@ -2,17 +2,9 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 
+from .config import CromperConfig
+
 logger = logging.getLogger(__name__)
-
-# Global library base path - will be set by main.py config
-LIBRARY_BASE_PATH: Path = Path("/opt/libraries")
-
-
-def set_library_base_path(path: Path) -> None:
-    """Set the library base path."""
-    global LIBRARY_BASE_PATH
-    LIBRARY_BASE_PATH = path
-    logger.info(f"Library base path set to: {LIBRARY_BASE_PATH}")
 
 
 @dataclass(frozen=True)
@@ -20,11 +12,13 @@ class Library:
     name: str
     version: str
 
-    def get_include_path(self, platform: str) -> Path:
-        return LIBRARY_BASE_PATH / platform / self.name / self.version / "include"
+    def get_include_path(self, platform: str, config: CromperConfig) -> Path:
+        return (
+            config.library_base_path / platform / self.name / self.version / "include"
+        )
 
-    def available(self, platform: str) -> bool:
-        include_path = self.get_include_path(platform)
+    def available(self, platform: str, config: CromperConfig) -> bool:
+        include_path = self.get_include_path(platform, config)
         if not include_path.exists():
             logger.debug(
                 f"Library {self.name} {self.version} not found at {include_path}"
@@ -38,20 +32,20 @@ class LibraryVersions:
     supported_versions: list[str]
     platform: str
 
-    @property
-    def path(self) -> Path:
-        return LIBRARY_BASE_PATH / self.platform / self.name
+    def get_path(self, config: CromperConfig) -> Path:
+        return config.library_base_path / self.platform / self.name
 
 
-def available_libraries() -> list[LibraryVersions]:
+def available_libraries(config: CromperConfig) -> list[LibraryVersions]:
     """Get all available libraries across all platforms."""
     results: list[LibraryVersions] = []
+    library_base_path = config.library_base_path
 
-    if not LIBRARY_BASE_PATH.exists():
-        logger.warning(f"Library base path does not exist: {LIBRARY_BASE_PATH}")
+    if not library_base_path.exists():
+        logger.warning(f"Library base path does not exist: {library_base_path}")
         return results
 
-    for platform_dir in LIBRARY_BASE_PATH.iterdir():
+    for platform_dir in library_base_path.iterdir():
         if not platform_dir.is_dir():
             continue
         for lib_dir in platform_dir.iterdir():
@@ -81,6 +75,8 @@ def available_libraries() -> list[LibraryVersions]:
     return results
 
 
-def libraries_for_platform(platform: str) -> list[LibraryVersions]:
+def libraries_for_platform(
+    platform: str, config: CromperConfig
+) -> list[LibraryVersions]:
     """Get available libraries for a specific platform."""
-    return [lib for lib in available_libraries() if lib.platform == platform]
+    return [lib for lib in available_libraries(config) if lib.platform == platform]

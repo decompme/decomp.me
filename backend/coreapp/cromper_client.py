@@ -10,6 +10,11 @@ from django.conf import settings
 
 from coreapp.compiler_utils import Compiler, Platform
 
+if TYPE_CHECKING:
+    from coreapp.models.scratch import Asm
+
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class CompilationResult:
@@ -37,12 +42,6 @@ class CromperUnavailableError(CromperError):
 
 class CromperTimeoutError(CromperUnavailableError):
     """Exception raised when a cromper request times out."""
-
-
-if TYPE_CHECKING:
-    from coreapp.models.scratch import Asm
-
-logger = logging.getLogger(__name__)
 
 
 class AbstractCromperClient(ABC):

@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from cromper import compilers, libraries, platforms
+from cromper import compilers, platforms
 
 
 def env_flag(name: str, default: bool = False) -> bool:
@@ -49,7 +49,6 @@ class CromperConfig:
         self.assembly_timeout_seconds = int(os.getenv("ASSEMBLY_TIMEOUT_SECONDS", "3"))
         self.objdump_timeout_seconds = int(os.getenv("OBJDUMP_TIMEOUT_SECONDS", "3"))
 
-        # Set up the compiler and library base paths in the shared modules
+        # Set up shared compiler and platform state
         self.compilers_instance = compilers.Compilers(self.compiler_base_path)
-        libraries.set_library_base_path(self.library_base_path)
         self.platforms_instance = platforms.Platforms()

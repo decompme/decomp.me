@@ -214,10 +214,7 @@ def update_needs_recompile(partial: dict[str, Any]) -> bool:
     return False
 
 
-def create_scratch(
-    data: dict[str, Any],
-    allow_project: bool = False,
-) -> Scratch:
+def create_scratch(data: dict[str, Any]) -> Scratch:
     create_ser = ScratchCreateSerializer(data=data)
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
@@ -242,7 +239,6 @@ def create_scratch(
         asm = get_db_asm(target_asm)
         asm_result = cromper_client.assemble_asm(platform.id, asm)
 
-        # Create Assembly object from cromper response
         assembly, _ = Assembly.objects.get_or_create(
             hash=asm_result["hash"],
             defaults={

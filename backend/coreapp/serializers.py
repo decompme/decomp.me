@@ -14,6 +14,11 @@ from .models.profile import Profile
 from .models.project import Project, ProjectMember
 from .models.scratch import Context, Library, Scratch
 
+if TYPE_CHECKING:
+    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, dict[str, Any]]
+else:
+    ProfileFieldBaseClass = serializers.RelatedField
+
 
 def serialize_profile(profile: Profile, num_scratches: bool = False) -> dict[str, Any]:
     if profile.user is None:
@@ -49,12 +54,6 @@ def serialize_profile(profile: Profile, num_scratches: bool = False) -> dict[str
             res["num_presets"] = Preset.objects.filter(owner__user=user).count()
 
         return res
-
-
-if TYPE_CHECKING:
-    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, dict[str, Any]]
-else:
-    ProfileFieldBaseClass = serializers.RelatedField
 
 
 class ProfileField(ProfileFieldBaseClass):

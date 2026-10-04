@@ -4,8 +4,6 @@ import subprocess
 import time
 from dataclasses import dataclass
 
-from cromper import libraries as library_paths
-
 from ..compilers import Compiler, CompilerType
 from ..config import CromperConfig
 from ..error import AssemblyError, CompilationError
@@ -68,9 +66,6 @@ class CompilerWrapper:
     ) -> CompilationResult:
         if libraries is None:
             libraries = []
-        # Process-pool workers may be started without inheriting module state.
-        # Set the configured root in the worker before resolving include paths.
-        library_paths.set_library_base_path(self.config.library_base_path)
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
 
@@ -123,7 +118,7 @@ class CompilerWrapper:
                 st = round(time.time() * 1000)
                 libraries_compiler_flags = " ".join(
                     compiler.library_include_flag
-                    + str(lib.get_include_path(compiler.platform.id))
+                    + str(lib.get_include_path(compiler.platform.id, self.config))
                     for lib in libraries
                 )
                 wibo_path = self.config.compiler_base_path / "common" / "wibo_dlls"
