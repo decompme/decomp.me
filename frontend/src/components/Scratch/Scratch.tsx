@@ -1,5 +1,4 @@
 import { StreamLanguage } from "@codemirror/language";
-
 import type { EditorView } from "@codemirror/view";
 import { DotFillIcon } from "@primer/octicons-react";
 import { vim } from "@replit/codemirror-vim";
@@ -262,9 +261,7 @@ function ScratchInner({
     const CODEMIRROR_EXTENSIONS = useMemo(
         () => [
             basicSetup,
-            language?.id === "pascal"
-                ? StreamLanguage.define(pascal)
-                : cpp(),
+            language?.id === "pascal" ? StreamLanguage.define(pascal) : cpp(),
         ],
         [language?.id],
     );

@@ -141,9 +141,7 @@ describe("resolveCompilersResponse", () => {
         expect(resolveCompilerLanguage(compiler, "-O2 -lang=c++")?.id).toBe(
             "cxx",
         );
-        expect(resolveCompilerLanguage(compiler, "-O2 -lang=c")?.id).toBe(
-            "c",
-        );
+        expect(resolveCompilerLanguage(compiler, "-O2 -lang=c")?.id).toBe("c");
         expect(resolveCompilerLanguage(compiler, "-O2")?.id).toBe("c");
     });
 });

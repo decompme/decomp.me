@@ -42,8 +42,8 @@ function onErrorRetry<C>(
     setTimeout(() => revalidate({ retryCount }), 5000);
 }
 
-export * from "./api/request";
 export * from "./api/compilerFlags";
+export * from "./api/request";
 export * from "./api/scratchState";
 export * from "./api/types";
 

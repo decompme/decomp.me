@@ -1,5 +1,4 @@
 import {
-    hasCompilerFlag,
     normalizeCompilerFlag,
     splitCompilerFlags,
 } from "@/lib/api/compilerFlags";
