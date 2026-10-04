@@ -1,9 +1,9 @@
 import {
     normalizeCompilerFlag,
     splitCompilerFlags,
-} from "@/lib/api/compilerFlags";
+} from "../../lib/api/compilerFlags";
 
-export { hasCompilerFlag } from "@/lib/api/compilerFlags";
+export { hasCompilerFlag } from "../../lib/api/compilerFlags";
 
 export type FlagEdit = {
     flag?: string;
