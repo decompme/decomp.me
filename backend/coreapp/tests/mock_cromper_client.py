@@ -55,9 +55,7 @@ GC_WII = Platform(
 )
 
 _C = Language(id="c", display_name="C", extension="c")
-_CXX = LanguageOverride(
-    id="cxx", display_name="C++", extension="cpp", flag="-x c++"
-)
+_CXX = LanguageOverride(id="cxx", display_name="C++", extension="cpp", flag="-x c++")
 _C_LANGUAGE = CompilerLanguage(default=_C, overrides=())
 _C_OR_CXX_LANGUAGE = CompilerLanguage(default=_C, overrides=(_CXX,))
 
@@ -71,9 +69,7 @@ IDO71 = Compiler("ido7.1", N64, "ido", "mips", _C_LANGUAGE)
 EE_GCC29_991111 = Compiler(
     "ee-gcc2.9-991111", PS2, "gcc-ps2", "mips", _C_OR_CXX_LANGUAGE
 )
-MWCC_242_81 = Compiler(
-    "mwcc_242_81", GC_WII, "mwcc-wii-gc", "common", _C_LANGUAGE
-)
+MWCC_242_81 = Compiler("mwcc_242_81", GC_WII, "mwcc-wii-gc", "common", _C_LANGUAGE)
 
 _PLATFORMS = {
     platform.id: platform for platform in (_DUMMY_PLATFORM, N64, PS1, PS2, GC_WII)
