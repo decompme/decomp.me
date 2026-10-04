@@ -116,6 +116,8 @@ jobs:
           echo 'GREEN_TAG=latest' >> .deploy.env
           echo 'NGINX_TAG=latest' >> .deploy.env
           echo 'CROMPER_TAG=latest' >> .deploy.env
+          touch backend.prod.env
+          touch cromper.prod.env
 
       - name: Comment out SSL server configuration from nginx
         run: |

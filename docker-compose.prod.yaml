@@ -4,6 +4,7 @@ x-backend-base: &backend-base
     target: prod
   env_file:
     - docker.prod.env
+    - backend.prod.env
   restart: unless-stopped
   healthcheck:
     test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8000/api/healthz" ]
@@ -47,6 +48,7 @@ services:
       - setfcap
     env_file:
       - docker.prod.env
+      - cromper.prod.env
     restart: unless-stopped
     security_opt:
       - apparmor=unconfined
