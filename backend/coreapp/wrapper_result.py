@@ -12,3 +12,10 @@ class DiffResult:
 class CompilationResult:
     elf_object: bytes
     errors: str
+
+
+@dataclass
+class AssemblyResult:
+    hash: str
+    arch: str
+    elf_object: bytes

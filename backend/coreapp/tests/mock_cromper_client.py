@@ -12,6 +12,7 @@ from coreapp.compiler_utils import (
     Platform,
 )
 from coreapp.cromper_client import AbstractCromperClient
+from coreapp.wrapper_result import AssemblyResult, CompilationResult, DiffResult
 
 _DUMMY_PLATFORM = Platform(
     id="dummy",
@@ -133,20 +134,12 @@ class MockCromperClient(AbstractCromperClient):
         except KeyError:
             raise ValueError(f"Unknown platform: {platform_id}")
 
-    def assemble_asm(self, platform_id: str, asm: Any) -> dict[str, Any]:
+    def assemble_asm(self, platform_id: str, asm: Any) -> AssemblyResult:
         """Return mock assembly result."""
         # Create a simple mock ELF object
         if asm.data.strip() == "":
-            return {
-                "hash": "empty_asm_hash",
-                "arch": "mips",
-                "elf_object": b"",
-            }
-        return {
-            "hash": "mock_hash_123",
-            "arch": "mips",
-            "elf_object": asm.data.encode(),
-        }
+            return AssemblyResult("empty_asm_hash", "mips", b"")
+        return AssemblyResult("mock_hash_123", "mips", asm.data.encode())
 
     def decompile(
         self,
@@ -167,11 +160,11 @@ class MockCromperClient(AbstractCromperClient):
         context: str,
         function: str = "",
         libraries: list[dict[str, str]] | None = None,
-    ) -> dict[str, Any]:
+    ) -> CompilationResult:
         """Return mock compilation result."""
         if libraries is None:
             libraries = []
-        return {"elf_object": code.encode(), "errors": ""}
+        return CompilationResult(code.encode(), "")
 
     def diff(
         self,
@@ -180,17 +173,17 @@ class MockCromperClient(AbstractCromperClient):
         compiled_elf: bytes,
         diff_label: str = "",
         diff_flags: list[str] | None = None,
-    ) -> dict[str, Any]:
+    ) -> DiffResult:
         """Return mock diff result."""
         if diff_flags is None:
             diff_flags = []
         is_exact_match = (
             b"li $v0,2" in bytes(target_elf) and b"return 2" in compiled_elf
         )
-        return {
-            "result": {
+        return DiffResult(
+            result={
                 "current_score": 0 if is_exact_match else 200,
                 "max_score": 200,
             },
-            "errors": "",
-        }
+            errors="",
+        )

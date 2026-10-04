@@ -22,7 +22,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from ..compiler_utils import filter_compiler_flags
-from ..cromper_client import CromperError, CromperUnavailableError, get_cromper_client
+from ..cromper_client import (
+    CromperError,
+    CromperTimeoutError,
+    CromperUnavailableError,
+    get_cromper_client,
+)
 from ..decorators.cache import globally_cacheable
 from ..decorators.django import condition
 from ..filters.scratch import ScratchFilter
@@ -99,7 +104,7 @@ def compile_scratch(scratch: Scratch, context: str | None = None) -> Compilation
         ) or ""
         libraries = [lib.to_json() for lib in scratch.libraries]
         cromper_client = get_cromper_client()
-        result = cromper_client.compile_code(
+        return cromper_client.compile_code(
             compiler_id=scratch.compiler,
             compiler_flags=scratch.compiler_flags,
             code=scratch.source_code,
@@ -107,9 +112,8 @@ def compile_scratch(scratch: Scratch, context: str | None = None) -> Compilation
             function=scratch.diff_label,
             libraries=libraries,
         )
-        return CompilationResult(result["elf_object"], result["errors"])
     except (CromperError, APIException) as e:
-        if isinstance(e, CromperUnavailableError):
+        if isinstance(e, (CromperUnavailableError, CromperTimeoutError)):
             return CompilationResult(
                 b"",
                 "The compiler service is unavailable. Please try again in a moment.",
@@ -123,16 +127,15 @@ def diff_compilation(
 ) -> DiffResult:
     try:
         cromper_client = get_cromper_client()
-        result = cromper_client.diff(
+        return cromper_client.diff(
             platform_id=scratch.platform,
             target_elf=bytes(scratch.target_assembly.elf_object),
             compiled_elf=compilation.elf_object,
             diff_label=scratch.diff_label,
             diff_flags=scratch.diff_flags,
         )
-        return DiffResult(result["result"], result["errors"])
     except CromperError as e:
-        if isinstance(e, CromperUnavailableError):
+        if isinstance(e, (CromperUnavailableError, CromperTimeoutError)):
             return DiffResult(
                 None, "The diff service is unavailable. Please try again in a moment."
             )
@@ -240,10 +243,10 @@ def create_scratch(data: dict[str, Any]) -> Scratch:
         asm_result = cromper_client.assemble_asm(platform.id, asm)
 
         assembly, _ = Assembly.objects.get_or_create(
-            hash=asm_result["hash"],
+            hash=asm_result.hash,
             defaults={
-                "arch": asm_result["arch"],
-                "elf_object": asm_result["elf_object"],
+                "arch": asm_result.arch,
+                "elf_object": asm_result.elf_object,
                 "source_asm": asm,
             },
         )
