@@ -74,10 +74,6 @@ class AbstractCromperClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def refresh_cache(self) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
     def compile_code(
         self,
         compiler_id: str,
@@ -127,16 +123,13 @@ class CromperClient(AbstractCromperClient):
         self._platforms_cache: dict[str, Platform] | None = None
         self._service_available = True
 
-    def _invalidate_caches(self) -> None:
-        self._compilers_cache = None
-        self._platforms_cache = None
-
     def _probe_recovery(self) -> None:
         """Confirm cromper has recovered before using cached metadata."""
         if not self._service_available:
             self._make_request("GET", "/healthz")
             logger.info("connection to cromper restored, invalidating caches")
-            self._invalidate_caches()
+            self._compilers_cache = None
+            self._platforms_cache = None
             self._service_available = True
 
     def _make_request(
@@ -238,12 +231,6 @@ class CromperClient(AbstractCromperClient):
             if id == platform_id:
                 return platform
         raise ValueError(f"Unknown platform: {platform_id}")
-
-    def refresh_cache(self) -> None:
-        """Force refresh of compilers and platforms cache."""
-        self._invalidate_caches()
-        self.get_compilers()
-        self.get_platforms()
 
     def compile_code(
         self,

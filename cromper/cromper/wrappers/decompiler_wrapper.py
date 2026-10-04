@@ -34,7 +34,7 @@ class DecompilerWrapper:
         try:
             ret = self.m2c_wrapper.decompile(asm, context, platform.id, compiler)
         except M2CError as context_error:
-            # Retry without context as a last-ditch fallback.
+            # Attempt to decompile the source without context as a last-ditch effort
             try:
                 ret = self.m2c_wrapper.decompile(asm, "", platform.id, compiler)
                 ret = f"{context_error}\n{DECOMP_WITH_CONTEXT_FAILED_PREAMBLE}\n{ret}"

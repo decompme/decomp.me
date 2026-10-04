@@ -125,9 +125,6 @@ class MockCromperClient(AbstractCromperClient):
     def get_libraries(self, platform: str = "") -> list[dict[str, Any]]:
         return []
 
-    def refresh_cache(self) -> None:
-        return None
-
     def get_compiler_by_id(self, compiler_id: str) -> Compiler:
         try:
             return _COMPILERS[compiler_id]
