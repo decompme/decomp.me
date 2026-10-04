@@ -26,7 +26,6 @@ def assemble_asm(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
     if not asm_data:
         raise tornado.web.HTTPError(400, "asm_data is required")
 
-    # Create assembly data object
     asm = AssemblyData(data=asm_data, hash=asm_hash)
 
     wrapper = CompilerWrapper(config)

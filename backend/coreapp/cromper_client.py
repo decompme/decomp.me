@@ -24,16 +24,12 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class CompilationResult:
-    """Result of a compilation operation."""
-
     elf_object: bytes
     errors: str
 
 
 @dataclass
 class DiffResult:
-    """Result of a diff operation."""
-
     result: dict[str, Any] | None
     errors: str
 

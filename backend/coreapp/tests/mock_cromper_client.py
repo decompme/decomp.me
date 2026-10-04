@@ -60,9 +60,6 @@ _C_LANGUAGE = CompilerLanguage(default=_C, overrides=())
 _C_OR_CXX_LANGUAGE = CompilerLanguage(default=_C, overrides=(_CXX,))
 
 DUMMY = Compiler("dummy", _DUMMY_PLATFORM, "other", "common", _C_LANGUAGE)
-DUMMY_LONGRUNNING = Compiler(
-    "dummy-longrunning", _DUMMY_PLATFORM, "other", "common", _C_LANGUAGE
-)
 GCC281PM = Compiler("gcc2.8.1pm", N64, "gcc", "mips", _C_LANGUAGE)
 IDO53 = Compiler("ido5.3", N64, "ido", "mips", _C_LANGUAGE)
 IDO71 = Compiler("ido7.1", N64, "ido", "mips", _C_LANGUAGE)
@@ -78,7 +75,6 @@ _COMPILERS = {
     compiler.id: compiler
     for compiler in (
         DUMMY,
-        DUMMY_LONGRUNNING,
         GCC281PM,
         IDO53,
         IDO71,

@@ -25,7 +25,10 @@ def compile(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
     context = data.get("context", "")
     function = data.get("function", "")
     compiler_flags = data.get("compiler_flags", "")
-    libraries = [Library(**lib) for lib in data.get("libraries", [])]
+    try:
+        libraries = [Library(**lib) for lib in data.get("libraries", [])]
+    except (TypeError, ValueError) as e:
+        raise tornado.web.HTTPError(400, f"invalid libraries: {e}") from e
 
     wrapper = CompilerWrapper(config)
 
