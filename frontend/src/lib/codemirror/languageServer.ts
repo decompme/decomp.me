@@ -502,7 +502,7 @@ class LanguageServerPlugin implements PluginValue {
                         [DiagnosticSeverity.Hint]: "info",
                     } as const
                 )[severity],
-                message: typeof message === "string" ? message : message.value,
+                message,
             }))
             .filter(
                 ({ from, to }) =>
