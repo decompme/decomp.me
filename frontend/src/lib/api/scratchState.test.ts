@@ -17,7 +17,6 @@ const scratch = (overrides: Partial<Scratch> = {}): Scratch => ({
     compiler: "ido5.3",
     preset: 123,
     platform: "n64",
-    language: "C",
     score: 0,
     max_score: 100,
     match_override: false,

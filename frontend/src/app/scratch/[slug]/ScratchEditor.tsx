@@ -68,7 +68,7 @@ function ScratchEditorInner({
         let isCurrent = true;
 
         api.get(initialScratchUrl)
-            .then((updatedScratch: api.Scratch) => {
+            .then((updatedScratch) => {
                 if (!isCurrent) return;
 
                 const updateTime = new Date(updatedScratch.last_updated);

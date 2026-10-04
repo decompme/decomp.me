@@ -42,6 +42,7 @@ function onErrorRetry<C>(
     setTimeout(() => revalidate({ retryCount }), 5000);
 }
 
+export * from "./api/compilerFlags";
 export * from "./api/request";
 export * from "./api/scratchState";
 export * from "./api/types";
@@ -111,7 +112,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             throw new Error("Cannot save scratch which you do not own");
         }
 
-        const updatedScratch = await patch(
+        const updatedScratch: Scratch = await patch(
             scratchUrl(localScratch),
             buildScratchSavePatch(savedScratch, localScratch),
         );
@@ -130,10 +131,9 @@ export async function claimScratch(scratch: ClaimableScratch): Promise<void> {
     const { success } = await post(`${scratchUrl(scratch)}/claim`, {
         token: scratch.claim_token,
     });
-    const user = await get("/user");
-
     if (!success) throw new Error("Scratch cannot be claimed");
 
+    const user = await get("/user");
     await mutate("/user", user, { revalidate: false });
 
     delete scratch.claim_token;
@@ -144,7 +144,7 @@ export async function claimScratch(scratch: ClaimableScratch): Promise<void> {
 }
 
 export async function forkScratch(parent: TerseScratch): Promise<Scratch> {
-    const scratch = await post(`${scratchUrl(parent)}/fork`, parent);
+    const scratch: Scratch = await post(`${scratchUrl(parent)}/fork`, parent);
 
     if (scratch.owner) {
         await mutate("/user", scratch.owner, { revalidate: false });

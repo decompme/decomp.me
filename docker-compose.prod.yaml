@@ -2,36 +2,21 @@ x-backend-base: &backend-base
   build:
     context: backend
     target: prod
-  cap_drop:
-    - all
-  cap_add:
-    - setuid
-    - setgid
-    - setfcap
   env_file:
     - docker.prod.env
   restart: unless-stopped
   healthcheck:
-    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/api/healthz"]
+    test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8000/api/healthz" ]
     interval: 15s
     timeout: 3s
     retries: 10
     start_period: 20s
-  security_opt:
-    - apparmor=unconfined
-    - seccomp=unconfined
   volumes:
-    # persist compilers + libraries
-    - ./backend/compilers:/backend/compilers
-    - ./backend/libraries:/backend/libraries
     # static files for django /admin control panel
     - ./backend/static:/backend/static
-  tmpfs:
-    # Use a separate tmpfs to prevent a rogue jailed process
-    # from filling /tmp on the parent container
-    - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
   networks:
     - decompme
+
 x-frontend-base: &frontend-base
   build:
     context: frontend
@@ -40,7 +25,7 @@ x-frontend-base: &frontend-base
     - docker.prod.env
   restart: unless-stopped
   healthcheck:
-    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
+    test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz" ]
     interval: 15s
     timeout: 3s
     retries: 10
@@ -49,30 +34,65 @@ x-frontend-base: &frontend-base
     - decompme
 
 services:
+  cromper:
+    image: ghcr.io/decompme/decompme-cromper:${CROMPER_TAG:-latest}
+    build:
+      context: cromper
+      target: prod
+    cap_drop:
+      - all
+    cap_add:
+      - setuid
+      - setgid
+      - setfcap
+    env_file:
+      - docker.prod.env
+    restart: unless-stopped
+    security_opt:
+      - apparmor=unconfined
+      - seccomp=unconfined
+    volumes:
+      - ./cromper/compilers:/cromper/compilers:ro
+      - ./cromper/libraries:/cromper/libraries:ro
+    tmpfs:
+      - /sandbox/tmp:exec,uid=1000,gid=1000,size=256M,mode=0700
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8888/healthz" ]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    networks:
+      - decompme
+
   backend-blue:
     <<: *backend-base
     image: ghcr.io/decompme/decompme-backend:${BLUE_TAG:-latest}
+
   frontend-blue:
     <<: *frontend-base
     image: ghcr.io/decompme/decompme-frontend:${BLUE_TAG:-latest}
     environment:
       INTERNAL_API_BASE: http://backend-blue:8000/api
+      INTERNAL_CROMPER_BASE: http://cromper:8888
 
   backend-green:
     <<: *backend-base
     image: ghcr.io/decompme/decompme-backend:${GREEN_TAG:-latest}
+
   frontend-green:
     <<: *frontend-base
     image: ghcr.io/decompme/decompme-frontend:${GREEN_TAG:-latest}
     environment:
       INTERNAL_API_BASE: http://backend-green:8000/api
+      INTERNAL_CROMPER_BASE: http://cromper:8888
 
   nginx:
     image: ghcr.io/decompme/decompme-nginx:${NGINX_TAG:-latest}
     build:
       context: nginx
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/nginx-healthz"]
+      test: [ "CMD", "wget", "-q", "--spider", "http://127.0.0.1/nginx-healthz" ]
       interval: 15s
       timeout: 3s
       retries: 10
@@ -88,15 +108,13 @@ services:
       # certbot
       - ./certbot:/var/www/certbot
       - ./letsencrypt:/etc/letsencrypt
-      # NOTE: /media is a "Project" feature, currently unused
-      - ./backend/media:/media
       # static files for django /admin control panel
       - ./backend/static:/var/www/decomp.me/static
       # TODO: mount static + public files from frontend
-    # BOOTSTRAP: allow nginx to start before backend/frontend containers are up
-    #extra_hosts:
-    #  - "backend-blue=172.17.0.1"   # docker0 bridge
-    #  - "frontend-blue=172.17.0.1"  # docker0 bridge
+      # BOOTSTRAP: allow nginx to start before backend/frontend containers are up
+      #extra_hosts:
+      #  - "backend-blue=172.17.0.1"   # docker0 bridge
+      #  - "frontend-blue=172.17.0.1"  # docker0 bridge
     networks:
       - decompme
 
@@ -116,8 +134,6 @@ services:
     image: postgres:17
     env_file:
       - docker.prod.env
-    # ports:
-    #   - "5432:5432"
     restart: unless-stopped
     volumes:
       - ./postgres:/var/lib/postgresql/data
@@ -127,14 +143,14 @@ services:
       - decompme
     command: >
       postgres
-      -c shared_buffers=8GB
-      -c work_mem=128MB
-      -c maintenance_work_mem=2GB
-      -c effective_cache_size=16GB
-      -c wal_buffers=32MB
-      -c checkpoint_completion_target=0.9
-      -c random_page_cost=1.1
-      -c effective_io_concurrency=300
+       -c shared_buffers=8GB
+       -c work_mem=128MB
+       -c maintenance_work_mem=2GB
+       -c effective_cache_size=16GB
+       -c wal_buffers=32MB
+       -c checkpoint_completion_target=0.9
+       -c random_page_cost=1.1
+       -c effective_io_concurrency=300
 
 networks:
   decompme:

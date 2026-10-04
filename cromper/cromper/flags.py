@@ -23,6 +23,13 @@ class Language(enum.Enum):
     def get_display_name(self) -> str:
         return self.display_name
 
+    def to_json(self) -> dict[str, str]:
+        return {
+            "id": self.name.lower(),
+            "display_name": self.display_name,
+            "extension": self.file_extension,
+        }
+
 
 @dataclass(frozen=True)
 class Checkbox:
@@ -56,8 +63,8 @@ class LanguageFlagSet:
     flags: dict[str, Language]
 
     def to_json(self) -> dict[str, str | list[str]]:
-        # To the client, we're a regular FlagSet - the extra metadata we carry
-        # is purely for the backend to determine the scratch's language
+        # Generic flag clients see a regular FlagSet; compiler metadata exposes
+        # the mappings separately through Compiler.language.
         return {
             "type": "flagset",
             "id": self.id,

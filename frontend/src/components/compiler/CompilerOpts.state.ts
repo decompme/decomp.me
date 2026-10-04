@@ -1,3 +1,10 @@
+import {
+    normalizeCompilerFlag,
+    splitCompilerFlags,
+} from "../../lib/api/compilerFlags";
+
+export { hasCompilerFlag } from "../../lib/api/compilerFlags";
+
 export type FlagEdit = {
     flag?: string;
     value: boolean;
@@ -31,58 +38,11 @@ function areLibrariesEqual(left: Library[], right: Library[]) {
     );
 }
 
-function normalizeCompilerFlag(flag: string | undefined) {
-    return flag?.trim().replace(/\s+/g, " ") ?? "";
-}
-
-function splitCompilerFlags(
-    flags: string | undefined,
-    knownFlags: string[] = [],
-): string[] {
-    const normalizedFlags = normalizeCompilerFlag(flags ?? "");
-    if (!normalizedFlags) return [];
-
-    const normalizedKnownFlags = knownFlags
-        .map(normalizeCompilerFlag)
-        .filter(Boolean)
-        .sort((left, right) => right.length - left.length);
-
-    const compilerFlags: string[] = [];
-    let index = 0;
-
-    while (index < normalizedFlags.length) {
-        const knownFlag = normalizedKnownFlags.find((flag) => {
-            if (!normalizedFlags.startsWith(flag, index)) return false;
-
-            const next = normalizedFlags[index + flag.length];
-            return next === undefined || next === " ";
-        });
-
-        if (knownFlag) {
-            compilerFlags.push(knownFlag);
-            index += knownFlag.length + 1;
-            continue;
-        }
-
-        const nextSpace = normalizedFlags.indexOf(" ", index);
-        const end = nextSpace === -1 ? normalizedFlags.length : nextSpace;
-        compilerFlags.push(normalizedFlags.slice(index, end));
-        index = end + 1;
-    }
-
-    return compilerFlags;
-}
-
 export function normalizeDiffFlags(flags: string[] | undefined): string[] {
     if (!flags) return [];
 
     const normalizedFlags = flags.filter(Boolean);
     return areArraysEqual(flags, normalizedFlags) ? flags : normalizedFlags;
-}
-
-export function hasCompilerFlag(flags: string | undefined, flag: string) {
-    const normalizedFlag = normalizeCompilerFlag(flag);
-    return splitCompilerFlags(flags, [normalizedFlag]).includes(normalizedFlag);
 }
 
 export function setCompilerFlag(

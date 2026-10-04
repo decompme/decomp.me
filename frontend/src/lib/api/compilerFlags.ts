@@ -1,4 +1,73 @@
-import type { Compiler, CompilersResponse, Flag, FlagClass } from "./types";
+import type {
+    Compiler,
+    CompilersResponse,
+    Flag,
+    FlagClass,
+    Language,
+} from "./types";
+
+export function normalizeCompilerFlag(flag: string | undefined): string {
+    return flag?.trim().replace(/\s+/g, " ") ?? "";
+}
+
+export function splitCompilerFlags(
+    flags: string | undefined,
+    knownFlags: string[] = [],
+): string[] {
+    const normalizedFlags = normalizeCompilerFlag(flags ?? "");
+    if (!normalizedFlags) return [];
+
+    const normalizedKnownFlags = knownFlags
+        .map(normalizeCompilerFlag)
+        .filter(Boolean)
+        .sort((left, right) => right.length - left.length);
+
+    const compilerFlags: string[] = [];
+    let index = 0;
+
+    while (index < normalizedFlags.length) {
+        const knownFlag = normalizedKnownFlags.find((flag) => {
+            if (!normalizedFlags.startsWith(flag, index)) return false;
+
+            const next = normalizedFlags[index + flag.length];
+            return next === undefined || next === " ";
+        });
+
+        if (knownFlag) {
+            compilerFlags.push(knownFlag);
+            index += knownFlag.length + 1;
+            continue;
+        }
+
+        const nextSpace = normalizedFlags.indexOf(" ", index);
+        const end = nextSpace === -1 ? normalizedFlags.length : nextSpace;
+        compilerFlags.push(normalizedFlags.slice(index, end));
+        index = end + 1;
+    }
+
+    return compilerFlags;
+}
+
+export function hasCompilerFlag(
+    flags: string | undefined,
+    flag: string,
+): boolean {
+    const normalizedFlag = normalizeCompilerFlag(flag);
+    return splitCompilerFlags(flags, [normalizedFlag]).includes(normalizedFlag);
+}
+
+export function resolveCompilerLanguage(
+    compiler: Compiler | undefined,
+    compilerFlags: string,
+): Language | undefined {
+    if (!compiler) return undefined;
+
+    return (
+        compiler.language.overrides.find(({ flag }) =>
+            hasCompilerFlag(compilerFlags, flag),
+        ) ?? compiler.language.default
+    );
+}
 
 export function resolveFlags(
     className: string,

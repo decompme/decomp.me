@@ -40,7 +40,6 @@ export interface TerseScratch {
     compiler: string;
     preset: number;
     platform: string;
-    language: string;
     score: number; // -1 = doesn't compile
     max_score: number;
     match_override: boolean;
@@ -179,6 +178,22 @@ export type CompilerMetadata = CompilerBase & {
     platform: string;
     flags_class: string;
     diff_flags_class: string;
+    language: CompilerLanguage;
+};
+
+export type Language = {
+    id: string;
+    display_name: string;
+    extension: string;
+};
+
+export type LanguageOverride = Language & {
+    flag: string;
+};
+
+export type CompilerLanguage = {
+    default: Language;
+    overrides: LanguageOverride[];
 };
 
 export type FlagClass = {

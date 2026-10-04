@@ -1,5 +1,4 @@
 import { StreamLanguage } from "@codemirror/language";
-
 import type { EditorView } from "@codemirror/view";
 import { DotFillIcon } from "@primer/octicons-react";
 import { vim } from "@replit/codemirror-vim";
@@ -254,14 +253,17 @@ function ScratchInner({
     initialCompilation,
     offline,
 }: Props) {
+    const availableCompilers = api.useCompilers(scratch.platform);
+    const language = api.resolveCompilerLanguage(
+        availableCompilers[scratch.compiler],
+        scratch.compiler_flags,
+    );
     const CODEMIRROR_EXTENSIONS = useMemo(
         () => [
             basicSetup,
-            scratch.language === "Pascal"
-                ? StreamLanguage.define(pascal)
-                : cpp(),
+            language?.id === "pascal" ? StreamLanguage.define(pascal) : cpp(),
         ],
-        [scratch.language],
+        [language?.id],
     );
 
     const container = useSize<HTMLDivElement>();
@@ -335,6 +337,7 @@ function ScratchInner({
     const [saveSource, saveContext] = useLanguageServer(
         languageServerEnabledSetting,
         scratch,
+        language,
         sourceEditor,
         contextEditor,
     );

@@ -12,14 +12,31 @@ import {
     languageServerWithTransport,
 } from "@/lib/codemirror/languageServer";
 
+type InitialLanguageServerState = {
+    scratch: api.Scratch;
+    languageId: "c" | "cpp";
+};
+
+function getClangdLanguageId(
+    language: api.Language | undefined,
+): "c" | "cpp" | undefined {
+    if (language?.id === "c") return "c";
+    if (language?.id === "cxx" || language?.id === "old_cxx") {
+        return "cpp";
+    }
+    return undefined;
+}
+
 export default function useLanguageServer(
     enabled: boolean,
     scratch: api.Scratch,
+    language: api.Language | undefined,
     sourceEditor: RefObject<EditorView>,
     contextEditor: RefObject<EditorView>,
 ) {
+    const languageId = getClangdLanguageId(language);
     const [initialScratchState, setInitialScratchState] =
-        useState<api.Scratch>(undefined);
+        useState<InitialLanguageServerState>(undefined);
     const [defaultClangFormat, setDefaultClangFormat] =
         useState<string>(undefined);
 
@@ -36,8 +53,7 @@ export default function useLanguageServer(
 
         const loadClangdModule = async () => {
             if (!enabled) return;
-            if (!(scratch.language === "C" || scratch.language === "C++"))
-                return;
+            if (!languageId) return;
 
             const { ClangdStdioTransport } = await import(
                 "@clangd-wasm/clangd-wasm"
@@ -52,13 +68,13 @@ export default function useLanguageServer(
         return () => {
             isCurrent = false;
         };
-    }, [scratch.language, enabled]);
+    }, [languageId, enabled]);
 
     useEffect(() => {
-        if (!initialScratchState) {
-            setInitialScratchState(scratch);
+        if (!initialScratchState && languageId) {
+            setInitialScratchState({ scratch, languageId });
         }
-    }, [scratch, initialScratchState]);
+    }, [scratch, languageId, initialScratchState]);
 
     useEffect(() => {
         let isCurrent = true;
@@ -84,10 +100,7 @@ export default function useLanguageServer(
         if (!initialScratchState) return;
         if (!defaultClangFormat) return;
 
-        const languageId = {
-            C: "c",
-            "C++": "cpp",
-        }[initialScratchState.language];
+        const { scratch: initialScratch, languageId } = initialScratchState;
 
         const sourceFilename = `source.${languageId}`;
         const contextFilename = `context.${languageId}`;
@@ -109,8 +122,8 @@ export default function useLanguageServer(
             ".clang-format": defaultClangFormat,
         };
 
-        initialFileState[sourceFilename] = initialScratchState.source_code;
-        initialFileState[contextFilename] = initialScratchState.context;
+        initialFileState[sourceFilename] = initialScratch.source_code;
+        initialFileState[contextFilename] = initialScratch.context;
 
         const _lsClient = new LanguageServerClient({
             transport: new ClangdStdioTransportModule({
