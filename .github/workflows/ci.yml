@@ -72,14 +72,12 @@ jobs:
             --cap-add setfcap \
             --tmpfs /sandbox/tmp:exec,uid=1000,gid=1000,size=256M,mode=0700 \
             --entrypoint /bin/bash \
-            -e COMPILER_BASE_PATH=/cromper/compilers \
-            -e LIBRARY_BASE_PATH=/cromper/libraries \
             -e SANDBOX_DISABLE_PROC=true \
             decompme_cromper \
               -c 'cd /cromper && \
               uv sync --locked --all-extras && \
-              uv run --locked compilers/download.py --compilers-dir $COMPILER_BASE_PATH && \
-              uv run --locked libraries/download.py --libraries-dir $LIBRARY_BASE_PATH && \
+              uv run --locked compilers/download.py && \
+              uv run --locked libraries/download.py && \
               uv run --locked pytest'
 
   docker_compose_test:
