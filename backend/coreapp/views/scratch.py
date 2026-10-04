@@ -432,7 +432,7 @@ class ScratchViewSet(
             if "context" in partial:
                 scratch_context = partial["context"]
             if "libraries" in partial:
-                scratch.libraries = [Library(**lib) for lib in partial["libraries"]]
+                scratch.libraries = partial["libraries"]
             include_objects = partial["include_objects"]
 
         compilation = compile_scratch(scratch, context=scratch_context)

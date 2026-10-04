@@ -532,6 +532,18 @@ class ScratchModificationTests(BaseTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_compile_post_accepts_libraries(self) -> None:
+        scratch = self.create_nop_scratch()
+
+        response = self.client.post(
+            reverse("scratch-compile", kwargs={"pk": scratch.slug}),
+            {"libraries": [{"name": "directx", "version": "8.0"}]},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.json()["success"])
+
     def test_compile_post_parses_include_objects_bool(self) -> None:
         scratch = self.create_nop_scratch()
 
