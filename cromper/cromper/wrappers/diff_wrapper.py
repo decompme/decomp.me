@@ -41,7 +41,7 @@ def parse_flag(flag: str) -> ParsedFlag:
 @dataclass
 class DiffResult:
     result: dict[str, Any] | None = None
-    errors: str | None = None
+    errors: str = ""
 
 
 class DiffWrapper:

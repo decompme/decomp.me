@@ -74,7 +74,6 @@ jobs:
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/cromper/compilers \
             -e LIBRARY_BASE_PATH=/cromper/libraries \
-            -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             decompme_cromper \
               -c 'cd /cromper && \
@@ -114,7 +113,6 @@ jobs:
           echo 'ALLOWED_HOSTS="backend,backend-green,backend-blue,localhost,127.0.0.1"' >> docker.prod.env
           echo 'CROMPER_URL=http://cromper:8888' >> docker.prod.env
           echo 'CROMPER_PORT=8888' >> docker.prod.env
-          echo 'USE_SANDBOX_JAIL="on"' >> docker.prod.env
           echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
           echo 'CI=true' >> docker.prod.env
           echo 'ACTIVE_SLOT=blue' >> .deploy.env

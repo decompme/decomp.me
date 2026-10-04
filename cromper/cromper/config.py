@@ -25,7 +25,7 @@ class CromperConfig:
         self.num_threads = int(os.getenv("CROMPER_NUM_THREADS", "8"))
 
         # Sandbox settings
-        self.use_sandbox_jail = env_flag("USE_SANDBOX_JAIL")
+        self.use_sandbox_jail = env_flag("USE_SANDBOX_JAIL", True)
         self.sandbox_disable_proc = env_flag("SANDBOX_DISABLE_PROC")
 
         # Paths
