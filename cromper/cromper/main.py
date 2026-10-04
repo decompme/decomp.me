@@ -3,10 +3,13 @@
 import logging
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
+import sentry_sdk
 import tornado.web
 
 # Load environment variables from .env file before importing other modules
 from dotenv import load_dotenv
+from sentry_sdk.integrations.tornado import TornadoIntegration
+from sentry_sdk.transport import HttpTransport
 
 from .config import CromperConfig
 from .handlers.assemble import AssembleHandler
@@ -19,6 +22,23 @@ from .handlers.handlers import (
     LibrariesHandler,
     PlatformHandler,
 )
+
+
+def init_sentry(config: CromperConfig) -> None:
+    """Initialize Sentry when error reporting is configured."""
+    if not config.sentry_dsn:
+        return
+
+    class CustomHttpTransport(HttpTransport):
+        TIMEOUT = config.sentry_timeout
+
+    sentry_sdk.init(
+        dsn=config.sentry_dsn,
+        integrations=[TornadoIntegration()],
+        traces_sample_rate=config.sentry_sample_rate,
+        send_default_pii=False,
+        transport=CustomHttpTransport,
+    )
 
 
 def make_app(config: CromperConfig) -> tornado.web.Application:
@@ -79,6 +99,7 @@ def main():
     logger = logging.getLogger(__name__)
 
     config = CromperConfig()
+    init_sentry(config)
 
     logger.info(f"Starting cromper on port {config.port}")
     logger.info(f"Debug mode: {config.debug}")

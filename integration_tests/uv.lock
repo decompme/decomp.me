@@ -407,6 +407,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "requests" },
+    { name = "sentry-sdk" },
     { name = "tornado" },
 ]
 
@@ -422,6 +423,7 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "requests", specifier = ">=2.34.2" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.16.6" },
+    { name = "sentry-sdk", specifier = ">=2.69.1" },
     { name = "tornado", specifier = ">=6.5.8" },
 ]
 provides-extras = ["dev"]

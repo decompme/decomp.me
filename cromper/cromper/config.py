@@ -20,6 +20,11 @@ class CromperConfig:
         self.port = int(os.getenv("CROMPER_PORT", "8888"))
         self.debug = env_flag("CROMPER_DEBUG")
 
+        # Error reporting
+        self.sentry_dsn = os.getenv("SENTRY_DSN", "")
+        self.sentry_sample_rate = float(os.getenv("SENTRY_SAMPLE_RATE", "0.0"))
+        self.sentry_timeout = int(os.getenv("SENTRY_TIMEOUT", "3"))
+
         # CPU settings
         self.num_processes = int(os.getenv("CROMPER_NUM_PROCESSES", "4"))
         self.num_threads = int(os.getenv("CROMPER_NUM_THREADS", "8"))
