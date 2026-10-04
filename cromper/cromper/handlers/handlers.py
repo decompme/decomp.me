@@ -1,4 +1,5 @@
 import json
+import logging
 import traceback
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from typing import Any
@@ -8,6 +9,8 @@ import tornado.web
 from cromper import flags, libraries
 
 from ..config import CromperConfig
+
+logger = logging.getLogger(__name__)
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -171,6 +174,7 @@ class CompilerLanguageBaseHandler(BaseHandler):
             None,
         )
         if compiler is None:
+            logger.warning("Compiler id '%s' not found", compiler_id)
             raise tornado.web.HTTPError(404, reason="Unknown compiler")
 
         return compiler.get_language(compiler_flags)
