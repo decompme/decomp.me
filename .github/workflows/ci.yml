@@ -111,8 +111,6 @@ jobs:
           echo 'CONN_MAX_AGE=60' >> docker.prod.env
           echo 'CONN_HEALTH_CHECKS="true"' >> docker.prod.env
           echo 'ALLOWED_HOSTS="backend,backend-green,backend-blue,localhost,127.0.0.1"' >> docker.prod.env
-          echo 'CROMPER_URL=http://cromper:8888' >> docker.prod.env
-          echo 'CROMPER_PORT=8888' >> docker.prod.env
           echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
           echo 'CI=true' >> docker.prod.env
           echo 'ACTIVE_SLOT=blue' >> .deploy.env
