@@ -11,6 +11,10 @@
         "analyze": "ANALYZE=true next build",
         "clean": "rm -rf .next node_modules"
     },
+    "resolutions": {
+        "motion-dom": "12.18.1",
+        "motion-utils": "12.18.1"
+    },
     "dependencies": {
         "@clangd-wasm/clangd-wasm": "15.0.7-dev5",
         "@codemirror/autocomplete": "^6.18.3",
