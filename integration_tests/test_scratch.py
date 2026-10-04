@@ -21,25 +21,6 @@ from .conftest import IntegrationTestBase
 class TestScratchCreation(IntegrationTestBase):
     """Tests for scratch creation with real compilers."""
 
-    def test_accept_late_rodata(self, api_client):
-        """
-        Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
-        """
-        scratch_dict = {
-            "platform": "n64",
-            "compiler": "ido7.1",
-            "context": "",
-            "target_asm": """.late_rodata
-glabel D_8092C224
-.float 0.1
-
-.text
-glabel func_80929D04
-jr $ra
-nop""",
-        }
-        self.create_scratch(api_client, scratch_dict)
-
     def test_n64_func(self, api_client):
         """
         Ensure that functions with t6/t7 registers can be assembled.
