@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from rest_framework import filters, generics
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -157,3 +158,34 @@ class UserScratchStats(APIView):
             }
         )
         return resp
+
+
+class AnonymousProfileDetail(APIView):
+    def get(self, request: Request, pk: int) -> Response:
+        if not request.profile.is_staff():
+            raise PermissionDenied()
+
+        profile = get_object_or_404(Profile, pk=pk, user__isnull=True)
+        return Response(serialize_profile(profile, num_scratches=True))
+
+
+class AnonymousProfileScratchList(generics.ListAPIView):  # type: ignore
+    pagination_class = ScratchPagination
+    serializer_class = TerseScratchSerializer
+    filterset_fields = ["platform", "compiler", "preset"]
+    filter_backends = [
+        django_filters.rest_framework.DjangoFilterBackend,
+        NonEmptySearchFilter,
+        filters.OrderingFilter,
+    ]
+    ordering_fields = ["creation_time", "last_updated", "score", "match_percent"]
+
+    def get_queryset(self) -> QuerySet[Scratch]:
+        profile: Profile | None = self.request.profile  # type: ignore[attr-defined]
+        if profile is None or not profile.is_staff():
+            raise PermissionDenied()
+
+        anon_profile = get_object_or_404(
+            Profile, pk=self.kwargs["pk"], user__isnull=True
+        )
+        return ScratchViewSet.queryset.filter(owner=anon_profile)

@@ -263,3 +263,49 @@ class UserTests(BaseTestCase):
         url = reverse("scratch-detail", kwargs={"pk": slug})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_anonymous_profile_activity_is_admin_only(self) -> None:
+        scratch = self.create_nop_scratch()
+        profile = Profile.objects.create()
+        scratch.owner = profile
+        scratch.save(update_fields=["owner"])
+        profile_id = profile.id
+        profile_url = reverse("anonymous-profile-detail", kwargs={"pk": profile_id})
+        scratches_url = reverse(
+            "anonymous-profile-scratches", kwargs={"pk": profile_id}
+        )
+
+        self.assertEqual(
+            self.client.get(profile_url).status_code, status.HTTP_403_FORBIDDEN
+        )
+        self.assertEqual(
+            self.client.get(scratches_url).status_code, status.HTTP_403_FORBIDDEN
+        )
+
+        user = User.objects.create_user(username="not-admin")
+        Profile.objects.create(user=user)
+        self.client.force_login(user)
+        self.assertEqual(
+            self.client.get(profile_url).status_code, status.HTTP_403_FORBIDDEN
+        )
+        self.assertEqual(
+            self.client.get(scratches_url).status_code, status.HTTP_403_FORBIDDEN
+        )
+
+        admin = User.objects.create_user(username="admin")
+        admin.is_staff = True
+        admin.save(update_fields=["is_staff"])
+        Profile.objects.create(user=admin)
+        self.client.force_login(admin)
+
+        profile_response = self.client.get(profile_url)
+        self.assertEqual(profile_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(profile_response.json()["id"], profile_id)
+        self.assertEqual(profile_response.json()["num_scratches"], 1)
+
+        scratches_response = self.client.get(scratches_url)
+        self.assertEqual(scratches_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            [result["slug"] for result in scratches_response.json()["results"]],
+            [scratch.slug],
+        )
