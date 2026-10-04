@@ -8,7 +8,13 @@ from typing import TYPE_CHECKING, Any
 import requests
 from django.conf import settings
 
-from coreapp.compiler_utils import Compiler, Platform
+from coreapp.compiler_utils import (
+    Compiler,
+    CompilerLanguage,
+    Language,
+    LanguageOverride,
+    Platform,
+)
 
 if TYPE_CHECKING:
     from coreapp.models.scratch import Asm
@@ -65,12 +71,6 @@ class AbstractCromperClient(ABC):
 
     @abstractmethod
     def get_platform_by_id(self, platform_id: str) -> Platform:
-        raise NotImplementedError
-
-    @abstractmethod
-    def resolve_language_extension(
-        self, compiler_id: str, compiler_flags: str = ""
-    ) -> str:
         raise NotImplementedError
 
     @abstractmethod
@@ -180,11 +180,21 @@ class CromperClient(AbstractCromperClient):
                         )
 
                     platform = self.get_platform_by_id(compiler_data["platform"])
+                    language_data = compiler_data["language"]
+                    default_language = language_data["default"]
+                    language = CompilerLanguage(
+                        default=Language(**default_language),
+                        overrides=tuple(
+                            LanguageOverride(**override)
+                            for override in language_data["overrides"]
+                        ),
+                    )
                     compilers[compiler_id] = Compiler(
                         id=compiler_id,
                         platform=platform,
                         flag_class=compiler_data["flags_class"],
                         diff_flag_class=compiler_data["diff_flags_class"],
+                        language=language,
                     )
                 except (KeyError, TypeError, ValueError) as e:
                     raise CromperError(
@@ -228,25 +238,6 @@ class CromperClient(AbstractCromperClient):
             if id == platform_id:
                 return platform
         raise ValueError(f"Unknown platform: {platform_id}")
-
-    def resolve_language_extension(
-        self, compiler_id: str, compiler_flags: str = ""
-    ) -> str:
-        """Resolve a compiler invocation's effective source file extension."""
-        response = self._make_request(
-            "POST",
-            "/compiler/extension",
-            json={
-                "compiler_id": compiler_id,
-                "compiler_flags": compiler_flags,
-            },
-        )
-        extension = response.get("extension")
-        if not isinstance(extension, str):
-            raise CromperError(
-                f"Invalid extension response from cromper: {extension!r}"
-            )
-        return extension
 
     def refresh_cache(self) -> None:
         """Force refresh of compilers and platforms cache."""

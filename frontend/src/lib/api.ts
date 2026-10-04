@@ -5,7 +5,6 @@ import { useDebouncedCallback } from "use-debounce";
 import { useRouter } from "@/lib/navigation";
 import { resolveCompilersResponse } from "./api/compilerFlags";
 import { get, getPublic, patch, post, ResponseError } from "./api/request";
-import { getScratch, resolveScratchLanguage } from "./api/scratchLanguage";
 import {
     buildScratchCompileRequest,
     buildScratchSavePatch,
@@ -13,7 +12,7 @@ import {
 } from "./api/scratchState";
 import type {
     AnonymousUser,
-    ClaimableScratchData,
+    ClaimableScratch,
     Compilation,
     Compiler,
     CompilersResponse,
@@ -23,7 +22,6 @@ import type {
     Preset,
     PresetBase,
     Scratch,
-    ScratchData,
     TerseScratch,
     User,
 } from "./api/types";
@@ -45,7 +43,7 @@ function onErrorRetry<C>(
 }
 
 export * from "./api/request";
-export * from "./api/scratchLanguage";
+export * from "./api/compilerFlags";
 export * from "./api/scratchState";
 export * from "./api/types";
 
@@ -91,7 +89,7 @@ export function useUserIsYou(): (
 export function useSavedScratch(scratch: Scratch, enabled = true): Scratch {
     const { data: savedScratch, error } = useSWR(
         enabled ? scratchUrl(scratch) : null,
-        getScratch,
+        get,
         {
             fallbackData: scratch, // No loading state, just use the local scratch
         },
@@ -114,11 +112,10 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             throw new Error("Cannot save scratch which you do not own");
         }
 
-        const updatedScratchData: ScratchData = await patch(
+        const updatedScratch: Scratch = await patch(
             scratchUrl(localScratch),
             buildScratchSavePatch(savedScratch, localScratch),
         );
-        const updatedScratch = await resolveScratchLanguage(updatedScratchData);
 
         await mutate(scratchUrl(localScratch), updatedScratch, {
             revalidate: false,
@@ -130,33 +127,24 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
     return saveScratch;
 }
 
-export async function claimScratch(
-    scratch: ClaimableScratchData,
-): Promise<void> {
+export async function claimScratch(scratch: ClaimableScratch): Promise<void> {
     const { success } = await post(`${scratchUrl(scratch)}/claim`, {
         token: scratch.claim_token,
     });
     if (!success) throw new Error("Scratch cannot be claimed");
 
-    const [user, resolvedScratch] = await Promise.all([
-        get("/user"),
-        resolveScratchLanguage(scratch),
-    ]);
+    const user = await get("/user");
     await mutate("/user", user, { revalidate: false });
 
-    delete resolvedScratch.claim_token;
-    await mutate(scratchUrl(resolvedScratch), {
-        ...resolvedScratch,
+    delete scratch.claim_token;
+    await mutate(scratchUrl(scratch), {
+        ...scratch,
         owner: user,
     });
 }
 
 export async function forkScratch(parent: TerseScratch): Promise<Scratch> {
-    const scratchData: ScratchData = await post(
-        `${scratchUrl(parent)}/fork`,
-        parent,
-    );
-    const scratch = await resolveScratchLanguage(scratchData);
+    const scratch: Scratch = await post(`${scratchUrl(parent)}/fork`, parent);
 
     if (scratch.owner) {
         await mutate("/user", scratch.owner, { revalidate: false });

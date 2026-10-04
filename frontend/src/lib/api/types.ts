@@ -57,21 +57,13 @@ export interface BestFork {
     updated_at: string;
 }
 
-export interface ScratchData extends TerseScratch {
+export interface Scratch extends TerseScratch {
     description: string;
     compiler_flags: string;
     diff_flags: string[];
     source_code: string;
     context: string;
     diff_label: string;
-}
-
-export interface Scratch extends ScratchData {
-    language: string;
-}
-
-export interface ClaimableScratchData extends ScratchData {
-    claim_token: string;
 }
 
 export interface ClaimableScratch extends Scratch {
@@ -186,6 +178,22 @@ export type CompilerMetadata = CompilerBase & {
     platform: string;
     flags_class: string;
     diff_flags_class: string;
+    language: CompilerLanguage;
+};
+
+export type Language = {
+    id: string;
+    display_name: string;
+    extension: string;
+};
+
+export type LanguageOverride = Language & {
+    flag: string;
+};
+
+export type CompilerLanguage = {
+    default: Language;
+    overrides: LanguageOverride[];
 };
 
 export type FlagClass = {

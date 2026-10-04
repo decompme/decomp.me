@@ -60,7 +60,9 @@ class CromperAPITests(AsyncHTTPTestCase):
             self.assertNotIn("diff_flags", compiler)
             self.assertIn(compiler["diff_flags_class"], data["diff_flags"])
             self.assertNotIn("flags", compiler)
-            self.assertNotIn("language", compiler)
+            self.assertIn("language", compiler)
+            self.assertIn("default", compiler["language"])
+            self.assertIn("overrides", compiler["language"])
             self.assertIn(compiler["flags_class"], data["flags"])
 
         for field in ("flags", "diff_flags"):
@@ -97,71 +99,21 @@ class CromperAPITests(AsyncHTTPTestCase):
         self.assertEqual(set(data["diff_flags"]), {"common", "mips"})
         self.assertEqual(data["diff_flags"]["mips"]["parent"], "common")
 
-    def test_compiler_language_endpoint(self):
-        """Test resolving the effective language from compiler flags."""
-        response = self.fetch(
-            "/compiler/language",
-            method="POST",
-            headers={"Content-Type": "application/json"},
-            body=json.dumps(
-                {
-                    "compiler_id": "ee-gcc2.9-991111",
-                    "compiler_flags": "-O2 -x c++",
-                }
-            ),
-        )
+    def test_compiler_language_metadata(self):
+        response = self.fetch("/compiler/ps2/ee-gcc2.9-991111")
         self.assertEqual(response.code, 200)
 
-        data = json.loads(response.body)
-        self.assertEqual(data["language"], "C++")
-        self.assertNotIn("extension", data)
-
-    def test_compiler_extension_endpoint(self):
-        """Test resolving the effective source extension from compiler flags."""
-        response = self.fetch(
-            "/compiler/extension",
-            method="POST",
-            headers={"Content-Type": "application/json"},
-            body=json.dumps(
-                {
-                    "compiler_id": "ee-gcc2.9-991111",
-                    "compiler_flags": "-O2 -x c++",
-                }
-            ),
+        compiler = json.loads(response.body)["compilers"]["ee-gcc2.9-991111"]
+        self.assertEqual(compiler["language"]["default"]["id"], "c")
+        self.assertIn(
+            {
+                "flag": "-x c++",
+                "id": "cxx",
+                "display_name": "C++",
+                "extension": "cpp",
+            },
+            compiler["language"]["overrides"],
         )
-        self.assertEqual(response.code, 200)
-
-        data = json.loads(response.body)
-        self.assertEqual(data["extension"], "cpp")
-        self.assertNotIn("language", data)
-
-    def test_compiler_language_endpoint_unknown_compiler(self):
-        response = self.fetch(
-            "/compiler/language",
-            method="POST",
-            headers={"Content-Type": "application/json"},
-            body=json.dumps(
-                {
-                    "compiler_id": "nonexistent_compiler",
-                    "compiler_flags": "",
-                }
-            ),
-        )
-        self.assertEqual(response.code, 404)
-
-    def test_compiler_language_endpoint_rejects_invalid_flags(self):
-        response = self.fetch(
-            "/compiler/language",
-            method="POST",
-            headers={"Content-Type": "application/json"},
-            body=json.dumps(
-                {
-                    "compiler_id": "gcc2.8.1pm",
-                    "compiler_flags": [],
-                }
-            ),
-        )
-        self.assertEqual(response.code, 400)
 
     def test_libraries_endpoint(self):
         """Test the libraries endpoint."""

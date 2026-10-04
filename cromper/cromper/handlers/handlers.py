@@ -152,46 +152,6 @@ class CompilerHandler(BaseHandler):
         )
 
 
-class CompilerLanguageBaseHandler(BaseHandler):
-    """Shared compiler invocation language resolution."""
-
-    def get_effective_language(self) -> flags.Language:
-        body = self.get_json_body()
-        compiler_id = body.get("compiler_id")
-        compiler_flags = body.get("compiler_flags", "")
-
-        if not isinstance(compiler_id, str) or not compiler_id:
-            raise tornado.web.HTTPError(400, reason="compiler_id is required")
-        if not isinstance(compiler_flags, str):
-            raise tornado.web.HTTPError(400, reason="compiler_flags must be a string")
-
-        compiler = next(
-            (
-                item
-                for item in self.config.compilers_instance.available_compilers()
-                if item.id == compiler_id
-            ),
-            None,
-        )
-        if compiler is None:
-            logger.warning("Compiler id '%s' not found", compiler_id)
-            raise tornado.web.HTTPError(404, reason="Unknown compiler")
-
-        return compiler.get_language(compiler_flags)
-
-
-class CompilerLanguageHandler(CompilerLanguageBaseHandler):
-    def post(self):
-        language = self.get_effective_language()
-        self.write({"language": language.get_display_name()})
-
-
-class CompilerExtensionHandler(CompilerLanguageBaseHandler):
-    def post(self):
-        language = self.get_effective_language()
-        self.write({"extension": language.get_file_extension()})
-
-
 class LibrariesHandler(BaseHandler):
     """Libraries information endpoint."""
 

@@ -5,7 +5,36 @@ This module contains utility functions for working with compilers
 that don't require the full compilation infrastructure.
 """
 
+import re
 from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Language:
+    id: str
+    display_name: str
+    extension: str
+
+
+@dataclass(frozen=True)
+class LanguageOverride(Language):
+    flag: str
+
+
+@dataclass(frozen=True)
+class CompilerLanguage:
+    default: Language
+    overrides: tuple[LanguageOverride, ...]
+
+    def resolve(self, compiler_flags: str) -> Language:
+        normalized_flags = " ".join(compiler_flags.split())
+        for override in self.overrides:
+            normalized_flag = " ".join(override.flag.split())
+            if re.search(
+                rf"(?:^|\s){re.escape(normalized_flag)}(?=$|\s)", normalized_flags
+            ):
+                return override
+        return self.default
 
 
 @dataclass(frozen=True)
@@ -24,6 +53,10 @@ class Compiler:
     platform: Platform
     flag_class: str
     diff_flag_class: str
+    language: CompilerLanguage
+
+    def resolve_language(self, compiler_flags: str) -> Language:
+        return self.language.resolve(compiler_flags)
 
 
 def filter_compiler_flags(compiler_flags: str) -> str:

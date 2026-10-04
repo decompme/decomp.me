@@ -4,7 +4,13 @@ from functools import wraps
 from typing import Any
 from unittest.mock import patch
 
-from coreapp.compiler_utils import Compiler, Platform
+from coreapp.compiler_utils import (
+    Compiler,
+    CompilerLanguage,
+    Language,
+    LanguageOverride,
+    Platform,
+)
 from coreapp.cromper_client import AbstractCromperClient
 
 _DUMMY_PLATFORM = Platform(
@@ -48,13 +54,26 @@ GC_WII = Platform(
     has_decompiler=True,
 )
 
-DUMMY = Compiler("dummy", _DUMMY_PLATFORM, "other", "common")
-DUMMY_LONGRUNNING = Compiler("dummy-longrunning", _DUMMY_PLATFORM, "other", "common")
-GCC281PM = Compiler("gcc2.8.1pm", N64, "gcc", "mips")
-IDO53 = Compiler("ido5.3", N64, "ido", "mips")
-IDO71 = Compiler("ido7.1", N64, "ido", "mips")
-EE_GCC29_991111 = Compiler("ee-gcc2.9-991111", PS2, "gcc-ps2", "mips")
-MWCC_242_81 = Compiler("mwcc_242_81", GC_WII, "mwcc-wii-gc", "common")
+_C = Language(id="c", display_name="C", extension="c")
+_CXX = LanguageOverride(
+    id="cxx", display_name="C++", extension="cpp", flag="-x c++"
+)
+_C_LANGUAGE = CompilerLanguage(default=_C, overrides=())
+_C_OR_CXX_LANGUAGE = CompilerLanguage(default=_C, overrides=(_CXX,))
+
+DUMMY = Compiler("dummy", _DUMMY_PLATFORM, "other", "common", _C_LANGUAGE)
+DUMMY_LONGRUNNING = Compiler(
+    "dummy-longrunning", _DUMMY_PLATFORM, "other", "common", _C_LANGUAGE
+)
+GCC281PM = Compiler("gcc2.8.1pm", N64, "gcc", "mips", _C_LANGUAGE)
+IDO53 = Compiler("ido5.3", N64, "ido", "mips", _C_LANGUAGE)
+IDO71 = Compiler("ido7.1", N64, "ido", "mips", _C_LANGUAGE)
+EE_GCC29_991111 = Compiler(
+    "ee-gcc2.9-991111", PS2, "gcc-ps2", "mips", _C_OR_CXX_LANGUAGE
+)
+MWCC_242_81 = Compiler(
+    "mwcc_242_81", GC_WII, "mwcc-wii-gc", "common", _C_LANGUAGE
+)
 
 _PLATFORMS = {
     platform.id: platform for platform in (_DUMMY_PLATFORM, N64, PS1, PS2, GC_WII)
@@ -124,13 +143,6 @@ class MockCromperClient(AbstractCromperClient):
             return _PLATFORMS[platform_id]
         except KeyError:
             raise ValueError(f"Unknown platform: {platform_id}")
-
-    def resolve_language_extension(
-        self, compiler_id: str, compiler_flags: str = ""
-    ) -> str:
-        self.get_compiler_by_id(compiler_id)
-        cxx_flags = ("-x c++", "-lang=c++", "--cpp", "--g++", "/TP")
-        return "cpp" if any(flag in compiler_flags for flag in cxx_flags) else "c"
 
     def assemble_asm(self, platform_id: str, asm: Any) -> dict[str, Any]:
         """Return mock assembly result."""

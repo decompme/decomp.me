@@ -1,6 +1,7 @@
 import unittest
 from typing import cast
 
+from cromper.compilers import MWCC_242_81
 from cromper.flags import (
     COMMON_DIFF_FLAGS,
     COMMON_GCC_FLAGS,
@@ -8,6 +9,7 @@ from cromper.flags import (
     COMMON_MWCC_FLAGS,
     GCC_GC_FLAGS,
     MWCC_WII_GC_FLAGS,
+    Language,
     compiler_flag_classes_to_json,
     diff_flag_classes_to_json,
     resolve_flags,
@@ -15,6 +17,11 @@ from cromper.flags import (
 
 
 class CompilerFlagClassTests(unittest.TestCase):
+    def test_language_flags_match_complete_arguments(self) -> None:
+        self.assertIs(MWCC_242_81.get_language("-O4 -lang=c++"), Language.CXX)
+        self.assertIs(MWCC_242_81.get_language("-O4 -lang=c"), Language.C)
+        self.assertIs(MWCC_242_81.get_language("-O4 -lang=c++suffix"), Language.C)
+
     def test_resolve_compiler_flags_parent_first(self) -> None:
         self.assertEqual(
             resolve_flags(GCC_GC_FLAGS),

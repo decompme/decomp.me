@@ -13,6 +13,17 @@ from coreapp.cromper_client import (
 
 
 class CromperClientCompilerTests(SimpleTestCase):
+    language_response = {
+        "default": {"id": "c", "display_name": "C", "extension": "c"},
+        "overrides": [
+            {
+                "flag": "-x c++",
+                "id": "cxx",
+                "display_name": "C++",
+                "extension": "cpp",
+            }
+        ],
+    }
     platform_response = {
         "n64": {
             "id": "n64",
@@ -32,6 +43,7 @@ class CromperClientCompilerTests(SimpleTestCase):
                     "platform": "n64",
                     "flags_class": "ido",
                     "diff_flags_class": "mips",
+                    "language": self.language_response,
                 }
             },
             "flags": {"ido": {"flags": []}},
@@ -53,6 +65,8 @@ class CromperClientCompilerTests(SimpleTestCase):
         self.assertEqual(compiler.platform.id, "n64")
         self.assertEqual(compiler.flag_class, "ido")
         self.assertEqual(compiler.diff_flag_class, "mips")
+        self.assertEqual(compiler.resolve_language("-O2").extension, "c")
+        self.assertEqual(compiler.resolve_language("-O2 -x c++").extension, "cpp")
 
     def test_failed_metadata_read_does_not_cache_partial_results(self) -> None:
         client = CromperClient("http://cromper")
@@ -61,6 +75,7 @@ class CromperClientCompilerTests(SimpleTestCase):
             "platform": "n64",
             "flags_class": "ido",
             "diff_flags_class": "mips",
+            "language": self.language_response,
         }
         with (
             patch.object(client, "get_platform_by_id", return_value=object()),
@@ -78,26 +93,6 @@ class CromperClientCompilerTests(SimpleTestCase):
             self.assertIsNone(client._compilers_cache)
             self.assertEqual(client.get_compiler_by_id("ido7.1").id, "ido7.1")
             self.assertEqual(request.call_count, 2)
-
-    def test_resolves_language_extension(self) -> None:
-        client = CromperClient("http://cromper")
-
-        with patch.object(
-            client,
-            "_make_request",
-            return_value={"extension": "cpp"},
-        ) as make_request:
-            extension = client.resolve_language_extension("ido7.1", "-x c++")
-
-        self.assertEqual(extension, "cpp")
-        make_request.assert_called_once_with(
-            "POST",
-            "/compiler/extension",
-            json={
-                "compiler_id": "ido7.1",
-                "compiler_flags": "-x c++",
-            },
-        )
 
     def test_connection_failure_is_marked_as_service_unavailable(self) -> None:
         client = CromperClient("http://cromper")
@@ -186,6 +181,7 @@ class CromperClientCompilerTests(SimpleTestCase):
                     "platform": "n64",
                     "flags_class": "ido",
                     "diff_flags_class": "mips",
+                    "language": self.language_response,
                 }
             }
         }
@@ -197,6 +193,7 @@ class CromperClientCompilerTests(SimpleTestCase):
                     "platform": "n64",
                     "flags_class": "ido",
                     "diff_flags_class": "mips",
+                    "language": self.language_response,
                 },
             }
         }

@@ -1,5 +1,6 @@
 import enum
 import logging
+import re
 from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
@@ -90,6 +91,22 @@ class Compiler:
         return self.get_path(base).exists()
 
     def get_language(self, compiler_flags: str = "") -> flags.Language:
+        language_overrides = self.get_language_overrides()
+        normalized_flags = " ".join(compiler_flags.split())
+        matches = [
+            (flag, language)
+            for flag, language in language_overrides.items()
+            if re.search(
+                rf"(?:^|\s){re.escape(' '.join(flag.split()))}(?=$|\s)",
+                normalized_flags,
+            )
+        ]
+        if not matches:
+            return self.language
+
+        return max(matches, key=lambda match: len(match[0]))[1]
+
+    def get_language_overrides(self) -> dict[str, flags.Language]:
         language_flag_set = next(
             (
                 flag
@@ -99,24 +116,26 @@ class Compiler:
             None,
         )
         if language_flag_set is None:
-            return self.language
-
-        matches = [
-            (flag, language)
-            for flag, language in language_flag_set.flags.items()
-            if flag in compiler_flags
-        ]
-        if not matches:
-            return self.language
-
-        return max(matches, key=lambda match: len(match[0]))[1]
+            return {}
+        return language_flag_set.flags
 
     def to_json(self) -> dict[str, object]:
+        overrides = sorted(
+            self.get_language_overrides().items(),
+            key=lambda item: len(item[0]),
+            reverse=True,
+        )
         return {
             "id": self.id,
             "platform": self.platform.id,
             "flags_class": self.flag_class.name,
             "diff_flags_class": self.platform.diff_flag_class.name,
+            "language": {
+                "default": self.language.to_json(),
+                "overrides": [
+                    {"flag": flag, **language.to_json()} for flag, language in overrides
+                ],
+            },
         }
 
 
