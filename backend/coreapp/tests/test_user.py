@@ -302,6 +302,7 @@ class UserTests(BaseTestCase):
         self.assertEqual(profile_response.status_code, status.HTTP_200_OK)
         self.assertEqual(profile_response.json()["id"], profile_id)
         self.assertEqual(profile_response.json()["num_scratches"], 1)
+        self.assertNotIn("num_presets", profile_response.json())
 
         scratches_response = self.client.get(scratches_url)
         self.assertEqual(scratches_response.status_code, status.HTTP_200_OK)

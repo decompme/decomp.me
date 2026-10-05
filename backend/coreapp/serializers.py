@@ -33,7 +33,6 @@ def serialize_profile(profile: Profile, num_scratches: bool = False) -> dict[str
         }
         if num_scratches:
             res["num_scratches"] = Scratch.objects.filter(owner=profile).count()
-            res["num_presets"] = Preset.objects.filter(owner=profile).count()
         return res
     else:
         user = profile.user

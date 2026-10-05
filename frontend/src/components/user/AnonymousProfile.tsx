@@ -9,7 +9,6 @@ import UserAvatar from "./UserAvatar";
 
 type AnonymousScratchUser = AnonymousUser & {
     num_scratches: number;
-    num_presets: number;
 };
 
 export default function AnonymousProfile({ id }: { id: string }) {
