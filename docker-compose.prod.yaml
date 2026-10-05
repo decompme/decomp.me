@@ -75,9 +75,9 @@ services:
     image: ghcr.io/decompme/decompme-cromper:${CROMPER_PURPLE_TAG:-latest}
 
   cromper-proxy:
-    image: ghcr.io/decompme/decompme-nginx:${NGINX_TAG:-latest}
+    image: ghcr.io/decompme/decompme-cromper-proxy:${CROMPER_PROXY_TAG:-latest}
     build:
-      context: nginx
+      context: cromper-proxy
     healthcheck:
       test: [ "CMD", "wget", "-q", "--spider", "http://127.0.0.1:8888/healthz" ]
       interval: 15s
@@ -86,7 +86,6 @@ services:
       start_period: 5s
     restart: unless-stopped
     volumes:
-      - ./nginx/production/cromper-proxy.conf:/etc/nginx/conf.d/default.conf:ro
       - ./nginx/production/runtime:/etc/nginx/conf.d/runtime:ro
     networks:
       - decompme

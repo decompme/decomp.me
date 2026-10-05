@@ -24,6 +24,8 @@ jobs:
           - name: cromper
             context: cromper
             target: prod
+          - name: cromper-proxy
+            context: cromper-proxy
           - name: frontend
             context: frontend
             target: prod

@@ -46,7 +46,8 @@ The old slot is left running after a successful deploy so rollback remains quick
 ### Cromper deployments
 
 Cromper can be deployed independently to orange/purple slots. The internal
-`cromper-proxy` nginx service routes app and public requests to the active slot.
+`cromper-proxy` nginx service, built from `cromper-proxy/`, routes app and public
+requests to the active slot. The development Compose stack runs the same proxy.
 
 ```bash
 python3 deploy.py deploy-cromper

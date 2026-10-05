@@ -32,6 +32,7 @@ class DeployTests(unittest.TestCase):
         self.assertEqual(env["BLUE_TAG"], "latest")
         self.assertEqual(env["GREEN_TAG"], "latest")
         self.assertEqual(env["NGINX_TAG"], "latest")
+        self.assertEqual(env["CROMPER_PROXY_TAG"], "latest")
         self.assertEqual(env["CROMPER_ORANGE_TAG"], "latest")
         self.assertEqual(env["CROMPER_PURPLE_TAG"], "latest")
 

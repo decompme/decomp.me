@@ -11,6 +11,7 @@ You will need [Docker](https://docs.docker.com/get-docker/) and [Docker Compose]
 ## Development
 
 There is a `docker-compose.yaml` file to help you spin up a dev instance quickly.
+It includes an internal `cromper-proxy` service between the app and Cromper.
 
 **Run in foreground:**
 

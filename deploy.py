@@ -20,6 +20,7 @@ INFRA_SERVICES = ["postgres", "cromper-proxy", "nginx", "certbot"]
 BLUE_TAG = "BLUE_TAG"
 GREEN_TAG = "GREEN_TAG"
 NGINX_TAG = "NGINX_TAG"
+CROMPER_PROXY_TAG = "CROMPER_PROXY_TAG"
 CROMPER_ORANGE_TAG = "CROMPER_ORANGE_TAG"
 CROMPER_PURPLE_TAG = "CROMPER_PURPLE_TAG"
 ACTIVE_SLOT = "ACTIVE_SLOT"
@@ -67,6 +68,7 @@ def write_env_file(data):
         BLUE_TAG,
         GREEN_TAG,
         NGINX_TAG,
+        CROMPER_PROXY_TAG,
         CROMPER_ACTIVE_SLOT,
         CROMPER_ORANGE_TAG,
         CROMPER_PURPLE_TAG,
@@ -92,6 +94,7 @@ def compose_env(state):
     env.setdefault(BLUE_TAG, "latest")
     env.setdefault(GREEN_TAG, "latest")
     env.setdefault(NGINX_TAG, "latest")
+    env.setdefault(CROMPER_PROXY_TAG, "latest")
     env.setdefault(CROMPER_ORANGE_TAG, "latest")
     env.setdefault(CROMPER_PURPLE_TAG, "latest")
     return env
