@@ -16,7 +16,7 @@ DOCKER_COMPOSE = ["docker", "compose", "-f", "docker-compose.prod.yaml"]
 
 SLOTS = {"blue", "green"}
 CROMPER_SLOTS = {"orange", "purple"}
-INFRA_SERVICES = ["postgres", "cromper-proxy", "nginx", "certbot"]
+INFRA_SERVICES = ["postgres", "nginx", "certbot"]
 BLUE_TAG = "BLUE_TAG"
 GREEN_TAG = "GREEN_TAG"
 NGINX_TAG = "NGINX_TAG"
@@ -112,8 +112,32 @@ def colour_slot(slot):
 
 
 def validate_tag(tag):
-    if not re.fullmatch(r"[A-Za-z0-9._-]{6,128}", tag):
+    if not isinstance(tag, str) or not re.fullmatch(r"[A-Za-z0-9._-]{6,128}", tag):
         raise SystemExit(f"Invalid image tag: {tag}")
+
+
+def resolve_latest_tag(image, env, *, pull=True):
+    image_ref = f"ghcr.io/decompme/decompme-{image}:latest"
+    if pull:
+        run(["docker", "pull", image_ref], env=env)
+
+    result = run(
+        [
+            "docker",
+            "image",
+            "inspect",
+            "--format",
+            '{{ index .Config.Labels "org.opencontainers.image.revision" }}',
+            image_ref,
+        ],
+        env=env,
+        capture=True,
+        quiet=True,
+    )
+    tag = result.stdout.strip()
+    validate_tag(tag)
+    print(f"Resolved {image}:latest to revision {tag}")
+    return tag
 
 
 def write_upstream(slot):
@@ -170,15 +194,15 @@ def switch_cromper_upstream(slot, env):
     write_cromper_upstream(slot)
 
     try:
-        nginx_test_and_reload(env, "cromper-proxy")
+        nginx_test_and_reload(env)
     except Exception:
-        print("cromper-proxy reload failed; restoring previous upstream config...")
+        print("nginx reload failed; restoring previous cromper upstream config...")
         if previous is None:
             CROMPER_UPSTREAM_CONF.unlink(missing_ok=True)
         else:
             CROMPER_UPSTREAM_CONF.write_text(previous)
 
-        nginx_test_and_reload(env, "cromper-proxy")
+        nginx_test_and_reload(env)
         raise
 
 
@@ -290,7 +314,7 @@ def smoke_test(slot, env):
     print(f"Smoke testing {slot} from nginx...")
     nginx_fetch(f"http://backend-{slot}:8000/api/healthz", env)
     nginx_fetch(f"http://frontend-{slot}:8080/healthz", env)
-    nginx_fetch("http://cromper-proxy:8888/healthz", env)
+    nginx_fetch("http://nginx:8888/healthz", env)
 
 
 def nginx_test_and_reload(env, service="nginx"):
@@ -360,9 +384,12 @@ def cmd_status(args):
 
 
 def cmd_deploy(args):
-    validate_tag(args.tag)
-
     state = read_env_file()
+    tag = args.tag
+    if tag is None:
+        tag = resolve_latest_tag("backend", compose_env(state), pull=args.pull)
+    validate_tag(tag)
+
     active = state.get(ACTIVE_SLOT, "blue")
 
     if args.slot == "auto":
@@ -377,10 +404,10 @@ def cmd_deploy(args):
         raise SystemExit(f"Refusing to deploy over active slot: {slot}")
 
     tag_key = f"{slot.upper()}_TAG"
-    state[tag_key] = args.tag
+    state[tag_key] = tag
     env = compose_env(state)
 
-    print(f"Deploying tag {args.tag} to {slot}")
+    print(f"Deploying tag {tag} to {slot}")
 
     ensure_infra(env)
 
@@ -411,7 +438,7 @@ def cmd_deploy(args):
     write_env_file(state)
 
     print()
-    print(f"Deploy complete: {slot} is active on {args.tag}")
+    print(f"Deploy complete: {slot} is active on {tag}")
     print(f"Old slot left running for rollback/drain: {other_slot(slot)}")
     print(
         f"Stop old slot with: {' '.join(DOCKER_COMPOSE)} "
@@ -422,9 +449,12 @@ def cmd_deploy(args):
 
 
 def cmd_deploy_cromper(args):
-    validate_tag(args.tag)
-
     state = read_env_file()
+    tag = args.tag
+    if tag is None:
+        tag = resolve_latest_tag("cromper", compose_env(state), pull=args.pull)
+    validate_tag(tag)
+
     active = state.get(CROMPER_ACTIVE_SLOT, "orange")
     if args.slot == "auto":
         slot = other_cromper_slot(active)
@@ -438,10 +468,10 @@ def cmd_deploy_cromper(args):
         raise SystemExit(f"Refusing to deploy over active cromper slot: {slot}")
 
     tag_key = f"CROMPER_{slot.upper()}_TAG"
-    state[tag_key] = args.tag
+    state[tag_key] = tag
     env = compose_env(state)
 
-    print(f"Deploying cromper tag {args.tag} to {slot}")
+    print(f"Deploying cromper tag {tag} to {slot}")
 
     ensure_infra(env)
 
@@ -459,7 +489,7 @@ def cmd_deploy_cromper(args):
     write_env_file(state)
 
     print()
-    print(f"Cromper deploy complete: {slot} is active on {args.tag}")
+    print(f"Cromper deploy complete: {slot} is active on {tag}")
     print(f"Old slot left running for rollback: {other_cromper_slot(slot)}")
     print_status(state, env)
 
@@ -481,7 +511,6 @@ def cmd_ensure(args):
 
     wait_for_healthy("postgres", env)
     wait_for_healthy(f"cromper-{cromper_active}", env)
-    wait_for_healthy("cromper-proxy", env)
     wait_for_healthy("certbot", env)
     wait_for_healthy(f"backend-{active}", env)
     wait_for_healthy(f"frontend-{active}", env)
@@ -545,11 +574,14 @@ def cmd_rollback_cromper(args):
 
 
 def cmd_migrate(args):
-    validate_tag(args.tag)
+    state = read_env_file()
+    tag = args.tag
+    if tag is None:
+        tag = resolve_latest_tag("backend", compose_env(state))
+    validate_tag(tag)
 
     slot = "blue"
-    state = read_env_file()
-    state[BLUE_TAG] = args.tag
+    state[BLUE_TAG] = tag
     state[ACTIVE_SLOT] = "blue"
     env = compose_env(state)
 
@@ -603,7 +635,7 @@ def cmd_migrate(args):
     write_env_file(state)
 
     print()
-    print(f"Migration deploy complete: blue is active on {args.tag}")
+    print(f"Migration deploy complete: blue is active on {tag}")
     print()
     print_status(state, env)
 
@@ -629,7 +661,7 @@ def main():
         help="Use locally available images instead of pulling the target slot images.",
     )
     deploy.set_defaults(pull=True)
-    deploy.add_argument("tag", nargs="?", default="latest")
+    deploy.add_argument("tag", nargs="?")
     deploy.add_argument(
         "slot", choices=["auto", "blue", "green"], nargs="?", default="auto"
     )
@@ -643,7 +675,7 @@ def main():
         help="Use locally available images instead of pulling the target slot image.",
     )
     deploy_cromper.set_defaults(pull=True)
-    deploy_cromper.add_argument("tag", nargs="?", default="latest")
+    deploy_cromper.add_argument("tag", nargs="?")
     deploy_cromper.add_argument(
         "slot", choices=["auto", "orange", "purple"], nargs="?", default="auto"
     )
@@ -653,7 +685,7 @@ def main():
     rollback_cromper.set_defaults(func=cmd_rollback_cromper)
 
     migrate = sub.add_parser("migrate")
-    migrate.add_argument("tag", nargs="?", default="latest")
+    migrate.add_argument("tag", nargs="?")
     migrate.set_defaults(func=cmd_migrate)
 
     args = parser.parse_args()

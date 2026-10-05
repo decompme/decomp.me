@@ -55,6 +55,8 @@ jobs:
           target: ${{ matrix.target }}
           push: true
           pull: true
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
           build-args: |
             GIT_HASH=${{ env.SHORT_SHA }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/decompme-${{ matrix.name }}:buildcache

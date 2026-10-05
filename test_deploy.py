@@ -8,7 +8,7 @@ import deploy
 
 
 class DeployTests(unittest.TestCase):
-    def test_deploy_commands_default_to_latest(self):
+    def test_deploy_commands_leave_omitted_tag_unresolved(self):
         commands = [
             (["deploy.py", "deploy"], "cmd_deploy"),
             (["deploy.py", "deploy-cromper"], "cmd_deploy_cromper"),
@@ -23,7 +23,7 @@ class DeployTests(unittest.TestCase):
                 ):
                     deploy.main()
 
-                self.assertEqual(command.call_args.args[0].tag, "latest")
+                self.assertIsNone(command.call_args.args[0].tag)
 
     def test_compose_env_defaults_all_image_tags(self):
         with patch.dict("os.environ", {}, clear=True):
@@ -34,6 +34,27 @@ class DeployTests(unittest.TestCase):
         self.assertEqual(env["NGINX_TAG"], "latest")
         self.assertEqual(env["CROMPER_ORANGE_TAG"], "latest")
         self.assertEqual(env["CROMPER_PURPLE_TAG"], "latest")
+
+    def test_resolve_latest_tag_pulls_and_returns_image_revision(self):
+        with patch.object(
+            deploy,
+            "run",
+            side_effect=[
+                None,
+                type("Result", (), {"stdout": "1234567890abcdef\n"})(),
+            ],
+        ) as run:
+            tag = deploy.resolve_latest_tag("backend", {}, pull=True)
+
+        self.assertEqual(tag, "1234567890abcdef")
+        self.assertEqual(
+            run.call_args_list[0].args[0],
+            ["docker", "pull", "ghcr.io/decompme/decompme-backend:latest"],
+        )
+        self.assertIn(
+            "ghcr.io/decompme/decompme-backend:latest",
+            run.call_args_list[1].args[0],
+        )
 
     def test_read_env_file_migrates_legacy_cromper_tag(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -63,7 +84,7 @@ class DeployTests(unittest.TestCase):
             ):
                 deploy.switch_cromper_upstream("purple", {})
 
-            reload_nginx.assert_called_once_with({}, "cromper-proxy")
+            reload_nginx.assert_called_once_with({})
             self.assertIn("server cromper-purple:8888;", config.read_text())
 
 
