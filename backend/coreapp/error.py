@@ -9,14 +9,32 @@ from rest_framework.status import (
 from rest_framework.views import exception_handler
 
 
-class AssemblyError(Exception):
-    """Raised when the target assembly cannot be assembled by cromper."""
+class ServiceError(Exception):
+    """An exception that should be rendered as a JSON response.
 
-    code = "Assembler"
+    Subclasses set ``status_code``/``code`` to control the HTTP response, and
+    may set ``public_message`` to expose a user-friendly message while keeping
+    the raw error text (``msg``) for logs.
+    """
+
+    status_code: int = HTTP_500_INTERNAL_SERVER_ERROR
+    code: str | None = None
+    public_message: str | None = None
 
     def __init__(self, message: str):
         self.msg = message
         super().__init__(message)
+
+    @property
+    def detail(self) -> str:
+        return self.public_message or self.msg
+
+
+class AssemblyError(ServiceError):
+    """Raised when the target assembly cannot be assembled by cromper."""
+
+    status_code = HTTP_400_BAD_REQUEST
+    code = "Assembler"
 
 
 def custom_exception_handler(exc: Exception, context: Any) -> Response | None:
@@ -24,14 +42,11 @@ def custom_exception_handler(exc: Exception, context: Any) -> Response | None:
     # to get the standard error response.
     response = exception_handler(exc, context)
 
-    if isinstance(exc, AssemblyError):
-        response = Response(
-            data={
-                "code": exc.code,
-                "detail": exc.msg,
-            },
-            status=HTTP_400_BAD_REQUEST,
-        )
+    if isinstance(exc, ServiceError):
+        data: dict[str, Any] = {"detail": exc.detail}
+        if exc.code is not None:
+            data["code"] = exc.code
+        response = Response(data=data, status=exc.status_code)
     elif isinstance(exc, (AssertionError, IntegrityError)):
         response = Response(
             data={

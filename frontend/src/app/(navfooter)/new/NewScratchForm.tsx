@@ -30,9 +30,11 @@ import { useRouter } from "@/lib/navigation";
 import {
     applyCompiler,
     applyPreset,
+    type CreateScratchError,
     clearSubmittedDraft,
     emptyDraft,
     filterDuplicateScratches,
+    formatCreateScratchError,
     getLabels,
     type NewScratchDraft,
     readStoredDraft,
@@ -42,12 +44,6 @@ import {
 } from "./NewScratchForm.state";
 
 const SEARCH_MAX_LENGTH = 64;
-
-type CreateScratchError = {
-    title: string;
-    detail: string;
-    hint?: string;
-};
 
 interface FormLabelProps {
     children: React.ReactNode;
@@ -115,43 +111,6 @@ function useDuplicateScratches(
     }, [debouncedLabel, platform, presetId]);
 
     return duplicates;
-}
-
-function formatCreateScratchError(error: unknown): CreateScratchError | null {
-    if (!(error instanceof ResponseError)) {
-        return null;
-    }
-
-    if (error.status !== 400) {
-        return null;
-    }
-
-    if (typeof error.json?.detail === "string") {
-        if (error.json.code === "Assembler") {
-            return {
-                title: "Target assembly could not be assembled",
-                detail: error.json.detail,
-                hint: "Check that the target assembly is compatible with the GNU assembler syntax for the selected platform.",
-            };
-        }
-
-        return {
-            title: "Scratch could not be created",
-            detail: error.json.detail,
-        };
-    }
-
-    if (typeof error.message === "string" && error.message) {
-        return {
-            title: "Scratch could not be created",
-            detail: error.message,
-        };
-    }
-
-    return {
-        title: "Scratch could not be created",
-        detail: "Unable to create scratch. Please check the fields above and try again.",
-    };
 }
 
 export default function NewScratchForm({
@@ -276,9 +235,14 @@ export default function NewScratchForm({
                 diff_label: draft.label || defaultLabel || "",
             });
         } catch (error) {
-            const createError = formatCreateScratchError(error);
-            if (createError) {
-                setSubmissionError(createError);
+            if (error instanceof ResponseError) {
+                setSubmissionError(
+                    formatCreateScratchError({
+                        code: error.code,
+                        detail: error.json?.detail,
+                        message: error.message,
+                    }),
+                );
                 return;
             }
 

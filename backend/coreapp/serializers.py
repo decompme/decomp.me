@@ -137,7 +137,7 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
 
         try:
             platform = cromper.get_platform_by_id(platform_id)
-        except Exception:
+        except ValueError:
             raise serializers.ValidationError(f"Unknown platform: {platform_id}")
 
         return platform.id
@@ -179,7 +179,7 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
         try:
             compiler = cromper.get_compiler_by_id(compiler_id)
             platform = cromper.get_platform_by_id(platform_id)
-        except Exception:
+        except ValueError:
             raise serializers.ValidationError("Unknown compiler or platform.")
 
         if compiler.platform.id != platform.id:
@@ -217,7 +217,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         try:
             cromper = get_cromper_client()
             cromper.get_platform_by_id(platform)
-        except Exception:
+        except ValueError:
             raise serializers.ValidationError(f"Unknown platform: {platform}")
         return platform
 
@@ -225,7 +225,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         try:
             cromper = get_cromper_client()
             cromper.get_compiler_by_id(compiler)
-        except Exception:
+        except ValueError:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
@@ -246,7 +246,12 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         if "preset" in data:
             preset: Preset = data["preset"]
             # Preset dictates platform and compiler.
-            data["platform"] = cromper.get_platform_by_id(preset.platform)
+            try:
+                data["platform"] = cromper.get_platform_by_id(preset.platform)
+            except ValueError:
+                raise serializers.ValidationError(
+                    f"Unknown platform: {preset.platform}"
+                )
             data["compiler"] = preset.compiler
 
             if "compiler_flags" not in data or not data["compiler_flags"]:
@@ -305,7 +310,7 @@ class ScratchCompileSerializer(serializers.Serializer[None]):
     def validate_compiler(self, compiler: str) -> str:
         try:
             get_cromper_client().get_compiler_by_id(compiler)
-        except Exception:
+        except ValueError:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
@@ -316,8 +321,11 @@ class ScratchCompileSerializer(serializers.Serializer[None]):
             return data
 
         cromper = get_cromper_client()
-        compiler = cromper.get_compiler_by_id(compiler_id)
-        platform = cromper.get_platform_by_id(scratch.platform)
+        try:
+            compiler = cromper.get_compiler_by_id(compiler_id)
+            platform = cromper.get_platform_by_id(scratch.platform)
+        except ValueError:
+            raise serializers.ValidationError("Unknown compiler or platform.")
         if compiler.platform.id != platform.id:
             raise serializers.ValidationError(
                 f"Compiler {compiler.id} is not compatible with platform {platform.id}"
@@ -332,7 +340,7 @@ class ScratchDecompileSerializer(serializers.Serializer[None]):
     def validate_compiler(self, compiler: str) -> str:
         try:
             get_cromper_client().get_compiler_by_id(compiler)
-        except Exception:
+        except ValueError:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
@@ -343,8 +351,11 @@ class ScratchDecompileSerializer(serializers.Serializer[None]):
             return data
 
         cromper = get_cromper_client()
-        compiler = cromper.get_compiler_by_id(compiler_id)
-        platform = cromper.get_platform_by_id(scratch.platform)
+        try:
+            compiler = cromper.get_compiler_by_id(compiler_id)
+            platform = cromper.get_platform_by_id(scratch.platform)
+        except ValueError:
+            raise serializers.ValidationError("Unknown compiler or platform.")
         if compiler.platform.id != platform.id:
             raise serializers.ValidationError(
                 f"Compiler {compiler.id} is not compatible with platform {platform.id}"
@@ -411,7 +422,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     def validate_compiler(self, compiler: str) -> str:
         try:
             get_cromper_client().get_compiler_by_id(compiler)
-        except Exception:
+        except ValueError:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
@@ -421,12 +432,18 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             return data
 
         cromper = get_cromper_client()
-        compiler = cromper.get_compiler_by_id(compiler_id)
+        try:
+            compiler = cromper.get_compiler_by_id(compiler_id)
+        except ValueError:
+            raise serializers.ValidationError(f"Unknown compiler: {compiler_id}")
         platform_id = self.instance.platform if self.instance else data.get("platform")
         if platform_id is None:
             return data
 
-        platform = cromper.get_platform_by_id(platform_id)
+        try:
+            platform = cromper.get_platform_by_id(platform_id)
+        except ValueError:
+            raise serializers.ValidationError(f"Unknown platform: {platform_id}")
         if compiler.platform.id != platform.id:
             raise serializers.ValidationError(
                 f"Compiler {compiler.id} is not compatible with platform {platform.id}"

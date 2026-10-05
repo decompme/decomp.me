@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 import requests
 from django.conf import settings
+from rest_framework.status import HTTP_503_SERVICE_UNAVAILABLE
 
 from coreapp.compiler_utils import (
     Compiler,
@@ -14,7 +15,7 @@ from coreapp.compiler_utils import (
     LanguageOverride,
     Platform,
 )
-from coreapp.error import AssemblyError
+from coreapp.error import AssemblyError, ServiceError
 from coreapp.wrapper_result import AssemblyResult, CompilationResult, DiffResult
 
 if TYPE_CHECKING:
@@ -25,16 +26,29 @@ logger = logging.getLogger(__name__)
 _T = TypeVar("_T")
 
 
-class CromperError(Exception):
-    pass
+_SERVICE_UNAVAILABLE_MESSAGE = (
+    "The compiler service is unavailable. Please try again in a moment."
+)
+
+
+class CromperError(ServiceError):
+    """Raised when cromper returns an unexpected or unsuccessful response."""
 
 
 class CromperUnavailableError(CromperError):
     """Raised when a connection to cromper cannot be established."""
 
+    status_code = HTTP_503_SERVICE_UNAVAILABLE
+    code = "ServiceUnavailable"
+    public_message = _SERVICE_UNAVAILABLE_MESSAGE
+
 
 class CromperTimeoutError(CromperError):
     """Exception raised when a cromper request times out."""
+
+    status_code = HTTP_503_SERVICE_UNAVAILABLE
+    code = "ServiceUnavailable"
+    public_message = _SERVICE_UNAVAILABLE_MESSAGE
 
 
 class AbstractCromperClient(ABC):

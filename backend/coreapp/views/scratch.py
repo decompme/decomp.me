@@ -254,13 +254,21 @@ def create_scratch(data: dict[str, Any]) -> Scratch:
     source_code = data.get("source_code")
     if asm and not source_code:
         default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
-        source_code = cromper_client.decompile(
-            platform_id=platform.id,
-            compiler_id=compiler.id,
-            asm=asm.data,
-            default_source_code=default_source_code,
-            context=context,
-        )
+        try:
+            source_code = cromper_client.decompile(
+                platform_id=platform.id,
+                compiler_id=compiler.id,
+                asm=asm.data,
+                default_source_code=default_source_code,
+                context=context,
+            )
+        except CromperError:
+            logger.warning(
+                "Failed to decompile assembly when creating scratch; "
+                "falling back to default source code",
+                exc_info=True,
+            )
+            source_code = default_source_code
 
     compiler_flags = data.get("compiler_flags", "")
     compiler_flags = filter_compiler_flags(compiler_flags)
@@ -490,13 +498,26 @@ class ScratchViewSet(
         compiler_id = partial.get("compiler", scratch.compiler)
 
         cromper_client = get_cromper_client()
-        decompilation = cromper_client.decompile(
-            platform_id=scratch.platform,
-            compiler_id=compiler_id,
-            asm=scratch.target_assembly.source_asm.data,
-            default_source_code="",
-            context=context,
-        )
+        try:
+            decompilation = cromper_client.decompile(
+                platform_id=scratch.platform,
+                compiler_id=compiler_id,
+                asm=scratch.target_assembly.source_asm.data,
+                default_source_code="",
+                context=context,
+            )
+        except (CromperUnavailableError, CromperTimeoutError):
+            return Response(
+                {
+                    "decompilation": "The compiler service is unavailable. "
+                    "Please try again in a moment."
+                }
+            )
+        except CromperError as e:
+            logger.warning(
+                "Decompilation failed for scratch %s", scratch.slug, exc_info=True
+            )
+            return Response({"decompilation": f"Decompilation failed: {e}"})
 
         return Response({"decompilation": decompilation})
 
@@ -584,8 +605,15 @@ class ScratchViewSet(
                 zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
             zip_f.writestr("target.o", scratch.target_assembly.elf_object)
 
-            compiler = get_cromper_client().get_compiler_by_id(scratch.compiler)
-            src_ext = compiler.resolve_language(scratch.compiler_flags).extension
+            try:
+                compiler = get_cromper_client().get_compiler_by_id(scratch.compiler)
+                src_ext = compiler.resolve_language(scratch.compiler_flags).extension
+            except (CromperError, ValueError):
+                logger.warning(
+                    "Could not resolve language for export; falling back to .c",
+                    exc_info=True,
+                )
+                src_ext = "c"
             zip_f.writestr(f"code.{src_ext}", scratch.source_code)
             if scratch.context_fk and scratch.context_fk.text:
                 zip_f.writestr(f"ctx.{src_ext}", scratch.context_fk.text)

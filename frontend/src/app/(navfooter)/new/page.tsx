@@ -1,3 +1,4 @@
+import CompilerServiceUnavailable from "@/components/CompilerServiceUnavailable";
 import { CompilerServiceUnavailableError, getPublic } from "@/lib/api/request";
 
 import DESCRIPTION from "./description";
@@ -15,18 +16,7 @@ export default async function NewScratchPage() {
         availablePlatforms = await getPublic("/platform");
     } catch (error) {
         if (error instanceof CompilerServiceUnavailableError) {
-            return (
-                <main className="max-w-prose p-4 md:mx-auto">
-                    <h1 className="py-4 font-semibold text-3xl">
-                        The compiler service is unavailable
-                    </h1>
-                    <p className="py-4">
-                        We can’t load the available platforms right now. Please
-                        try again shortly; if this continues, let us know on
-                        Discord.
-                    </p>
-                </main>
-            );
+            return <CompilerServiceUnavailable />;
         }
         throw error;
     }
