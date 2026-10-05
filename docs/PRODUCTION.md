@@ -31,14 +31,10 @@ We support blue/green deployments when running decomp.me in production. This all
 
 `deploy.py` deploys the requested image tag to the inactive backend and frontend slots, waits for them to become healthy, smoke-tests the inactive slot from nginx, then reloads nginx to switch traffic.
 
-If a tag is omitted, the script uses the current checkout's git revision as
-the image tag. Run the server's update script first so the checkout is at the
-latest commit. An explicitly provided `latest` remains the mutable tag.
-
 ### Standard deployments
 
 ```bash
-python3 deploy.py deploy
+python3 deploy.py deploy githash
 ```
 
 The old slot is left running after a successful deploy so rollback remains quick.
@@ -50,7 +46,7 @@ Cromper can be deployed independently to orange/purple slots. The internal
 requests to the active slot. The development Compose stack runs the same proxy.
 
 ```bash
-python3 deploy.py deploy-cromper
+python3 deploy.py deploy-cromper githash
 ```
 
 The inactive slot is pulled, started, and checked for health before the proxy
@@ -71,7 +67,7 @@ python3 deploy.py rollback
 Schema-changing deploys may require maintenance time. The migration flow stops both app slots, runs migrations using the new backend image, starts `blue`, then points nginx at `blue`.
 
 ```bash
-python3 deploy.py migrate
+python3 deploy.py migrate githash
 ```
 
 ### Status

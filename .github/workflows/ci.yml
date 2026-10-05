@@ -87,9 +87,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Test deployment script
-        run: python3 -m unittest test_deploy
-
       - name: Allow nsjail user namespaces
         run: |
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
