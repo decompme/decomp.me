@@ -1,6 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 
+from coreapp.error import AssemblyError, custom_exception_handler
 from coreapp.models.profile import Profile
 from coreapp.tests import (
     mock_cromper_client as compilers,
@@ -57,6 +58,16 @@ class RequestTests(BaseTestCase):
             reverse("current-user"), HTTP_USER_AGENT="browser"
         )
         self.assertFalse(user_response.json()["is_ephemeral"])
+
+    def test_assembly_errors_are_reported_as_assembler_errors(self) -> None:
+        response = custom_exception_handler(AssemblyError("bad asm"), {})
+
+        self.assertIsNotNone(response)
+        assert response is not None
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["code"], "Assembler")
+        self.assertEqual(response.data["kind"], "AssemblyError")
+        self.assertEqual(response.data["detail"], "bad asm")
 
     def test_node_fetch_request(self) -> None:
         """

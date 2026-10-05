@@ -14,6 +14,7 @@ from coreapp.compiler_utils import (
     LanguageOverride,
     Platform,
 )
+from coreapp.error import AssemblyError
 from coreapp.wrapper_result import AssemblyResult, CompilationResult, DiffResult
 
 if TYPE_CHECKING:
@@ -347,7 +348,11 @@ class CromperClient(AbstractCromperClient):
 
         response = self._make_request("POST", "/assemble", json=data)
 
-        self._require_success(response, "/assemble")
+        try:
+            self._require_success(response, "/assemble")
+        except CromperError as e:
+            raise AssemblyError(str(e)) from e
+
         return AssemblyResult(
             hash=self._require_field(response, "/assemble", "hash", str),
             arch=self._require_field(response, "/assemble", "arch", str),
