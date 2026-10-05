@@ -2,7 +2,8 @@
 
 ## Prerequisites
 
-Create `.deploy.env` with the desired `NGINX_TAG`.
+Create `.deploy.env` with the desired image tags. Tags omitted by the deployment
+commands default to `latest`.
 
 ```bash
 cat <<EOF > .deploy.env
@@ -15,27 +16,46 @@ Create the runtime nginx config files.
 ```bash
 cp ./nginx/production/runtime/geo.conf.example ./nginx/production/runtime/geo.conf
 cp ./nginx/production/runtime/upstream.conf.example ./nginx/production/runtime/upstream.conf
+cp ./nginx/production/runtime/cromper-upstream.conf.example ./nginx/production/runtime/cromper-upstream.conf
 ```
 
-Start the shared production services.
+Start the active Cromper slot before its proxy, then start the remaining shared
+services.
 
 ```bash
-docker compose -f docker-compose.prod.yaml --env-file .deploy.env up -d postgres nginx certbot
+docker compose -f docker-compose.prod.yaml --env-file .deploy.env up -d postgres cromper-orange
+docker compose -f docker-compose.prod.yaml --env-file .deploy.env up -d cromper-proxy nginx certbot
 ```
 
 ## Blue/Green deployment
 
 We support blue/green deployments when running decomp.me in production. This allows us to release the majority of our changes with zero downtime.
 
-`deploy.py` deploys the requested image tag to the inactive slot, waits for the backend and frontend containers to become healthy, smoke-tests the inactive slot from nginx, then reloads nginx to switch traffic.
+`deploy.py` deploys the requested image tag to the inactive backend and frontend slots, waits for them to become healthy, smoke-tests the inactive slot from nginx, then reloads nginx to switch traffic. If no tag is provided, it pulls and deploys `latest`.
 
 ### Standard deployments
 
 ```bash
-python3 deploy.py deploy githash
+python3 deploy.py deploy
 ```
 
 The old slot is left running after a successful deploy so rollback remains quick.
+
+### Cromper deployments
+
+Cromper can be deployed independently to orange/purple slots. The stable
+`cromper-proxy` endpoint routes app and nginx requests to the active slot.
+
+```bash
+python3 deploy.py deploy-cromper
+```
+
+The inactive slot is pulled, started, and checked for health before the proxy
+route is switched. The previous slot remains available for rollback:
+
+```bash
+python3 deploy.py rollback-cromper
+```
 
 ### Rollback
 
@@ -48,7 +68,7 @@ python3 deploy.py rollback
 Schema-changing deploys may require maintenance time. The migration flow stops both app slots, runs migrations using the new backend image, starts `blue`, then points nginx at `blue`.
 
 ```bash
-python3 deploy.py migrate githash
+python3 deploy.py migrate
 ```
 
 ### Status

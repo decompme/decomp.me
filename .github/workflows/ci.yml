@@ -87,6 +87,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Test deployment script
+        run: python3 -m unittest test_deploy
+
       - name: Allow nsjail user namespaces
         run: |
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
@@ -112,10 +115,12 @@ jobs:
           echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
           echo 'CI=true' >> docker.prod.env
           echo 'ACTIVE_SLOT=blue' >> .deploy.env
+          echo 'CROMPER_ACTIVE_SLOT=orange' >> .deploy.env
           echo 'BLUE_TAG=latest' >> .deploy.env
           echo 'GREEN_TAG=latest' >> .deploy.env
           echo 'NGINX_TAG=latest' >> .deploy.env
-          echo 'CROMPER_TAG=latest' >> .deploy.env
+          echo 'CROMPER_ORANGE_TAG=latest' >> .deploy.env
+          echo 'CROMPER_PURPLE_TAG=latest' >> .deploy.env
           touch backend.prod.env
           touch cromper.prod.env
 
@@ -127,14 +132,21 @@ jobs:
         run: |
           cp ./nginx/production/runtime/geo.conf.example ./nginx/production/runtime/geo.conf
           cp ./nginx/production/runtime/upstream.conf.example ./nginx/production/runtime/upstream.conf
+          cp ./nginx/production/runtime/cromper-upstream.conf.example ./nginx/production/runtime/cromper-upstream.conf
 
       - name: Build production images
         run: |
-          docker compose -f docker-compose.prod.yaml build cromper nginx backend-blue frontend-blue
+          docker compose -f docker-compose.prod.yaml build cromper-orange cromper-proxy nginx backend-blue frontend-blue
 
       - name: Ensure production services
         run: |
           timeout 120s python3 deploy.py ensure
+
+      - name: Deploy purple cromper slot
+        run: python3 deploy.py deploy-cromper --no-pull latest purple
+
+      - name: Roll back cromper slot
+        run: python3 deploy.py rollback-cromper
 
       - name: View docker compose logs (blue)
         if: always()
