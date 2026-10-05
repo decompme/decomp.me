@@ -55,10 +55,6 @@ def read_env_file():
                 continue
             k, v = line.split("=", 1)
             data[k.strip()] = v.strip()
-    legacy_cromper_tag = data.pop("CROMPER_TAG", None)
-    cromper_active = data.get(CROMPER_ACTIVE_SLOT, "orange")
-    if legacy_cromper_tag:
-        data.setdefault(f"CROMPER_{cromper_active.upper()}_TAG", legacy_cromper_tag)
     return data
 
 
