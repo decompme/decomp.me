@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "@/components/Link";
 
+import { useThisUserIsAdmin } from "@/lib/api";
 import { type AnonymousUser, isAnonUser, type User } from "@/lib/api/types";
 
 import UserAvatar from "./UserAvatar";
@@ -15,11 +18,17 @@ export default function UserLink({
     showUsername,
     truncateUsername,
 }: Props) {
+    const isAdmin = useThisUserIsAdmin();
+
     if (!user) {
         return <span>?</span>;
     }
 
-    const url: string | null = isAnonUser(user) ? null : `/u/${user.username}`;
+    const url: string | null = isAnonUser(user)
+        ? isAdmin && user.id !== null
+            ? `/u/anonymous/${user.id}`
+            : null
+        : `/u/${user.username}`;
     const shouldTruncateUsername = truncateUsername !== false;
 
     const inner = (

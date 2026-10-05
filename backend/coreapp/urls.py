@@ -46,5 +46,15 @@ urlpatterns = [
         user.UserScratchStats.as_view(),
         name="user-scratch-stats",
     ),
+    path(
+        "users/anonymous/<int:pk>",
+        user.AnonymousProfileDetail.as_view(),
+        name="anonymous-profile-detail",
+    ),
+    path(
+        "users/anonymous/<int:pk>/scratches",
+        user.AnonymousProfileScratchList.as_view(),
+        name="anonymous-profile-scratches",
+    ),
     path("search", search.SearchViewSet.as_view(), name="search"),
 ]

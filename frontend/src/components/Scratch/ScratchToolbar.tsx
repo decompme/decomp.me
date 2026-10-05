@@ -383,6 +383,7 @@ export type Props = {
 export default function ScratchToolbar(props: Props) {
     const { scratch, setScratch } = props;
     const userIsYou = api.useUserIsYou();
+    const isAdmin = api.useThisUserIsAdmin();
 
     const [actionsLocation, inNavActionsRef] = useActionsLocation();
 
@@ -405,9 +406,11 @@ export default function ScratchToolbar(props: Props) {
                                         </span>
                                     </div>
                                 ),
-                                href:
-                                    !scratch.owner.is_anonymous &&
-                                    `/u/${scratch.owner.username}`,
+                                href: scratch.owner.is_anonymous
+                                    ? isAdmin && scratch.owner.id !== null
+                                        ? `/u/anonymous/${scratch.owner.id}`
+                                        : undefined
+                                    : `/u/${scratch.owner.username}`,
                             },
                             {
                                 label: (

@@ -22,7 +22,7 @@ else:
 
 def serialize_profile(profile: Profile, num_scratches: bool = False) -> dict[str, Any]:
     if profile.user is None:
-        return {
+        res = {
             "is_anonymous": True,
             "is_ephemeral": profile.id is None,
             "id": profile.id,
@@ -31,6 +31,9 @@ def serialize_profile(profile: Profile, num_scratches: bool = False) -> dict[str
             "username": f"{profile.pseudonym} (anon)",
             "frog_color": profile.get_frog_color() if profile.id else (0, 0.5, 0.5),
         }
+        if num_scratches:
+            res["num_scratches"] = Scratch.objects.filter(owner=profile).count()
+        return res
     else:
         user = profile.user
 
