@@ -99,6 +99,27 @@ class ScratchCreationTests(BaseTestCase):
 
         self.assertEqual(scratch.diff_flags, ["-DIFFdifflib"])
 
+    def test_create_filters_libraries_empty_entries(self) -> None:
+        """
+        Ensure that blank or empty library metadata entries are safely filtered during scratch creation.
+        """
+        scratch = self.create_scratch(
+            {
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
+                "context": "",
+                "target_asm": "jr $ra\nnop\n",
+                "libraries": [
+                    {"name": "libultra", "version": "1.0"},
+                    {"name": "", "version": ""},
+                ],
+            }
+        )
+        self.assertEqual(
+            [lib.to_json() for lib in scratch.libraries if lib.name],
+            [{"name": "libultra", "version": "1.0"}],
+        )
+
     def test_accept_late_rodata(self) -> None:
         """
         Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
