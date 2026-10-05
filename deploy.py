@@ -116,27 +116,11 @@ def validate_tag(tag):
         raise SystemExit(f"Invalid image tag: {tag}")
 
 
-def resolve_latest_tag(image, env, *, pull=True):
-    image_ref = f"ghcr.io/decompme/decompme-{image}:latest"
-    if pull:
-        run(["docker", "pull", image_ref], env=env)
-
-    result = run(
-        [
-            "docker",
-            "image",
-            "inspect",
-            "--format",
-            '{{ index .Config.Labels "org.opencontainers.image.revision" }}',
-            image_ref,
-        ],
-        env=env,
-        capture=True,
-        quiet=True,
-    )
+def resolve_current_revision(env):
+    result = run(["git", "rev-parse", "HEAD"], env=env, capture=True, quiet=True)
     tag = result.stdout.strip()
     validate_tag(tag)
-    print(f"Resolved {image}:latest to revision {tag}")
+    print(f"Resolved omitted image tag to current git revision {tag}")
     return tag
 
 
@@ -387,7 +371,7 @@ def cmd_deploy(args):
     state = read_env_file()
     tag = args.tag
     if tag is None:
-        tag = resolve_latest_tag("backend", compose_env(state), pull=args.pull)
+        tag = resolve_current_revision(compose_env(state))
     validate_tag(tag)
 
     active = state.get(ACTIVE_SLOT, "blue")
@@ -452,7 +436,7 @@ def cmd_deploy_cromper(args):
     state = read_env_file()
     tag = args.tag
     if tag is None:
-        tag = resolve_latest_tag("cromper", compose_env(state), pull=args.pull)
+        tag = resolve_current_revision(compose_env(state))
     validate_tag(tag)
 
     active = state.get(CROMPER_ACTIVE_SLOT, "orange")
@@ -578,7 +562,7 @@ def cmd_migrate(args):
     state = read_env_file()
     tag = args.tag
     if tag is None:
-        tag = resolve_latest_tag("backend", compose_env(state))
+        tag = resolve_current_revision(compose_env(state))
     validate_tag(tag)
 
     slot = "blue"

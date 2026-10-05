@@ -35,25 +35,21 @@ class DeployTests(unittest.TestCase):
         self.assertEqual(env["CROMPER_ORANGE_TAG"], "latest")
         self.assertEqual(env["CROMPER_PURPLE_TAG"], "latest")
 
-    def test_resolve_latest_tag_pulls_and_returns_image_revision(self):
+    def test_resolve_omitted_tag_from_current_git_revision(self):
+        revision = "1234567890abcdef1234567890abcdef12345678"
         with patch.object(
             deploy,
             "run",
-            side_effect=[
-                None,
-                type("Result", (), {"stdout": "1234567890abcdef\n"})(),
-            ],
+            return_value=type("Result", (), {"stdout": f"{revision}\n"})(),
         ) as run:
-            tag = deploy.resolve_latest_tag("backend", {}, pull=True)
+            tag = deploy.resolve_current_revision({})
 
-        self.assertEqual(tag, "1234567890abcdef")
-        self.assertEqual(
-            run.call_args_list[0].args[0],
-            ["docker", "pull", "ghcr.io/decompme/decompme-backend:latest"],
-        )
-        self.assertIn(
-            "ghcr.io/decompme/decompme-backend:latest",
-            run.call_args_list[1].args[0],
+        self.assertEqual(tag, revision)
+        run.assert_called_once_with(
+            ["git", "rev-parse", "HEAD"],
+            env={},
+            capture=True,
+            quiet=True,
         )
 
     def test_read_env_file_migrates_legacy_cromper_tag(self):

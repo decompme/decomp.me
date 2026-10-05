@@ -31,9 +31,9 @@ We support blue/green deployments when running decomp.me in production. This all
 
 `deploy.py` deploys the requested image tag to the inactive backend and frontend slots, waits for them to become healthy, smoke-tests the inactive slot from nginx, then reloads nginx to switch traffic.
 
-If a tag is omitted, the script pulls the mutable `latest` image tag, reads its
-`org.opencontainers.image.revision` label, and deploys that immutable commit tag.
-An explicitly provided `latest` remains the mutable tag.
+If a tag is omitted, the script uses the current checkout's git revision as
+the image tag. Run the server's update script first so the checkout is at the
+latest commit. An explicitly provided `latest` remains the mutable tag.
 
 ### Standard deployments
 
