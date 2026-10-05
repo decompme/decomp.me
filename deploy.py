@@ -16,7 +16,7 @@ DOCKER_COMPOSE = ["docker", "compose", "-f", "docker-compose.prod.yaml"]
 
 SLOTS = {"blue", "green"}
 CROMPER_SLOTS = {"orange", "purple"}
-INFRA_SERVICES = ["postgres", "nginx", "certbot"]
+INFRA_SERVICES = ["postgres", "cromper-proxy", "nginx", "certbot"]
 BLUE_TAG = "BLUE_TAG"
 GREEN_TAG = "GREEN_TAG"
 NGINX_TAG = "NGINX_TAG"
@@ -194,15 +194,15 @@ def switch_cromper_upstream(slot, env):
     write_cromper_upstream(slot)
 
     try:
-        nginx_test_and_reload(env)
+        nginx_test_and_reload(env, "cromper-proxy")
     except Exception:
-        print("nginx reload failed; restoring previous cromper upstream config...")
+        print("cromper-proxy reload failed; restoring previous upstream config...")
         if previous is None:
             CROMPER_UPSTREAM_CONF.unlink(missing_ok=True)
         else:
             CROMPER_UPSTREAM_CONF.write_text(previous)
 
-        nginx_test_and_reload(env)
+        nginx_test_and_reload(env, "cromper-proxy")
         raise
 
 
@@ -314,7 +314,7 @@ def smoke_test(slot, env):
     print(f"Smoke testing {slot} from nginx...")
     nginx_fetch(f"http://backend-{slot}:8000/api/healthz", env)
     nginx_fetch(f"http://frontend-{slot}:8080/healthz", env)
-    nginx_fetch("http://nginx:8888/healthz", env)
+    nginx_fetch("http://cromper-proxy:8888/healthz", env)
 
 
 def nginx_test_and_reload(env, service="nginx"):
@@ -511,6 +511,7 @@ def cmd_ensure(args):
 
     wait_for_healthy("postgres", env)
     wait_for_healthy(f"cromper-{cromper_active}", env)
+    wait_for_healthy("cromper-proxy", env)
     wait_for_healthy("certbot", env)
     wait_for_healthy(f"backend-{active}", env)
     wait_for_healthy(f"frontend-{active}", env)

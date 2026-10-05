@@ -18,11 +18,11 @@ cp ./nginx/production/runtime/upstream.conf.example ./nginx/production/runtime/u
 cp ./nginx/production/runtime/cromper-upstream.conf.example ./nginx/production/runtime/cromper-upstream.conf
 ```
 
-Start the active Cromper slot before nginx.
+Start the active Cromper slot before its proxy and public nginx.
 
 ```bash
 docker compose -f docker-compose.prod.yaml --env-file .deploy.env up -d postgres cromper-orange
-docker compose -f docker-compose.prod.yaml --env-file .deploy.env up -d nginx certbot
+docker compose -f docker-compose.prod.yaml --env-file .deploy.env up -d cromper-proxy nginx certbot
 ```
 
 ## Blue/Green deployment
@@ -45,8 +45,8 @@ The old slot is left running after a successful deploy so rollback remains quick
 
 ### Cromper deployments
 
-Cromper can be deployed independently to orange/purple slots. The existing
-nginx service routes app and public requests to the active slot.
+Cromper can be deployed independently to orange/purple slots. The internal
+`cromper-proxy` nginx service routes app and public requests to the active slot.
 
 ```bash
 python3 deploy.py deploy-cromper

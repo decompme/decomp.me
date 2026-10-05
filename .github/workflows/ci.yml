@@ -136,7 +136,7 @@ jobs:
 
       - name: Build production images
         run: |
-          docker compose -f docker-compose.prod.yaml build cromper-orange nginx backend-blue frontend-blue
+          docker compose -f docker-compose.prod.yaml build cromper-orange cromper-proxy nginx backend-blue frontend-blue
 
       - name: Ensure production services
         run: |

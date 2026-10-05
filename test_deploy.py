@@ -84,7 +84,7 @@ class DeployTests(unittest.TestCase):
             ):
                 deploy.switch_cromper_upstream("purple", {})
 
-            reload_nginx.assert_called_once_with({})
+            reload_nginx.assert_called_once_with({}, "cromper-proxy")
             self.assertIn("server cromper-purple:8888;", config.read_text())
 
 
