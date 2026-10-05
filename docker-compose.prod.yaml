@@ -61,7 +61,7 @@ x-cromper-base: &cromper-base
     interval: 15s
     timeout: 3s
     retries: 10
-    start_period: 20s
+    start_period: 10s
   networks:
     - decompme
 
@@ -86,7 +86,7 @@ services:
       start_period: 5s
     restart: unless-stopped
     volumes:
-      - ./nginx/production/runtime:/etc/nginx/conf.d/runtime:ro
+      - ./cromper-proxy/production/runtime:/etc/nginx/conf.d/runtime:ro
     networks:
       - decompme
 

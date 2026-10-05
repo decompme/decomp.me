@@ -27,4 +27,6 @@ update.sh
 .venv/
 nginx/production/runtime/*.conf
 !nginx/production/runtime/*.conf.example
+cromper-proxy/production/runtime/*.conf
+!cromper-proxy/production/runtime/*.conf.example
 .deploy.env

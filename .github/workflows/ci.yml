@@ -129,7 +129,7 @@ jobs:
         run: |
           cp ./nginx/production/runtime/geo.conf.example ./nginx/production/runtime/geo.conf
           cp ./nginx/production/runtime/upstream.conf.example ./nginx/production/runtime/upstream.conf
-          cp ./nginx/production/runtime/cromper-upstream.conf.example ./nginx/production/runtime/cromper-upstream.conf
+          cp ./cromper-proxy/production/runtime/cromper-upstream.conf.example ./cromper-proxy/production/runtime/cromper-upstream.conf
 
       - name: Build production images
         run: |

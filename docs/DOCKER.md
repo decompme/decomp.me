@@ -11,7 +11,6 @@ You will need [Docker](https://docs.docker.com/get-docker/) and [Docker Compose]
 ## Development
 
 There is a `docker-compose.yaml` file to help you spin up a dev instance quickly.
-It includes an internal `cromper-proxy` service between the app and Cromper.
 
 **Run in foreground:**
 
@@ -71,11 +70,7 @@ Create a `docker.prod.env` and set the necessary configuration options.
 nano docker.prod.env
 ```
 
-Bring up the shared production services.
-
-```bash
-docker compose -f docker-compose.prod.yaml up -d postgres nginx certbot
-```
+Follow the [production runbook](PRODUCTION.md) to configure the image tags and start the services.
 
 Deploy an app image tag with the blue/green deploy script.
 

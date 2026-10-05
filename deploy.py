@@ -10,13 +10,13 @@ from pathlib import Path
 
 DEPLOY_ENV = Path(".deploy.env")
 UPSTREAM_CONF = Path("nginx/production/runtime/upstream.conf")
-CROMPER_UPSTREAM_CONF = Path("nginx/production/runtime/cromper-upstream.conf")
+CROMPER_UPSTREAM_CONF = Path("cromper-proxy/production/runtime/cromper-upstream.conf")
 
 DOCKER_COMPOSE = ["docker", "compose", "-f", "docker-compose.prod.yaml"]
 
 SLOTS = {"blue", "green"}
 CROMPER_SLOTS = {"orange", "purple"}
-INFRA_SERVICES = ["postgres", "cromper-proxy", "nginx", "certbot"]
+INFRA_SERVICES = ["postgres", "cromper-proxy", "certbot"]
 BLUE_TAG = "BLUE_TAG"
 GREEN_TAG = "GREEN_TAG"
 NGINX_TAG = "NGINX_TAG"
@@ -174,8 +174,9 @@ def switch_cromper_upstream(slot, env):
 
     try:
         nginx_test_and_reload(env, "cromper-proxy")
-    except Exception:
-        print("cromper-proxy reload failed; restoring previous upstream config...")
+        nginx_fetch("http://cromper-proxy:8888/healthz", env)
+    except (Exception, SystemExit):
+        print("cromper-proxy switch failed; restoring previous upstream config...")
         if previous is None:
             CROMPER_UPSTREAM_CONF.unlink(missing_ok=True)
         else:
@@ -314,7 +315,9 @@ def ensure_infra(env):
         raise SystemExit("CROMPER_ACTIVE_SLOT is missing or invalid")
     write_cromper_upstream(cromper_slot)
     ensure_services(["postgres", f"cromper-{cromper_slot}"], env)
+    wait_for_healthy(f"cromper-{cromper_slot}", env)
     ensure_services(INFRA_SERVICES, env)
+    wait_for_healthy("cromper-proxy", env)
 
 
 def print_status(state, env):
@@ -483,12 +486,11 @@ def cmd_ensure(args):
     ensure_services([f"backend-{active}", f"frontend-{active}"], env)
 
     wait_for_healthy("postgres", env)
-    wait_for_healthy(f"cromper-{cromper_active}", env)
-    wait_for_healthy("cromper-proxy", env)
     wait_for_healthy("certbot", env)
     wait_for_healthy(f"backend-{active}", env)
     wait_for_healthy(f"frontend-{active}", env)
 
+    ensure_services(["nginx"], env)
     wait_for_healthy("nginx", env)
 
     print()

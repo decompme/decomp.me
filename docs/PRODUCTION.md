@@ -6,7 +6,12 @@ Create `.deploy.env` with the desired image tags.
 
 ```bash
 cat <<EOF > .deploy.env
-NGINX_TAG=8ca8d5b59b50
+ACTIVE_SLOT=blue
+BLUE_TAG=<published-git-hash>
+NGINX_TAG=<published-git-hash>
+CROMPER_ACTIVE_SLOT=orange
+CROMPER_ORANGE_TAG=<published-git-hash>
+CROMPER_PROXY_TAG=<published-git-hash>
 EOF
 ```
 
@@ -15,14 +20,15 @@ Create the runtime nginx config files.
 ```bash
 cp ./nginx/production/runtime/geo.conf.example ./nginx/production/runtime/geo.conf
 cp ./nginx/production/runtime/upstream.conf.example ./nginx/production/runtime/upstream.conf
-cp ./nginx/production/runtime/cromper-upstream.conf.example ./nginx/production/runtime/cromper-upstream.conf
+cp ./cromper-proxy/production/runtime/cromper-upstream.conf.example ./cromper-proxy/production/runtime/cromper-upstream.conf
 ```
 
-Start the active Cromper slot before its proxy and public nginx.
+Start the active Cromper slot, then the app and proxies.
 
 ```bash
 docker compose -f docker-compose.prod.yaml --env-file .deploy.env up -d postgres cromper-orange
-docker compose -f docker-compose.prod.yaml --env-file .deploy.env up -d cromper-proxy nginx certbot
+docker compose -f docker-compose.prod.yaml --env-file .deploy.env up -d cromper-proxy backend-blue frontend-blue
+docker compose -f docker-compose.prod.yaml --env-file .deploy.env up -d nginx certbot
 ```
 
 ## Blue/Green deployment
@@ -42,8 +48,7 @@ The old slot is left running after a successful deploy so rollback remains quick
 ### Cromper deployments
 
 Cromper can be deployed independently to orange/purple slots. The internal
-`cromper-proxy` nginx service, built from `cromper-proxy/`, routes app and public
-requests to the active slot. The development Compose stack runs the same proxy.
+`cromper-proxy` routes requests to the active slot.
 
 ```bash
 python3 deploy.py deploy-cromper githash
