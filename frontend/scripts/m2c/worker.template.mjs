@@ -1,5 +1,5 @@
 import { M2C_PYTHON_FILES } from "/vendor/m2c/m2c.js";
-import { loadPyodide } from "/vendor/pyodide/314.0.7/pyodide.mjs";
+import { loadPyodide } from "/vendor/pyodide/314.0.0/pyodide.mjs";
 
 const M2C_REVISION = "__M2C_REVISION__";
 const M2C_ROOT = "/opt/decompme-m2c";
@@ -31,7 +31,7 @@ function installM2C(pyodide) {
 
 async function loadM2C() {
     const pyodide = await loadPyodide({
-        indexURL: "/vendor/pyodide/314.0.7/",
+        indexURL: "/vendor/pyodide/314.0.0/",
     });
     installM2C(pyodide);
 

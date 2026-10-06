@@ -9,7 +9,7 @@ import { scratchUrl } from "@/lib/api/urls";
 import { decompileSetup } from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
 import useCompareExtension from "@/lib/codemirror/useCompareExtension";
-import { decompileWithM2C, isClientM2CEnabled } from "@/lib/m2c/client";
+import { decompile, isClientEnabled } from "@/lib/m2c/client";
 
 import styles from "./DecompilePanel.module.scss";
 
@@ -34,7 +34,7 @@ export default function DecompilePanel({ scratch }: Props) {
     const { targetAsm, error: targetAsmError } = api.useTargetAsm(scratch);
 
     useEffect(() => {
-        const clientEnabled = isClientM2CEnabled();
+        const clientEnabled = isClientEnabled();
         if (clientEnabled && compilerIsLoading) return;
         if (clientEnabled && targetAsm === undefined && !targetAsmError) return;
 
@@ -51,19 +51,19 @@ export default function DecompilePanel({ scratch }: Props) {
             return response.decompilation;
         };
 
-        const decompile = async () => {
+        const runDecompile = async () => {
             if (
                 clientEnabled &&
-                compiler?.m2c_target &&
+                compiler?.decompile_target &&
                 typeof targetAsm === "string"
             ) {
                 try {
-                    return await decompileWithM2C({
+                    return await decompile({
                         asm: targetAsm,
                         context: debouncedContext,
                         defaultSourceCode: "",
                         platformId: scratch.platform,
-                        target: compiler.m2c_target,
+                        target: compiler.decompile_target,
                     });
                 } catch (error) {
                     console.warn(
@@ -75,7 +75,7 @@ export default function DecompilePanel({ scratch }: Props) {
             return await serverDecompile();
         };
 
-        decompile().then((decompilation) => {
+        runDecompile().then((decompilation) => {
             if (!isCurrent) return;
 
             setDecompiledCode(decompilation);

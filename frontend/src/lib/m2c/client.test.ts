@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-    decompileWithM2C,
+    decompile,
     disposeM2CWorker,
     M2CWorkerClient,
     type M2CWorkerTransport,
@@ -97,7 +97,7 @@ describe("M2CWorkerClient", () => {
             .spyOn(console, "info")
             .mockImplementation(() => {});
 
-        const pending = decompileWithM2C(request);
+        const pending = decompile(request);
         worker?.respond({ id: 1, ok: true, result: "decompiled" });
 
         await expect(pending).resolves.toBe("decompiled");

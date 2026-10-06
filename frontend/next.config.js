@@ -170,7 +170,6 @@ let app = {
         NEXT_PUBLIC_API_BASE: process.env.API_BASE,
         NEXT_PUBLIC_GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
         NEXT_PUBLIC_COMMIT_HASH: process.env.GIT_HASH ?? "abc123",
-        NEXT_PUBLIC_CLIENT_M2C: process.env.CLIENT_M2C ?? "true",
         OBJDIFF_BASE: process.env.OBJDIFF_BASE,
     },
 };

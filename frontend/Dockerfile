@@ -51,9 +51,6 @@ ENV OBJDIFF_BASE=${OBJDIFF_BASE}
 ARG GIT_HASH=abc123
 ENV GIT_HASH=${GIT_HASH}
 
-ARG CLIENT_M2C=true
-ENV CLIENT_M2C=${CLIENT_M2C}
-
 RUN yarn build && rm -rf .next/cache
 
 

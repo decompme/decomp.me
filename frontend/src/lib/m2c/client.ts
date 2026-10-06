@@ -72,18 +72,13 @@ export class M2CWorkerClient {
 let sharedClient: M2CWorkerClient | null = null;
 const M2C_WORKER_URL = "/vendor/m2c/worker.mjs";
 
-export function isClientM2CEnabled(): boolean {
-    const setting = process.env.NEXT_PUBLIC_CLIENT_M2C?.toLowerCase();
-    return (
-        !["false", "0", "off", "no"].includes(setting ?? "") &&
-        typeof Worker !== "undefined" &&
-        typeof WebAssembly !== "undefined"
-    );
+export function isClientEnabled(): boolean {
+    return typeof Worker !== "undefined" && typeof WebAssembly !== "undefined";
 }
 
 function getSharedClient(): M2CWorkerClient {
-    if (!isClientM2CEnabled()) {
-        throw new Error("client-side m2c is disabled or unsupported");
+    if (!isClientEnabled()) {
+        throw new Error("client-side m2c is unsupported");
     }
     if (!sharedClient) {
         sharedClient = new M2CWorkerClient(
@@ -95,7 +90,7 @@ function getSharedClient(): M2CWorkerClient {
     return sharedClient;
 }
 
-export async function decompileWithM2C(request: M2CRequest): Promise<string> {
+export async function decompile(request: M2CRequest): Promise<string> {
     const startedAt = performance.now();
     try {
         const result = await getSharedClient().decompile(request);

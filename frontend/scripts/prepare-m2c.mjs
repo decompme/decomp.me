@@ -22,7 +22,7 @@ const workerTemplatePath = join(scriptRoot, "m2c", "worker.template.mjs");
 const vendorParent = join(frontendRoot, "public", "vendor");
 const outputRoot = join(vendorParent, "m2c");
 const repository = "https://github.com/matt-kempster/m2c.git";
-const pyodideVersion = "314.0.7";
+const pyodideVersion = "314.0.0";
 const pyodideFiles = [
     "pyodide.mjs",
     "pyodide.asm.mjs",

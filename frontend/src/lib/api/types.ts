@@ -178,7 +178,7 @@ export type CompilerMetadata = CompilerBase & {
     platform: string;
     flags_class: string;
     diff_flags_class: string;
-    m2c_target: string | null;
+    decompile_target: string | null;
     language: CompilerLanguage;
 };
 

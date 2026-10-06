@@ -131,7 +131,7 @@ class Compiler:
             "platform": self.platform.id,
             "flags_class": self.flag_class.name,
             "diff_flags_class": self.platform.diff_flag_class.name,
-            "m2c_target": resolve_m2c_target(self.platform.id, self.type.value),
+            "decompile_target": resolve_m2c_target(self.platform.id, self.type.value),
             "language": {
                 "default": self.language.to_json(),
                 "overrides": [
