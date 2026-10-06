@@ -12,6 +12,7 @@ from .models.scratch import (
     AssemblyAdmin,
     Scratch,
     ScratchAdmin,
+    ScratchPreference,
 )
 
 admin.site.register(Profile, ProfileAdmin)
@@ -19,6 +20,7 @@ admin.site.register(GitHubUser)
 admin.site.register(Asm)
 admin.site.register(Assembly, AssemblyAdmin)
 admin.site.register(Scratch, ScratchAdmin)
+admin.site.register(ScratchPreference)
 admin.site.register(Preset, PresetAdmin)
 admin.site.register(Project)
 admin.site.register(ProjectMember)

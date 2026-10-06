@@ -2,9 +2,11 @@ import {
     CheckIcon,
     DownloadIcon,
     FileIcon,
+    IssueOpenedIcon,
     IterationsIcon,
     MilestoneIcon,
     RepoForkedIcon,
+    StarIcon,
     SyncIcon,
     TrashIcon,
     UploadIcon,
@@ -163,6 +165,7 @@ function ActionButton({
     icon,
     text,
     dataTour,
+    pressed,
 }: {
     onClick: (event: MouseEvent<HTMLButtonElement>) => void | Promise<void>;
     disabled?: boolean;
@@ -170,6 +173,7 @@ function ActionButton({
     icon: JSX.Element;
     text: string;
     dataTour?: string;
+    pressed?: boolean;
 }) {
     return (
         <button
@@ -177,6 +181,7 @@ function ActionButton({
             disabled={disabled}
             title={title}
             aria-label={text}
+            aria-pressed={pressed}
             data-tour={dataTour}
         >
             {icon}
@@ -200,6 +205,9 @@ function Actions({
     const saveScratchRequest = api.useSaveScratch(scratch);
     const [isSaving, setIsSaving] = useState(false);
     const [isForking, setIsForking] = useState(false);
+    const [isUpdatingPreferences, setIsUpdatingPreferences] = useState(false);
+    const { preferences, updatePreferences } =
+        api.useScratchPreferences(scratch);
 
     const canSave = !!(scratch.owner && userIsYou(scratch.owner));
     const isSaved = api.useIsScratchSaved(scratch);
@@ -227,6 +235,19 @@ function Actions({
             saveCallback();
         } finally {
             setIsForking(false);
+        }
+    };
+
+    const togglePreference = async (
+        key: keyof api.ScratchPreferences,
+        value: boolean,
+    ) => {
+        if (isUpdatingPreferences) return;
+        setIsUpdatingPreferences(true);
+        try {
+            await updatePreferences({ [key]: value });
+        } finally {
+            setIsUpdatingPreferences(false);
         }
     };
 
@@ -272,6 +293,38 @@ function Actions({
                     dataTour={
                         tourTargetsEnabled ? "scratch-action-fork" : undefined
                     }
+                />
+            </li>
+            <li>
+                <ActionButton
+                    onClick={() =>
+                        void togglePreference(
+                            "is_favorite",
+                            !preferences?.is_favorite,
+                        )
+                    }
+                    disabled={!preferences || isUpdatingPreferences}
+                    text={preferences?.is_favorite ? "Favorited" : "Favorite"}
+                    title="Save this scratch to your favorites"
+                    icon={<StarIcon />}
+                    pressed={preferences?.is_favorite}
+                />
+            </li>
+            <li>
+                <ActionButton
+                    onClick={() =>
+                        void togglePreference(
+                            "help_wanted",
+                            !preferences?.help_wanted,
+                        )
+                    }
+                    disabled={!preferences || isUpdatingPreferences}
+                    text={
+                        preferences?.help_wanted ? "Help wanted" : "Need help"
+                    }
+                    title="Show this scratch in the help-wanted list"
+                    icon={<IssueOpenedIcon />}
+                    pressed={preferences?.help_wanted}
                 />
             </li>
             {((scratch.owner && userIsYou(scratch.owner)) || isAdmin) && (

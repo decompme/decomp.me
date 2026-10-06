@@ -66,6 +66,11 @@ export interface Scratch extends TerseScratch {
     diff_label: string;
 }
 
+export interface ScratchPreferences {
+    is_favorite: boolean;
+    help_wanted: boolean;
+}
+
 export interface ClaimableScratch extends Scratch {
     claim_token: string;
 }

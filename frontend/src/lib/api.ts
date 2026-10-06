@@ -22,6 +22,7 @@ import type {
     Preset,
     PresetBase,
     Scratch,
+    ScratchPreferences,
     TerseScratch,
     User,
 } from "./api/types";
@@ -169,6 +170,30 @@ export function useIsScratchSaved(scratch: Scratch, enabled = true): boolean {
     const saved = useSavedScratch(scratch, enabled);
 
     return isScratchSaved(scratch, saved);
+}
+
+export function useScratchPreferences(scratch: TerseScratch): {
+    preferences: ScratchPreferences | undefined;
+    updatePreferences: (
+        update: Partial<ScratchPreferences>,
+    ) => Promise<ScratchPreferences>;
+} {
+    const url = `${scratchUrl(scratch)}/preferences`;
+    const { data: preferences } = useSWR<ScratchPreferences>(url, get);
+
+    const updatePreferences = useCallback(
+        async (update: Partial<ScratchPreferences>) => {
+            const updatedPreferences: ScratchPreferences = await patch(
+                url,
+                update,
+            );
+            await mutate(url, updatedPreferences, { revalidate: false });
+            return updatedPreferences;
+        },
+        [url],
+    );
+
+    return { preferences, updatePreferences };
 }
 
 function getScratchCompileInputKey(scratch: Scratch | null): string {

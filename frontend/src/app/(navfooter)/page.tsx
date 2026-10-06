@@ -37,18 +37,36 @@ export default function Page() {
             </header>
             <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-16 px-8 py-4 md:flex-row md:py-8">
                 <section className="md:w-1/2 lg:w-1/4">
-                    <h2 className="mb-2 text-lg">Your scratches</h2>
-                    <YourScratchList
-                        item={SingleLineScratchItem}
-                        skeletonVariant="compact"
-                    />
+                    <div>
+                        <h2 className="mb-2 text-lg">Your scratches</h2>
+                        <YourScratchList
+                            item={SingleLineScratchItem}
+                            skeletonVariant="compact"
+                        />
+                    </div>
+                    <div className="mt-10">
+                        <ScratchList
+                            title="Favorites"
+                            url="/scratch/favorites?page_size=20"
+                            skeletonVariant="compact"
+                        />
+                    </div>
                 </section>
                 <section className="md:w-1/2 lg:w-3/4">
-                    <h2 className="mb-2 text-lg">Recent activity</h2>
-                    <ScratchList
-                        isPublic
-                        url="/scratch?page_size=20&has_owner=true"
-                    />
+                    <div className="mb-10">
+                        <ScratchList
+                            title="Help wanted"
+                            isPublic
+                            url="/scratch/help-wanted?page_size=20"
+                        />
+                    </div>
+                    <div>
+                        <h2 className="mb-2 text-lg">Recent activity</h2>
+                        <ScratchList
+                            isPublic
+                            url="/scratch?page_size=20&has_owner=true"
+                        />
+                    </div>
                 </section>
             </div>
         </main>

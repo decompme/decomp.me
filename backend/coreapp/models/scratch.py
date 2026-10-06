@@ -210,6 +210,24 @@ class Scratch(models.Model):
             return False
 
 
+class ScratchPreference(models.Model):
+    scratch = models.ForeignKey(
+        Scratch, on_delete=models.CASCADE, related_name="preferences"
+    )
+    profile = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, related_name="scratch_preferences"
+    )
+    is_favorite = models.BooleanField(default=False)
+    help_wanted = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["scratch", "profile"], name="unique_scratch_preference"
+            )
+        ]
+
+
 class ScratchAdmin(admin.ModelAdmin[Scratch]):
     raw_id_fields = ["owner", "parent", "family", "context_fk"]
     readonly_fields = ["target_assembly"]

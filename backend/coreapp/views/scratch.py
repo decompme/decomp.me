@@ -10,7 +10,7 @@ from typing import Any
 
 import django_filters
 from django.core.files import File
-from django.db.models import Case, F, FloatField, Value, When
+from django.db.models import Case, F, FloatField, Q, Value, When
 from django.db.models.functions import Cast
 from django.db.models.query import QuerySet
 from django.http import HttpResponse, QueryDict
@@ -35,7 +35,7 @@ from ..filters.search import NonEmptySearchFilter
 from ..middleware import Request
 from ..models.best_fork import update_best_forks_for_scratch
 from ..models.preset import Preset
-from ..models.scratch import Asm, Assembly, Library, Scratch
+from ..models.scratch import Asm, Assembly, Library, Scratch, ScratchPreference
 from ..pagination import SafeCursorPagination
 from ..serializers import (
     ClaimableScratchSerializer,
@@ -313,6 +313,11 @@ class ScratchPagination(SafeCursorPagination):
     max_page_size = 100
 
 
+class ScratchPreferenceSerializer(serializers.Serializer):
+    is_favorite = serializers.BooleanField(required=False)
+    help_wanted = serializers.BooleanField(required=False)
+
+
 @method_decorator(globally_cacheable(max_age=5, stale_while_revalidate=1), name="list")
 @method_decorator(globally_cacheable(max_age=1), name="retrieve")
 class ScratchViewSet(
@@ -355,6 +360,74 @@ class ScratchViewSet(
             return TerseScratchSerializer
         else:
             return ScratchSerializer
+
+    @action(detail=False, methods=["GET"], url_path="help-wanted")
+    def help_wanted(self, request: Request) -> Response:
+        matching_family_ids = Scratch.objects.filter(
+            Q(score=0) | Q(match_override=True),
+            family_id__isnull=False,
+        ).values("family_id")
+        queryset = (
+            self.filter_queryset(self.get_queryset())
+            .filter(preferences__help_wanted=True)
+            .exclude(Q(score=0) | Q(match_override=True))
+            .exclude(family_id__in=matching_family_ids)
+            .filter(best_fork__isnull=True)
+            .distinct()
+        )
+        page = self.paginate_queryset(queryset)
+        serializer = TerseScratchSerializer(
+            page, many=True, context=self.get_serializer_context()
+        )
+        return self.get_paginated_response(serializer.data)
+
+    @action(detail=False, methods=["GET"], url_path="favorites")
+    def favorites(self, request: Request) -> Response:
+        queryset = self.filter_queryset(
+            self.get_queryset().filter(
+                preferences__profile=request.profile,
+                preferences__is_favorite=True,
+            )
+        )
+        page = self.paginate_queryset(queryset)
+        serializer = TerseScratchSerializer(
+            page, many=True, context=self.get_serializer_context()
+        )
+        return self.get_paginated_response(serializer.data)
+
+    @action(detail=True, methods=["GET", "PATCH"])
+    def preferences(self, request: Request, pk: str) -> Response:
+        scratch = self.get_object()
+        preference = ScratchPreference.objects.filter(
+            scratch=scratch, profile=request.profile
+        ).first()
+
+        if request.method == "PATCH":
+            serializer = ScratchPreferenceSerializer(
+                data=request.data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            values = serializer.validated_data
+            if preference is None:
+                preference = ScratchPreference(
+                    scratch=scratch,
+                    profile=request.profile,
+                    **values,
+                )
+            else:
+                for field, value in values.items():
+                    setattr(preference, field, value)
+            if preference.is_favorite or preference.help_wanted:
+                preference.save()
+            elif preference.pk is not None:
+                preference.delete()
+
+        return Response(
+            {
+                "is_favorite": bool(preference and preference.is_favorite),
+                "help_wanted": bool(preference and preference.help_wanted),
+            }
+        )
 
     @scratch_condition
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:

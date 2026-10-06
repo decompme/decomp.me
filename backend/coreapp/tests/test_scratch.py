@@ -11,12 +11,15 @@ from django.db.models import ProtectedError
 from django.urls import reverse
 from rest_framework import status
 
+from coreapp.models.best_fork import BestFork
+from coreapp.models.profile import Profile
 from coreapp.models.scratch import (
     Assembly,
     Context,
     LibrariesField,
     Library,
     Scratch,
+    ScratchPreference,
 )
 from coreapp.tests import (
     mock_cromper_client as compilers,
@@ -56,6 +59,115 @@ class ScratchListTests(BaseTestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class ScratchPreferenceTests(BaseTestCase):
+    def set_help_wanted(self, scratch: Scratch) -> None:
+        response = self.client.patch(
+            reverse("scratch-preferences", args=[scratch.slug]),
+            {"help_wanted": True},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.json())
+        self.assertTrue(response.json()["help_wanted"])
+
+    def test_preferences_can_be_set_and_removed(self) -> None:
+        scratch = self.create_nop_scratch()
+        url = reverse("scratch-preferences", args=[scratch.slug])
+
+        response = self.client.patch(
+            url,
+            {"is_favorite": True, "help_wanted": True},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json(), {"is_favorite": True, "help_wanted": True}
+        )
+        self.assertTrue(
+            ScratchPreference.objects.filter(
+                scratch=scratch, is_favorite=True, help_wanted=True
+            ).exists()
+        )
+
+        response = self.client.patch(
+            url,
+            {"is_favorite": False, "help_wanted": False},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json(), {"is_favorite": False, "help_wanted": False}
+        )
+        self.assertFalse(ScratchPreference.objects.filter(scratch=scratch).exists())
+
+    def test_favorites_and_help_wanted_lists(self) -> None:
+        scratch = self.create_nop_scratch()
+        self.client.patch(
+            reverse("scratch-preferences", args=[scratch.slug]),
+            {"is_favorite": True, "help_wanted": True},
+            format="json",
+        )
+
+        favorite_response = self.client.get(reverse("scratch-favorites"))
+        wanted_response = self.client.get(reverse("scratch-help-wanted"))
+
+        self.assertEqual(favorite_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(wanted_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            [item["slug"] for item in favorite_response.json()["results"]],
+            [scratch.slug],
+        )
+        self.assertEqual(
+            [item["slug"] for item in wanted_response.json()["results"]],
+            [scratch.slug],
+        )
+
+        other_profile = Profile.objects.create()
+        session = self.client.session
+        session["profile_id"] = other_profile.id
+        session.save()
+
+        preference_response = self.client.get(
+            reverse("scratch-preferences", args=[scratch.slug])
+        )
+        favorite_response = self.client.get(reverse("scratch-favorites"))
+        wanted_response = self.client.get(reverse("scratch-help-wanted"))
+
+        self.assertEqual(
+            preference_response.json(),
+            {"is_favorite": False, "help_wanted": False},
+        )
+        self.assertEqual(favorite_response.json()["results"], [])
+        self.assertEqual(
+            [item["slug"] for item in wanted_response.json()["results"]],
+            [scratch.slug],
+        )
+
+    def test_help_wanted_hides_matched_families_and_improved_scratches(self) -> None:
+        matched_family_root = self.create_nop_scratch()
+        matched_family_member = self.create_nop_scratch()
+        matched_family_member.family = matched_family_root.family
+        matched_family_member.score = 0
+        matched_family_member.save(update_fields=["family", "score"])
+        self.set_help_wanted(matched_family_root)
+
+        improved = self.create_nop_scratch()
+        better_fork = self.create_nop_scratch()
+        BestFork.objects.create(
+            scratch=improved,
+            fork=better_fork,
+            score=100,
+            max_score=200,
+        )
+        self.set_help_wanted(improved)
+
+        response = self.client.get(reverse("scratch-help-wanted"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        listed_slugs = [item["slug"] for item in response.json()["results"]]
+        self.assertNotIn(matched_family_root.slug, listed_slugs)
+        self.assertNotIn(improved.slug, listed_slugs)
 
 
 class ScratchCreationTests(BaseTestCase):
