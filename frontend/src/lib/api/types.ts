@@ -66,7 +66,7 @@ export interface Scratch extends TerseScratch {
     diff_label: string;
 }
 
-export interface ScratchUserAttributes {
+export interface ScratchFlags {
     is_favorite: boolean;
     help_wanted: boolean;
 }

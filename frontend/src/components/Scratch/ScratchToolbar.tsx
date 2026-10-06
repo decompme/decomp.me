@@ -205,9 +205,8 @@ function Actions({
     const saveScratchRequest = api.useSaveScratch(scratch);
     const [isSaving, setIsSaving] = useState(false);
     const [isForking, setIsForking] = useState(false);
-    const [isUpdatingPreferences, setIsUpdatingPreferences] = useState(false);
-    const { userAttributes, updateUserAttributes } =
-        api.useScratchUserAttributes(scratch);
+    const [isUpdatingFlags, setIsUpdatingFlags] = useState(false);
+    const { flags, updateFlags } = api.useScratchFlags(scratch);
 
     const canSave = !!(scratch.owner && userIsYou(scratch.owner));
     const isSaved = api.useIsScratchSaved(scratch);
@@ -239,15 +238,15 @@ function Actions({
     };
 
     const togglePreference = async (
-        key: keyof api.ScratchUserAttributes,
+        key: keyof api.ScratchFlags,
         value: boolean,
     ) => {
-        if (isUpdatingPreferences) return;
-        setIsUpdatingPreferences(true);
+        if (isUpdatingFlags) return;
+        setIsUpdatingFlags(true);
         try {
-            await updateUserAttributes({ [key]: value });
+            await updateFlags({ [key]: value });
         } finally {
-            setIsUpdatingPreferences(false);
+            setIsUpdatingFlags(false);
         }
     };
 
@@ -300,16 +299,16 @@ function Actions({
                     onClick={() =>
                         void togglePreference(
                             "is_favorite",
-                            !userAttributes?.is_favorite,
+                            !flags?.is_favorite,
                         )
                     }
-                    disabled={!userAttributes || isUpdatingPreferences}
+                    disabled={!flags || isUpdatingFlags}
                     text={
-                        userAttributes?.is_favorite ? "Favorited" : "Favorite"
+                        flags?.is_favorite ? "Favorited" : "Favorite"
                     }
                     title="Save this scratch to your favorites"
                     icon={<StarIcon />}
-                    pressed={userAttributes?.is_favorite}
+                    pressed={flags?.is_favorite}
                 />
             </li>
             <li>
@@ -317,18 +316,16 @@ function Actions({
                     onClick={() =>
                         void togglePreference(
                             "help_wanted",
-                            !userAttributes?.help_wanted,
+                            !flags?.help_wanted,
                         )
                     }
-                    disabled={!userAttributes || isUpdatingPreferences}
+                    disabled={!flags || isUpdatingFlags}
                     text={
-                        userAttributes?.help_wanted
-                            ? "Help wanted"
-                            : "Need help"
+                        flags?.help_wanted ? "Help wanted" : "Need help"
                     }
                     title="Show this scratch in the help-wanted list"
                     icon={<IssueOpenedIcon />}
-                    pressed={userAttributes?.help_wanted}
+                    pressed={flags?.help_wanted}
                 />
             </li>
             {((scratch.owner && userIsYou(scratch.owner)) || isAdmin) && (

@@ -21,7 +21,7 @@ from coreapp.models.scratch import (
     LibrariesField,
     Library,
     Scratch,
-    ScratchUserAttribute,
+    ScratchFlags,
 )
 from coreapp.tests import (
     mock_cromper_client as compilers,
@@ -63,19 +63,19 @@ class ScratchListTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-class ScratchUserAttributeTests(BaseTestCase):
+class ScratchFlagsTests(BaseTestCase):
     def set_help_wanted(self, scratch: Scratch) -> None:
         response = self.client.patch(
-            reverse("scratch-user-attributes", args=[scratch.slug]),
+            reverse("scratch-flags", args=[scratch.slug]),
             {"help_wanted": True},
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.json())
         self.assertTrue(response.json()["help_wanted"])
 
-    def test_user_attributes_can_be_set_and_removed(self) -> None:
+    def test_flags_can_be_set_and_removed(self) -> None:
         scratch = self.create_nop_scratch()
-        url = reverse("scratch-user-attributes", args=[scratch.slug])
+        url = reverse("scratch-flags", args=[scratch.slug])
 
         response = self.client.patch(
             url,
@@ -87,7 +87,7 @@ class ScratchUserAttributeTests(BaseTestCase):
             response.json(), {"is_favorite": True, "help_wanted": True}
         )
         self.assertTrue(
-            ScratchUserAttribute.objects.filter(
+            ScratchFlags.objects.filter(
                 scratch=scratch, is_favorite=True, help_wanted=True
             ).exists()
         )
@@ -101,12 +101,12 @@ class ScratchUserAttributeTests(BaseTestCase):
         self.assertEqual(
             response.json(), {"is_favorite": False, "help_wanted": False}
         )
-        self.assertFalse(ScratchUserAttribute.objects.filter(scratch=scratch).exists())
+        self.assertFalse(ScratchFlags.objects.filter(scratch=scratch).exists())
 
     def test_favorites_and_help_wanted_lists(self) -> None:
         scratch = self.create_nop_scratch()
         self.client.patch(
-            reverse("scratch-user-attributes", args=[scratch.slug]),
+            reverse("scratch-flags", args=[scratch.slug]),
             {"is_favorite": True, "help_wanted": True},
             format="json",
         )
@@ -131,7 +131,7 @@ class ScratchUserAttributeTests(BaseTestCase):
         session.save()
 
         attributes_response = self.client.get(
-            reverse("scratch-user-attributes", args=[scratch.slug])
+            reverse("scratch-flags", args=[scratch.slug])
         )
         favorite_response = self.client.get(reverse("scratch-favorites"))
         wanted_response = self.client.get(reverse("scratch-help-wanted"))
@@ -146,7 +146,7 @@ class ScratchUserAttributeTests(BaseTestCase):
             [scratch.slug],
         )
         self.client.patch(
-            reverse("scratch-user-attributes", args=[scratch.slug]),
+            reverse("scratch-flags", args=[scratch.slug]),
             {"is_favorite": True, "help_wanted": True},
             format="json",
         )
@@ -172,12 +172,12 @@ class ScratchUserAttributeTests(BaseTestCase):
         second_profile = Profile.objects.create()
 
         self.client.patch(
-            reverse("scratch-user-attributes", args=[newest_one.slug]),
+            reverse("scratch-flags", args=[newest_one.slug]),
             {"help_wanted": True},
             format="json",
         )
         self.client.patch(
-            reverse("scratch-user-attributes", args=[more_votes.slug]),
+            reverse("scratch-flags", args=[more_votes.slug]),
             {"help_wanted": True},
             format="json",
         )
@@ -185,18 +185,18 @@ class ScratchUserAttributeTests(BaseTestCase):
         session["profile_id"] = second_profile.id
         session.save()
         self.client.patch(
-            reverse("scratch-user-attributes", args=[more_votes.slug]),
+            reverse("scratch-flags", args=[more_votes.slug]),
             {"help_wanted": True},
             format="json",
         )
 
-        first_vote = first_profile.scratch_user_attributes.get(scratch=newest_one)
+        first_vote = first_profile.scratch_flags.get(scratch=newest_one)
         first_vote.help_wanted_at = timezone.now() - timedelta(hours=3)
         first_vote.save(update_fields=["help_wanted_at"])
-        older_vote = first_profile.scratch_user_attributes.get(scratch=more_votes)
+        older_vote = first_profile.scratch_flags.get(scratch=more_votes)
         older_vote.help_wanted_at = timezone.now() - timedelta(hours=2)
         older_vote.save(update_fields=["help_wanted_at"])
-        newer_vote = second_profile.scratch_user_attributes.get(scratch=more_votes)
+        newer_vote = second_profile.scratch_flags.get(scratch=more_votes)
         newer_vote.help_wanted_at = timezone.now() - timedelta(hours=1)
         newer_vote.save(update_fields=["help_wanted_at"])
 

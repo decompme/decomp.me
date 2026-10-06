@@ -36,7 +36,7 @@ from ..filters.search import NonEmptySearchFilter
 from ..middleware import Request
 from ..models.best_fork import update_best_forks_for_scratch
 from ..models.preset import Preset
-from ..models.scratch import Asm, Assembly, Library, Scratch, ScratchUserAttribute
+from ..models.scratch import Asm, Assembly, Library, Scratch, ScratchFlags
 from ..pagination import SafeCursorPagination
 from ..serializers import (
     ClaimableScratchSerializer,
@@ -328,7 +328,7 @@ class ScratchPagination(SafeCursorPagination):
         return super().get_ordering(request, queryset, view)
 
 
-class ScratchUserAttributeSerializer(serializers.Serializer):
+class ScratchFlagsSerializer(serializers.Serializer):
     is_favorite = serializers.BooleanField(required=False)
     help_wanted = serializers.BooleanField(required=False)
 
@@ -386,13 +386,13 @@ class ScratchViewSet(
             self.filter_queryset(self.get_queryset())
             .annotate(
                 help_wanted_count=Count(
-                    "user_attributes",
-                    filter=Q(user_attributes__help_wanted=True),
+                    "flags",
+                    filter=Q(flags__help_wanted=True),
                     distinct=True,
                 ),
                 help_wanted_at=Max(
-                    "user_attributes__help_wanted_at",
-                    filter=Q(user_attributes__help_wanted=True),
+                    "flags__help_wanted_at",
+                    filter=Q(flags__help_wanted=True),
                 ),
             )
             .filter(help_wanted_count__gt=0)
@@ -420,8 +420,8 @@ class ScratchViewSet(
     def favorites(self, request: Request) -> Response:
         queryset = self.filter_queryset(
             self.get_queryset().filter(
-                user_attributes__profile=request.profile,
-                user_attributes__is_favorite=True,
+                flags__profile=request.profile,
+                flags__is_favorite=True,
             )
         )
         page = self.paginate_queryset(queryset)
@@ -433,48 +433,48 @@ class ScratchViewSet(
     @action(
         detail=True,
         methods=["GET", "PATCH"],
-        url_path="user-attributes",
+        url_path="flags",
     )
-    def user_attributes(self, request: Request, pk: str) -> Response:
+    def flags(self, request: Request, pk: str) -> Response:
         scratch = self.get_object()
-        user_attribute = ScratchUserAttribute.objects.filter(
+        scratch_flags = ScratchFlags.objects.filter(
             scratch=scratch, profile=request.profile
         ).first()
 
         if request.method == "PATCH":
-            serializer = ScratchUserAttributeSerializer(
+            serializer = ScratchFlagsSerializer(
                 data=request.data, partial=True
             )
             serializer.is_valid(raise_exception=True)
             values = serializer.validated_data
-            if user_attribute is None:
-                user_attribute = ScratchUserAttribute(
+            if scratch_flags is None:
+                scratch_flags = ScratchFlags(
                     scratch=scratch,
                     profile=request.profile,
                     **values,
                 )
             else:
-                was_help_wanted = user_attribute.help_wanted
+                was_help_wanted = scratch_flags.help_wanted
                 for field, value in values.items():
-                    setattr(user_attribute, field, value)
+                    setattr(scratch_flags, field, value)
                 if "help_wanted" in values:
-                    if user_attribute.help_wanted and not was_help_wanted:
-                        user_attribute.help_wanted_at = timezone.now()
-                    elif not user_attribute.help_wanted:
-                        user_attribute.help_wanted_at = None
-            if "help_wanted" in values and user_attribute.help_wanted:
-                user_attribute.help_wanted_at = (
-                    user_attribute.help_wanted_at or timezone.now()
+                    if scratch_flags.help_wanted and not was_help_wanted:
+                        scratch_flags.help_wanted_at = timezone.now()
+                    elif not scratch_flags.help_wanted:
+                        scratch_flags.help_wanted_at = None
+            if "help_wanted" in values and scratch_flags.help_wanted:
+                scratch_flags.help_wanted_at = (
+                    scratch_flags.help_wanted_at or timezone.now()
                 )
-            if user_attribute.is_favorite or user_attribute.help_wanted:
-                user_attribute.save()
-            elif user_attribute.pk is not None:
-                user_attribute.delete()
+            if scratch_flags.is_favorite or scratch_flags.help_wanted:
+                scratch_flags.save()
+            elif scratch_flags.pk is not None:
+                scratch_flags.delete()
 
         return Response(
             {
-                "is_favorite": bool(user_attribute and user_attribute.is_favorite),
-                "help_wanted": bool(user_attribute and user_attribute.help_wanted),
+                "is_favorite": bool(scratch_flags and scratch_flags.is_favorite),
+                "help_wanted": bool(scratch_flags and scratch_flags.help_wanted),
             }
         )
 

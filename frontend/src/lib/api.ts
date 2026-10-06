@@ -22,7 +22,7 @@ import type {
     Preset,
     PresetBase,
     Scratch,
-    ScratchUserAttributes,
+    ScratchFlags,
     TerseScratch,
     User,
 } from "./api/types";
@@ -172,28 +172,23 @@ export function useIsScratchSaved(scratch: Scratch, enabled = true): boolean {
     return isScratchSaved(scratch, saved);
 }
 
-export function useScratchUserAttributes(scratch: TerseScratch): {
-    userAttributes: ScratchUserAttributes | undefined;
-    updateUserAttributes: (
-        update: Partial<ScratchUserAttributes>,
-    ) => Promise<ScratchUserAttributes>;
+export function useScratchFlags(scratch: TerseScratch): {
+    flags: ScratchFlags | undefined;
+    updateFlags: (update: Partial<ScratchFlags>) => Promise<ScratchFlags>;
 } {
-    const url = `${scratchUrl(scratch)}/user-attributes`;
-    const { data: userAttributes } = useSWR<ScratchUserAttributes>(url, get);
+    const url = `${scratchUrl(scratch)}/flags`;
+    const { data: flags } = useSWR<ScratchFlags>(url, get);
 
-    const updateUserAttributes = useCallback(
-        async (update: Partial<ScratchUserAttributes>) => {
-            const updatedAttributes: ScratchUserAttributes = await patch(
-                url,
-                update,
-            );
-            await mutate(url, updatedAttributes, { revalidate: false });
-            return updatedAttributes;
+    const updateFlags = useCallback(
+        async (update: Partial<ScratchFlags>) => {
+            const updatedFlags: ScratchFlags = await patch(url, update);
+            await mutate(url, updatedFlags, { revalidate: false });
+            return updatedFlags;
         },
         [url],
     );
 
-    return { userAttributes, updateUserAttributes };
+    return { flags, updateFlags };
 }
 
 function getScratchCompileInputKey(scratch: Scratch | null): string {
