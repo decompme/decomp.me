@@ -294,7 +294,9 @@ function Actions({
                 <ActionButton
                     onClick={() => void toggleHelpWanted()}
                     disabled={!flags || isUpdatingFlags}
-                    text={flags?.help_wanted ? "Help wanted" : "Need help"}
+                    text={
+                        flags?.help_wanted ? "Help requested" : "Request help"
+                    }
                     title="Show this scratch in the help-wanted list"
                     icon={<IssueOpenedIcon />}
                     pressed={flags?.help_wanted}
