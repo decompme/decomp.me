@@ -19,6 +19,7 @@ from django.utils.decorators import method_decorator
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
+from rest_framework.request import Request as DRFRequest
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -43,6 +44,7 @@ from ..serializers import (
     ScratchCompileSerializer,
     ScratchCreateSerializer,
     ScratchDecompileSerializer,
+    ScratchFlagsSerializer,
     ScratchSerializer,
     TerseScratchSerializer,
 )
@@ -314,8 +316,8 @@ class ScratchPagination(SafeCursorPagination):
     max_page_size = 100
 
     def get_ordering(
-        self, request: Request, queryset: QuerySet[Any, Any], view: Any
-    ) -> tuple[str, ...] | str:
+        self, request: DRFRequest, queryset: QuerySet[Any, Any], view: Any
+    ) -> tuple[str, ...]:
         if getattr(view, "action", None) == "help_wanted":
             ordering = request.query_params.get("ordering", "-help_wanted_at")
             if ordering in {
@@ -327,10 +329,6 @@ class ScratchPagination(SafeCursorPagination):
             return "-help_wanted_at", "slug"
         return super().get_ordering(request, queryset, view)
 
-
-class ScratchFlagsSerializer(serializers.Serializer):
-    is_favorite = serializers.BooleanField(required=False)
-    help_wanted = serializers.BooleanField(required=False)
 
 
 @method_decorator(globally_cacheable(max_age=5, stale_while_revalidate=1), name="list")

@@ -12,7 +12,7 @@ from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile
 from .models.project import Project, ProjectMember
-from .models.scratch import Context, Library, Scratch
+from .models.scratch import Context, Library, Scratch, ScratchFlags
 
 if TYPE_CHECKING:
     ProfileFieldBaseClass = serializers.RelatedField[Profile, str, dict[str, Any]]
@@ -188,6 +188,11 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
             )
 
         return data
+
+
+class ScratchFlagsSerializer(serializers.Serializer[ScratchFlags]):
+    is_favorite = serializers.BooleanField(required=False)
+    help_wanted = serializers.BooleanField(required=False)
 
 
 class ScratchCreateSerializer(serializers.Serializer[None]):

@@ -4,7 +4,6 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from django.contrib import auth
-from django.contrib.auth.models import User
 from django.http.request import HttpRequest
 from django.utils.timezone import now
 from rest_framework.request import Request as DRFRequest
@@ -20,9 +19,7 @@ class AnonymousUser(auth.models.AnonymousUser):
 
 
 if TYPE_CHECKING:
-
     class Request(DRFRequest):
-        user: User | AnonymousUser
         profile: Profile
 
 else:
