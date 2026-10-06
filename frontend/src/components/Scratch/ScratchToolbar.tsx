@@ -304,7 +304,9 @@ function Actions({
                         )
                     }
                     disabled={!userAttributes || isUpdatingPreferences}
-                    text={userAttributes?.is_favorite ? "Favorited" : "Favorite"}
+                    text={
+                        userAttributes?.is_favorite ? "Favorited" : "Favorite"
+                    }
                     title="Save this scratch to your favorites"
                     icon={<StarIcon />}
                     pressed={userAttributes?.is_favorite}

@@ -29,7 +29,7 @@ export interface Props {
     emptyButtonLabel?: ReactNode;
     isSortable?: boolean;
     initialSortMode?: SortMode;
-    sortOptions?: Partial<Record<SortMode, string>>;
+    sortOptions?: Record<string, string>;
     isPublic?: boolean;
     showDeleteButtons?: boolean;
     skeletonVariant?: ScratchItemSkeletonVariant;

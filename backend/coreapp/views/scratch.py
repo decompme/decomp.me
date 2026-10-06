@@ -313,6 +313,20 @@ class ScratchPagination(SafeCursorPagination):
     page_size_query_param = "page_size"
     max_page_size = 100
 
+    def get_ordering(
+        self, request: Request, queryset: QuerySet[Any, Any], view: Any
+    ) -> tuple[str, ...] | str:
+        if getattr(view, "action", None) == "help_wanted":
+            ordering = request.query_params.get("ordering", "-help_wanted_at")
+            if ordering in {
+                "-help_wanted_at",
+                "help_wanted_at",
+                "-help_wanted_count",
+            }:
+                return ordering, "slug"
+            return "-help_wanted_at", "slug"
+        return super().get_ordering(request, queryset, view)
+
 
 class ScratchUserAttributeSerializer(serializers.Serializer):
     is_favorite = serializers.BooleanField(required=False)

@@ -32,6 +32,8 @@ export function produceSortFunction(
             return (a, b) => compareScratchScores(b, a);
         case SortMode.MOST_MATCHED:
             return compareScratchScores;
+        default:
+            return compareScratchScores;
     }
 }
 
@@ -54,10 +56,10 @@ export type Props = {
     className?: string;
     sortMode: SortMode;
     setSortMode: (m: SortMode) => void;
-    options?: Partial<Record<SortMode, string>>;
+    options?: Record<string, string>;
 };
 
-const DEFAULT_SORT_OPTIONS: Partial<Record<SortMode, string>> = {
+const DEFAULT_SORT_OPTIONS: Record<string, string> = {
     [SortMode.NEWEST_FIRST]: "Newest first",
     [SortMode.OLDEST_FIRST]: "Oldest first",
     [SortMode.LAST_UPDATED]: "Last modified",

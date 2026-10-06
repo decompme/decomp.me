@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SingleLineScratchItem } from "@/components/ScratchItem";
 import ScratchList from "@/components/ScratchList";
-import { SortMode } from "@/components/SortScratch";
+import type { SortMode } from "@/components/SortScratch";
 import YourScratchList from "@/components/YourScratchList";
 
 import WelcomeInfo from "./WelcomeInfo";
@@ -59,14 +59,11 @@ export default function Page() {
                             title="Help wanted"
                             isPublic
                             isSortable
-                            initialSortMode={SortMode.HELP_WANTED_NEWEST_FIRST}
+                            initialSortMode={"-help_wanted_at" as SortMode}
                             sortOptions={{
-                                [SortMode.HELP_WANTED_NEWEST_FIRST]:
-                                    "Most recent",
-                                [SortMode.HELP_WANTED_OLDEST_FIRST]:
-                                    "Oldest",
-                                [SortMode.HELP_WANTED_MOST_VOTES]:
-                                    "Most votes",
+                                "-help_wanted_at": "Most recent",
+                                help_wanted_at: "Oldest",
+                                "-help_wanted_count": "Most votes",
                             }}
                             url="/scratch/help-wanted?page_size=20"
                         />
