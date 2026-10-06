@@ -1,6 +1,6 @@
 import django_filters
 from django.contrib.auth import logout
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.query import QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -96,6 +96,41 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
     def get_queryset(self) -> QuerySet[Scratch]:
         return ScratchViewSet.queryset.filter(
             owner__user__username=self.kwargs["username"]
+        )
+
+
+@method_decorator(
+    globally_cacheable(max_age=60, stale_while_revalidate=30), name="dispatch"
+)
+class UserHelpWantedScratchList(generics.ListAPIView):  # type: ignore
+    """
+    Gets scratches a user has marked as help wanted.
+    """
+
+    pagination_class = ScratchPagination
+    serializer_class = TerseScratchSerializer
+    filterset_fields = ["platform", "compiler", "preset"]
+    filter_backends = [
+        django_filters.rest_framework.DjangoFilterBackend,
+        NonEmptySearchFilter,
+        filters.OrderingFilter,
+    ]
+    ordering_fields = ["creation_time", "last_updated", "score", "match_percent"]
+
+    def get_queryset(self) -> QuerySet[Scratch]:
+        return (
+            ScratchViewSet.queryset.annotate(
+                help_wanted_count=Count(
+                    "flags",
+                    filter=Q(flags__help_wanted=True),
+                    distinct=True,
+                )
+            )
+            .filter(
+                flags__profile__user__username=self.kwargs["username"],
+                flags__help_wanted=True,
+            )
+            .distinct()
         )
 
 

@@ -7,6 +7,7 @@ from time import sleep
 from typing import Any
 from urllib.parse import urlencode
 
+from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import ProtectedError
 from django.urls import reverse
@@ -79,46 +80,49 @@ class ScratchFlagsTests(BaseTestCase):
 
         response = self.client.patch(
             url,
-            {"is_favorite": True, "help_wanted": True},
+            {"help_wanted": True},
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), {"is_favorite": True, "help_wanted": True})
+        self.assertEqual(response.json(), {"help_wanted": True})
         self.assertTrue(
-            ScratchFlags.objects.filter(
-                scratch=scratch, is_favorite=True, help_wanted=True
-            ).exists()
+            ScratchFlags.objects.filter(scratch=scratch, help_wanted=True).exists()
         )
 
         response = self.client.patch(
             url,
-            {"is_favorite": False, "help_wanted": False},
+            {"help_wanted": False},
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), {"is_favorite": False, "help_wanted": False})
+        self.assertEqual(response.json(), {"help_wanted": False})
         self.assertFalse(ScratchFlags.objects.filter(scratch=scratch).exists())
 
-    def test_favorites_and_help_wanted_lists(self) -> None:
+    def test_help_wanted_list_and_requesters(self) -> None:
         scratch = self.create_nop_scratch()
         self.client.patch(
             reverse("scratch-flags", args=[scratch.slug]),
-            {"is_favorite": True, "help_wanted": True},
+            {"help_wanted": True},
             format="json",
         )
 
-        favorite_response = self.client.get(reverse("scratch-favorites"))
         wanted_response = self.client.get(reverse("scratch-help-wanted"))
 
-        self.assertEqual(favorite_response.status_code, status.HTTP_200_OK)
         self.assertEqual(wanted_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            [item["slug"] for item in favorite_response.json()["results"]],
-            [scratch.slug],
-        )
         self.assertEqual(
             [item["slug"] for item in wanted_response.json()["results"]],
             [scratch.slug],
+        )
+        wanted_scratch = wanted_response.json()["results"][0]
+        requester = Profile.objects.get(pk=self.client.session["profile_id"])
+        self.assertEqual(wanted_scratch["help_wanted_count"], 1)
+        requesters_response = self.client.get(
+            reverse("scratch-help-wanted-requesters", args=[scratch.slug])
+        )
+        self.assertEqual(requesters_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            [user["username"] for user in requesters_response.json()],
+            [f"{requester.pseudonym} (anon)"],
         )
 
         other_profile = Profile.objects.create()
@@ -129,36 +133,69 @@ class ScratchFlagsTests(BaseTestCase):
         attributes_response = self.client.get(
             reverse("scratch-flags", args=[scratch.slug])
         )
-        favorite_response = self.client.get(reverse("scratch-favorites"))
         wanted_response = self.client.get(reverse("scratch-help-wanted"))
 
-        self.assertEqual(
-            attributes_response.json(),
-            {"is_favorite": False, "help_wanted": False},
-        )
-        self.assertEqual(favorite_response.json()["results"], [])
+        self.assertEqual(attributes_response.json(), {"help_wanted": False})
         self.assertEqual(
             [item["slug"] for item in wanted_response.json()["results"]],
             [scratch.slug],
         )
         self.client.patch(
             reverse("scratch-flags", args=[scratch.slug]),
-            {"is_favorite": True, "help_wanted": True},
+            {"help_wanted": True},
             format="json",
         )
         self.assertEqual(
             len(self.client.get(reverse("scratch-help-wanted")).json()["results"]),
             1,
         )
+        wanted_scratch = self.client.get(reverse("scratch-help-wanted")).json()[
+            "results"
+        ][0]
+        self.assertEqual(wanted_scratch["help_wanted_count"], 2)
+        requesters_response = self.client.get(
+            reverse("scratch-help-wanted-requesters", args=[scratch.slug])
+        )
+        self.assertCountEqual(
+            [user["id"] for user in requesters_response.json()],
+            [requester.id, other_profile.id],
+        )
+
+    def test_user_help_wanted_list(self) -> None:
+        scratch = self.create_nop_scratch()
+        self.create_nop_scratch()
+        helper = Profile.objects.create(
+            user=User.objects.create_user(username="helper")
+        )
+        another_helper = Profile.objects.create()
+        ScratchFlags.objects.create(
+            scratch=scratch,
+            profile=helper,
+            help_wanted=True,
+            help_wanted_at=timezone.now(),
+        )
+        ScratchFlags.objects.create(
+            scratch=scratch,
+            profile=another_helper,
+            help_wanted=True,
+            help_wanted_at=timezone.now(),
+        )
+
+        response = self.client.get(
+            reverse("user-help-wanted", kwargs={"username": "helper"})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            [
-                item["slug"]
-                for item in self.client.get(reverse("scratch-favorites")).json()[
-                    "results"
-                ]
-            ],
+            [item["slug"] for item in response.json()["results"]],
             [scratch.slug],
         )
+        self.assertEqual(response.json()["results"][0]["help_wanted_count"], 2)
+
+        profile_response = self.client.get(
+            reverse("user-detail", kwargs={"username": "helper"})
+        )
+        self.assertEqual(profile_response.json()["num_help_wanted"], 1)
 
     def test_help_wanted_ordering_uses_latest_vote_and_vote_count(self) -> None:
         newest_one = self.create_nop_scratch()

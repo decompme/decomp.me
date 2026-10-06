@@ -215,7 +215,6 @@ class ScratchFlags(models.Model):
     profile = models.ForeignKey(
         Profile, on_delete=models.CASCADE, related_name="scratch_flags"
     )
-    is_favorite = models.BooleanField(default=False)
     help_wanted = models.BooleanField(default=False)
     help_wanted_at = models.DateTimeField(null=True, blank=True, db_index=True)
 

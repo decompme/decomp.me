@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="ScratchPreference",
+            name="ScratchFlags",
             fields=[
                 (
                     "id",
@@ -22,13 +22,16 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("is_favorite", models.BooleanField(default=False)),
                 ("help_wanted", models.BooleanField(default=False)),
+                (
+                    "help_wanted_at",
+                    models.DateTimeField(blank=True, db_index=True, null=True),
+                ),
                 (
                     "profile",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="scratch_preferences",
+                        related_name="scratch_flags",
                         to="coreapp.profile",
                     ),
                 ),
@@ -36,7 +39,7 @@ class Migration(migrations.Migration):
                     "scratch",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="preferences",
+                        related_name="flags",
                         to="coreapp.scratch",
                     ),
                 ),
@@ -45,7 +48,7 @@ class Migration(migrations.Migration):
                 "constraints": [
                     models.UniqueConstraint(
                         fields=("scratch", "profile"),
-                        name="unique_scratch_preference",
+                        name="unique_scratch_flags",
                     )
                 ],
             },

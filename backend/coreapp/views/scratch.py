@@ -47,6 +47,7 @@ from ..serializers import (
     ScratchFlagsSerializer,
     ScratchSerializer,
     TerseScratchSerializer,
+    serialize_profile,
 )
 from ..wrapper_result import CompilationResult, DiffResult
 
@@ -413,19 +414,19 @@ class ScratchViewSet(
         )
         return self.get_paginated_response(serializer.data)
 
-    @action(detail=False, methods=["GET"], url_path="favorites")
-    def favorites(self, request: Request) -> Response:
-        queryset = self.filter_queryset(
-            self.get_queryset().filter(
-                flags__profile=request.profile,
-                flags__is_favorite=True,
-            )
+    @action(
+        detail=True,
+        methods=["GET"],
+        url_path="help-wanted-requesters",
+    )
+    def help_wanted_requesters(self, request: Request, pk: str) -> Response:
+        scratch = self.get_object()
+        requesters = (
+            ScratchFlags.objects.filter(scratch=scratch, help_wanted=True)
+            .select_related("profile__user__github")
+            .order_by("-help_wanted_at", "profile_id")
         )
-        page = self.paginate_queryset(queryset)
-        serializer = TerseScratchSerializer(
-            page, many=True, context=self.get_serializer_context()
-        )
-        return self.get_paginated_response(serializer.data)
+        return Response([serialize_profile(flag.profile) for flag in requesters])
 
     @action(
         detail=True,
@@ -461,14 +462,13 @@ class ScratchViewSet(
                 scratch_flags.help_wanted_at = (
                     scratch_flags.help_wanted_at or timezone.now()
                 )
-            if scratch_flags.is_favorite or scratch_flags.help_wanted:
+            if scratch_flags.help_wanted:
                 scratch_flags.save()
             elif scratch_flags.pk is not None:
                 scratch_flags.delete()
 
         return Response(
             {
-                "is_favorite": bool(scratch_flags and scratch_flags.is_favorite),
                 "help_wanted": bool(scratch_flags and scratch_flags.help_wanted),
             }
         )

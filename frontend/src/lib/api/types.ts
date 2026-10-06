@@ -28,6 +28,7 @@ export interface User {
 export interface ScratchUser extends User {
     num_scratches: number;
     num_presets: number;
+    num_help_wanted: number;
 }
 
 export interface TerseScratch {
@@ -46,6 +47,7 @@ export interface TerseScratch {
     project: string;
     libraries: Library[];
     best_fork: BestFork | null;
+    help_wanted_count?: number;
 }
 
 export interface BestFork {
@@ -67,7 +69,6 @@ export interface Scratch extends TerseScratch {
 }
 
 export interface ScratchFlags {
-    is_favorite: boolean;
     help_wanted: boolean;
 }
 

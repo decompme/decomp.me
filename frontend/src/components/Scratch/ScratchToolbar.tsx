@@ -6,7 +6,6 @@ import {
     IterationsIcon,
     MilestoneIcon,
     RepoForkedIcon,
-    StarIcon,
     SyncIcon,
     TrashIcon,
     UploadIcon,
@@ -237,14 +236,11 @@ function Actions({
         }
     };
 
-    const togglePreference = async (
-        key: keyof api.ScratchFlags,
-        value: boolean,
-    ) => {
+    const toggleHelpWanted = async () => {
         if (isUpdatingFlags) return;
         setIsUpdatingFlags(true);
         try {
-            await updateFlags({ [key]: value });
+            await updateFlags({ help_wanted: !flags?.help_wanted });
         } finally {
             setIsUpdatingFlags(false);
         }
@@ -296,27 +292,7 @@ function Actions({
             </li>
             <li>
                 <ActionButton
-                    onClick={() =>
-                        void togglePreference(
-                            "is_favorite",
-                            !flags?.is_favorite,
-                        )
-                    }
-                    disabled={!flags || isUpdatingFlags}
-                    text={flags?.is_favorite ? "Favorited" : "Favorite"}
-                    title="Save this scratch to your favorites"
-                    icon={<StarIcon />}
-                    pressed={flags?.is_favorite}
-                />
-            </li>
-            <li>
-                <ActionButton
-                    onClick={() =>
-                        void togglePreference(
-                            "help_wanted",
-                            !flags?.help_wanted,
-                        )
-                    }
+                    onClick={() => void toggleHelpWanted()}
                     disabled={!flags || isUpdatingFlags}
                     text={flags?.help_wanted ? "Help wanted" : "Need help"}
                     title="Show this scratch in the help-wanted list"

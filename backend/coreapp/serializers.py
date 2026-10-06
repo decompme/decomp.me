@@ -55,6 +55,10 @@ def serialize_profile(profile: Profile, num_scratches: bool = False) -> dict[str
         if num_scratches:
             res["num_scratches"] = Scratch.objects.filter(owner__user=user).count()
             res["num_presets"] = Preset.objects.filter(owner__user=user).count()
+            res["num_help_wanted"] = ScratchFlags.objects.filter(
+                profile=profile,
+                help_wanted=True,
+            ).count()
 
         return res
 
@@ -191,7 +195,6 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
 
 
 class ScratchFlagsSerializer(serializers.Serializer[ScratchFlags]):
-    is_favorite = serializers.BooleanField(required=False)
     help_wanted = serializers.BooleanField(required=False)
 
 
@@ -442,6 +445,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
 class TerseScratchSerializer(ScratchSerializer):
     owner = ProfileField(read_only=True)
     best_fork = serializers.SerializerMethodField()
+    help_wanted_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Scratch
@@ -461,7 +465,11 @@ class TerseScratchSerializer(ScratchSerializer):
             "preset",
             "libraries",
             "best_fork",
+            "help_wanted_count",
         ]
+
+    def get_help_wanted_count(self, scratch: Scratch) -> int:
+        return int(getattr(scratch, "help_wanted_count", 0))
 
     def get_best_fork(self, scratch: Scratch) -> dict[str, Any] | None:
         try:

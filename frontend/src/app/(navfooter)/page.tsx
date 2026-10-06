@@ -38,20 +38,11 @@ export default function Page() {
             </header>
             <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-16 px-8 py-4 md:flex-row md:py-8">
                 <section className="md:w-1/2 lg:w-1/4">
-                    <div>
-                        <h2 className="mb-2 text-lg">Your scratches</h2>
-                        <YourScratchList
-                            item={SingleLineScratchItem}
-                            skeletonVariant="compact"
-                        />
-                    </div>
-                    <div className="mt-10">
-                        <ScratchList
-                            title="Favorites"
-                            url="/scratch/favorites?page_size=20"
-                            skeletonVariant="compact"
-                        />
-                    </div>
+                    <h2 className="mb-2 text-lg">Your scratches</h2>
+                    <YourScratchList
+                        item={SingleLineScratchItem}
+                        skeletonVariant="compact"
+                    />
                 </section>
                 <section className="md:w-1/2 lg:w-3/4">
                     <div className="mb-10">
