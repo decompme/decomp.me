@@ -12,6 +12,7 @@ from coreapp.cromper_client import (
     CromperTimeoutError,
     CromperUnavailableError,
 )
+from coreapp.error import AssemblyError
 from coreapp.wrapper_result import AssemblyResult, CompilationResult, DiffResult
 
 
@@ -276,6 +277,31 @@ class CromperClientCompilerTests(SimpleTestCase):
                 ),
             ):
                 client.assemble_asm("n64", asm)
+
+    def test_assemble_failure_raises_assembly_error(self) -> None:
+        client = CromperClient("http://cromper")
+        asm = cast(Any, SimpleNamespace(data="nop", hash="asm-hash"))
+        response = {"success": False, "error": "Assembly failed: bad asm"}
+
+        with (
+            patch.object(client, "_make_request", return_value=response),
+            self.assertRaisesMessage(AssemblyError, "Assembly failed: bad asm"),
+        ):
+            client.assemble_asm("n64", asm)
+
+    def test_assemble_transport_failure_is_not_an_assembly_error(self) -> None:
+        client = CromperClient("http://cromper")
+        asm = cast(Any, SimpleNamespace(data="nop", hash="asm-hash"))
+
+        with (
+            patch.object(
+                client,
+                "_make_request",
+                side_effect=CromperUnavailableError("cromper unavailable"),
+            ),
+            self.assertRaises(CromperUnavailableError),
+        ):
+            client.assemble_asm("n64", asm)
 
     def test_diff_returns_typed_result_and_requires_result(self) -> None:
         client = CromperClient("http://cromper")

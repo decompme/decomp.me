@@ -189,3 +189,56 @@ export function clearSubmittedDraft(storage: Storage) {
     storage.setItem("new_scratch_label", "");
     storage.setItem("new_scratch_asm", "");
 }
+
+export type CreateScratchError = {
+    title: string;
+    detail: string;
+    hint?: string;
+};
+
+export type CreateScratchErrorResponse = {
+    code?: string;
+    detail?: unknown;
+    message?: unknown;
+};
+
+export function formatCreateScratchError(
+    response: CreateScratchErrorResponse,
+): CreateScratchError {
+    if (response.code === "Assembler" && typeof response.detail === "string") {
+        return {
+            title: "Target assembly could not be assembled",
+            detail: response.detail,
+            hint: "Check that the target assembly is compatible with the GNU assembler syntax for the selected platform.",
+        };
+    }
+
+    if (
+        response.code === "ServiceUnavailable" &&
+        typeof response.detail === "string"
+    ) {
+        return {
+            title: "The compiler service is unavailable",
+            detail: response.detail,
+        };
+    }
+
+    if (typeof response.detail === "string") {
+        return {
+            title: "Scratch could not be created",
+            detail: response.detail,
+        };
+    }
+
+    if (typeof response.message === "string" && response.message) {
+        return {
+            title: "Scratch could not be created",
+            detail: response.message,
+        };
+    }
+
+    return {
+        title: "Scratch could not be created",
+        detail: "Unable to create scratch. Please check the fields above and try again.",
+    };
+}

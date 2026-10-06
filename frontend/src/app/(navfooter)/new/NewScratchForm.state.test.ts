@@ -9,6 +9,7 @@ import {
     clearSubmittedDraft,
     emptyDraft,
     filterDuplicateScratches,
+    formatCreateScratchError,
     getLabels,
     type NewScratchDraft,
     readStoredDraft,
@@ -265,5 +266,48 @@ describe("draft storage", () => {
 
         expect(stored.value("new_scratch_label")).toBe("");
         expect(stored.value("new_scratch_asm")).toBe("");
+    });
+});
+
+describe("formatCreateScratchError", () => {
+    it("explains assembly failures", () => {
+        expect(
+            formatCreateScratchError({
+                code: "Assembler",
+                detail: "Assembly failed: bad asm",
+            }),
+        ).toEqual({
+            title: "Target assembly could not be assembled",
+            detail: "Assembly failed: bad asm",
+            hint: "Check that the target assembly is compatible with the GNU assembler syntax for the selected platform.",
+        });
+    });
+
+    it("explains compiler service outages", () => {
+        expect(
+            formatCreateScratchError({
+                code: "ServiceUnavailable",
+                detail: "The compiler service is unavailable. Please try again in a moment.",
+            }),
+        ).toEqual({
+            title: "The compiler service is unavailable",
+            detail: "The compiler service is unavailable. Please try again in a moment.",
+        });
+    });
+
+    it("falls back to a generic error with the response detail", () => {
+        expect(
+            formatCreateScratchError({ detail: "Some validation error" }),
+        ).toEqual({
+            title: "Scratch could not be created",
+            detail: "Some validation error",
+        });
+    });
+
+    it("falls back to a generic message without a detail", () => {
+        expect(formatCreateScratchError({})).toEqual({
+            title: "Scratch could not be created",
+            detail: "Unable to create scratch. Please check the fields above and try again.",
+        });
     });
 });
