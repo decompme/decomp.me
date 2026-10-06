@@ -303,9 +303,7 @@ function Actions({
                         )
                     }
                     disabled={!flags || isUpdatingFlags}
-                    text={
-                        flags?.is_favorite ? "Favorited" : "Favorite"
-                    }
+                    text={flags?.is_favorite ? "Favorited" : "Favorite"}
                     title="Save this scratch to your favorites"
                     icon={<StarIcon />}
                     pressed={flags?.is_favorite}
@@ -320,9 +318,7 @@ function Actions({
                         )
                     }
                     disabled={!flags || isUpdatingFlags}
-                    text={
-                        flags?.help_wanted ? "Help wanted" : "Need help"
-                    }
+                    text={flags?.help_wanted ? "Help wanted" : "Need help"}
                     title="Show this scratch in the help-wanted list"
                     icon={<IssueOpenedIcon />}
                     pressed={flags?.help_wanted}
