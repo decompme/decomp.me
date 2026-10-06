@@ -28,6 +28,8 @@ export interface Props {
     }) => JSX.Element;
     emptyButtonLabel?: ReactNode;
     isSortable?: boolean;
+    initialSortMode?: SortMode;
+    sortOptions?: Partial<Record<SortMode, string>>;
     isPublic?: boolean;
     showDeleteButtons?: boolean;
     skeletonVariant?: ScratchItemSkeletonVariant;
@@ -56,11 +58,13 @@ export default function ScratchList({
     item,
     emptyButtonLabel,
     isSortable,
+    initialSortMode = SortMode.NEWEST_FIRST,
+    sortOptions,
     isPublic,
     showDeleteButtons,
     skeletonVariant,
 }: Props) {
-    const [sortMode, setSortMode] = useState(SortMode.NEWEST_FIRST);
+    const [sortMode, setSortMode] = useState(initialSortMode);
     const { results, isLoading, hasNext, loadNext } =
         usePaginated<TerseScratch>(
             `${url || "/scratch"}&ordering=${sortMode.toString()}`,
@@ -74,7 +78,11 @@ export default function ScratchList({
             <div className="flex justify-between pb-2">
                 <h2 className="font-medium text-lg tracking-tight">{title}</h2>
                 {isSortable && (
-                    <Sort sortMode={sortMode} setSortMode={setSortMode} />
+                    <Sort
+                        sortMode={sortMode}
+                        setSortMode={setSortMode}
+                        options={sortOptions}
+                    />
                 )}
             </div>
             <ul

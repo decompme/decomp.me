@@ -7,6 +7,9 @@ export enum SortMode {
     LAST_UPDATED = "-last_updated",
     LEAST_MATCHED = "match_percent",
     MOST_MATCHED = "-match_percent",
+    HELP_WANTED_NEWEST_FIRST = "-help_wanted_at",
+    HELP_WANTED_OLDEST_FIRST = "help_wanted_at",
+    HELP_WANTED_MOST_VOTES = "-help_wanted_count",
 }
 
 export function produceSortFunction(
@@ -51,9 +54,22 @@ export type Props = {
     className?: string;
     sortMode: SortMode;
     setSortMode: (m: SortMode) => void;
+    options?: Partial<Record<SortMode, string>>;
 };
 
-export default function SortBy({ sortMode, setSortMode }: Props) {
+const DEFAULT_SORT_OPTIONS: Partial<Record<SortMode, string>> = {
+    [SortMode.NEWEST_FIRST]: "Newest first",
+    [SortMode.OLDEST_FIRST]: "Oldest first",
+    [SortMode.LAST_UPDATED]: "Last modified",
+    [SortMode.LEAST_MATCHED]: "Least matched",
+    [SortMode.MOST_MATCHED]: "Most matched",
+};
+
+export default function SortBy({
+    sortMode,
+    setSortMode,
+    options = DEFAULT_SORT_OPTIONS,
+}: Props) {
     return (
         <div>
             <span className="mr-2 text-gray-11 text-xs">Sort by</span>
@@ -62,13 +78,7 @@ export default function SortBy({ sortMode, setSortMode }: Props) {
                 onChange={(m) => {
                     setSortMode(m as SortMode);
                 }}
-                options={{
-                    [SortMode.NEWEST_FIRST]: "Newest first",
-                    [SortMode.OLDEST_FIRST]: "Oldest first",
-                    [SortMode.LAST_UPDATED]: "Last modified",
-                    [SortMode.LEAST_MATCHED]: "Least matched",
-                    [SortMode.MOST_MATCHED]: "Most matched",
-                }}
+                options={options}
             />
         </div>
     );

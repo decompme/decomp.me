@@ -210,20 +210,21 @@ class Scratch(models.Model):
             return False
 
 
-class ScratchPreference(models.Model):
+class ScratchUserAttribute(models.Model):
     scratch = models.ForeignKey(
-        Scratch, on_delete=models.CASCADE, related_name="preferences"
+        Scratch, on_delete=models.CASCADE, related_name="user_attributes"
     )
     profile = models.ForeignKey(
-        Profile, on_delete=models.CASCADE, related_name="scratch_preferences"
+        Profile, on_delete=models.CASCADE, related_name="scratch_user_attributes"
     )
     is_favorite = models.BooleanField(default=False)
     help_wanted = models.BooleanField(default=False)
+    help_wanted_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["scratch", "profile"], name="unique_scratch_preference"
+                fields=["scratch", "profile"], name="unique_scratch_user_attribute"
             )
         ]
 

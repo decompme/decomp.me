@@ -22,7 +22,7 @@ import type {
     Preset,
     PresetBase,
     Scratch,
-    ScratchPreferences,
+    ScratchUserAttributes,
     TerseScratch,
     User,
 } from "./api/types";
@@ -172,28 +172,28 @@ export function useIsScratchSaved(scratch: Scratch, enabled = true): boolean {
     return isScratchSaved(scratch, saved);
 }
 
-export function useScratchPreferences(scratch: TerseScratch): {
-    preferences: ScratchPreferences | undefined;
-    updatePreferences: (
-        update: Partial<ScratchPreferences>,
-    ) => Promise<ScratchPreferences>;
+export function useScratchUserAttributes(scratch: TerseScratch): {
+    userAttributes: ScratchUserAttributes | undefined;
+    updateUserAttributes: (
+        update: Partial<ScratchUserAttributes>,
+    ) => Promise<ScratchUserAttributes>;
 } {
-    const url = `${scratchUrl(scratch)}/preferences`;
-    const { data: preferences } = useSWR<ScratchPreferences>(url, get);
+    const url = `${scratchUrl(scratch)}/user-attributes`;
+    const { data: userAttributes } = useSWR<ScratchUserAttributes>(url, get);
 
-    const updatePreferences = useCallback(
-        async (update: Partial<ScratchPreferences>) => {
-            const updatedPreferences: ScratchPreferences = await patch(
+    const updateUserAttributes = useCallback(
+        async (update: Partial<ScratchUserAttributes>) => {
+            const updatedAttributes: ScratchUserAttributes = await patch(
                 url,
                 update,
             );
-            await mutate(url, updatedPreferences, { revalidate: false });
-            return updatedPreferences;
+            await mutate(url, updatedAttributes, { revalidate: false });
+            return updatedAttributes;
         },
         [url],
     );
 
-    return { preferences, updatePreferences };
+    return { userAttributes, updateUserAttributes };
 }
 
 function getScratchCompileInputKey(scratch: Scratch | null): string {

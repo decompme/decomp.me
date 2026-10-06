@@ -10,10 +10,11 @@ from typing import Any
 
 import django_filters
 from django.core.files import File
-from django.db.models import Case, F, FloatField, Q, Value, When
+from django.db.models import Case, Count, F, FloatField, Max, Q, Value, When
 from django.db.models.functions import Cast
 from django.db.models.query import QuerySet
 from django.http import HttpResponse, QueryDict
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
@@ -35,7 +36,7 @@ from ..filters.search import NonEmptySearchFilter
 from ..middleware import Request
 from ..models.best_fork import update_best_forks_for_scratch
 from ..models.preset import Preset
-from ..models.scratch import Asm, Assembly, Library, Scratch, ScratchPreference
+from ..models.scratch import Asm, Assembly, Library, Scratch, ScratchUserAttribute
 from ..pagination import SafeCursorPagination
 from ..serializers import (
     ClaimableScratchSerializer,
@@ -313,7 +314,7 @@ class ScratchPagination(SafeCursorPagination):
     max_page_size = 100
 
 
-class ScratchPreferenceSerializer(serializers.Serializer):
+class ScratchUserAttributeSerializer(serializers.Serializer):
     is_favorite = serializers.BooleanField(required=False)
     help_wanted = serializers.BooleanField(required=False)
 
@@ -369,11 +370,31 @@ class ScratchViewSet(
         ).values("family_id")
         queryset = (
             self.filter_queryset(self.get_queryset())
-            .filter(preferences__help_wanted=True)
+            .annotate(
+                help_wanted_count=Count(
+                    "user_attributes",
+                    filter=Q(user_attributes__help_wanted=True),
+                    distinct=True,
+                ),
+                help_wanted_at=Max(
+                    "user_attributes__help_wanted_at",
+                    filter=Q(user_attributes__help_wanted=True),
+                ),
+            )
+            .filter(help_wanted_count__gt=0)
             .exclude(Q(score=0) | Q(match_override=True))
             .exclude(family_id__in=matching_family_ids)
             .filter(best_fork__isnull=True)
             .distinct()
+        )
+        ordering = request.query_params.get("ordering", "-help_wanted_at")
+        allowed_orderings = {
+            "-help_wanted_at": "-help_wanted_at",
+            "help_wanted_at": "help_wanted_at",
+            "-help_wanted_count": "-help_wanted_count",
+        }
+        queryset = queryset.order_by(
+            allowed_orderings.get(ordering, "-help_wanted_at"), "slug"
         )
         page = self.paginate_queryset(queryset)
         serializer = TerseScratchSerializer(
@@ -385,8 +406,8 @@ class ScratchViewSet(
     def favorites(self, request: Request) -> Response:
         queryset = self.filter_queryset(
             self.get_queryset().filter(
-                preferences__profile=request.profile,
-                preferences__is_favorite=True,
+                user_attributes__profile=request.profile,
+                user_attributes__is_favorite=True,
             )
         )
         page = self.paginate_queryset(queryset)
@@ -395,37 +416,51 @@ class ScratchViewSet(
         )
         return self.get_paginated_response(serializer.data)
 
-    @action(detail=True, methods=["GET", "PATCH"])
-    def preferences(self, request: Request, pk: str) -> Response:
+    @action(
+        detail=True,
+        methods=["GET", "PATCH"],
+        url_path="user-attributes",
+    )
+    def user_attributes(self, request: Request, pk: str) -> Response:
         scratch = self.get_object()
-        preference = ScratchPreference.objects.filter(
+        user_attribute = ScratchUserAttribute.objects.filter(
             scratch=scratch, profile=request.profile
         ).first()
 
         if request.method == "PATCH":
-            serializer = ScratchPreferenceSerializer(
+            serializer = ScratchUserAttributeSerializer(
                 data=request.data, partial=True
             )
             serializer.is_valid(raise_exception=True)
             values = serializer.validated_data
-            if preference is None:
-                preference = ScratchPreference(
+            if user_attribute is None:
+                user_attribute = ScratchUserAttribute(
                     scratch=scratch,
                     profile=request.profile,
                     **values,
                 )
             else:
+                was_help_wanted = user_attribute.help_wanted
                 for field, value in values.items():
-                    setattr(preference, field, value)
-            if preference.is_favorite or preference.help_wanted:
-                preference.save()
-            elif preference.pk is not None:
-                preference.delete()
+                    setattr(user_attribute, field, value)
+                if "help_wanted" in values:
+                    if user_attribute.help_wanted and not was_help_wanted:
+                        user_attribute.help_wanted_at = timezone.now()
+                    elif not user_attribute.help_wanted:
+                        user_attribute.help_wanted_at = None
+            if "help_wanted" in values and user_attribute.help_wanted:
+                user_attribute.help_wanted_at = (
+                    user_attribute.help_wanted_at or timezone.now()
+                )
+            if user_attribute.is_favorite or user_attribute.help_wanted:
+                user_attribute.save()
+            elif user_attribute.pk is not None:
+                user_attribute.delete()
 
         return Response(
             {
-                "is_favorite": bool(preference and preference.is_favorite),
-                "help_wanted": bool(preference and preference.help_wanted),
+                "is_favorite": bool(user_attribute and user_attribute.is_favorite),
+                "help_wanted": bool(user_attribute and user_attribute.help_wanted),
             }
         )
 
