@@ -13,7 +13,7 @@ sandbox/
 *.db
 .DS_Store
 .env.*
-docker.prod.env
+*.prod.env
 *.log
 /frontend/*.tsbuildinfo
 /frontend/.next
