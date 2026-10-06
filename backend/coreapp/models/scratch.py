@@ -211,9 +211,7 @@ class Scratch(models.Model):
 
 
 class ScratchFlags(models.Model):
-    scratch = models.ForeignKey(
-        Scratch, on_delete=models.CASCADE, related_name="flags"
-    )
+    scratch = models.ForeignKey(Scratch, on_delete=models.CASCADE, related_name="flags")
     profile = models.ForeignKey(
         Profile, on_delete=models.CASCADE, related_name="scratch_flags"
     )

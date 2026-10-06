@@ -330,7 +330,6 @@ class ScratchPagination(SafeCursorPagination):
         return super().get_ordering(request, queryset, view)
 
 
-
 @method_decorator(globally_cacheable(max_age=5, stale_while_revalidate=1), name="list")
 @method_decorator(globally_cacheable(max_age=1), name="retrieve")
 class ScratchViewSet(
@@ -440,9 +439,7 @@ class ScratchViewSet(
         ).first()
 
         if request.method == "PATCH":
-            serializer = ScratchFlagsSerializer(
-                data=request.data, partial=True
-            )
+            serializer = ScratchFlagsSerializer(data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             values = serializer.validated_data
             if scratch_flags is None:

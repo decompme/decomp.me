@@ -83,9 +83,7 @@ class ScratchFlagsTests(BaseTestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.json(), {"is_favorite": True, "help_wanted": True}
-        )
+        self.assertEqual(response.json(), {"is_favorite": True, "help_wanted": True})
         self.assertTrue(
             ScratchFlags.objects.filter(
                 scratch=scratch, is_favorite=True, help_wanted=True
@@ -98,9 +96,7 @@ class ScratchFlagsTests(BaseTestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.json(), {"is_favorite": False, "help_wanted": False}
-        )
+        self.assertEqual(response.json(), {"is_favorite": False, "help_wanted": False})
         self.assertFalse(ScratchFlags.objects.filter(scratch=scratch).exists())
 
     def test_favorites_and_help_wanted_lists(self) -> None:

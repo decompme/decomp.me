@@ -19,6 +19,7 @@ class AnonymousUser(auth.models.AnonymousUser):
 
 
 if TYPE_CHECKING:
+
     class Request(DRFRequest):
         profile: Profile
 
