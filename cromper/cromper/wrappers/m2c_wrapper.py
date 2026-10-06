@@ -12,6 +12,7 @@ from ..sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 
+
 class M2CWrapper:
     def __init__(self, config: CromperConfig):
         self.config = config

@@ -683,9 +683,7 @@ class ScratchDetailTests(BaseTestCase):
             }
         )
 
-        response = self.client.get(
-            reverse("scratch-target-asm", args=[scratch.slug])
-        )
+        response = self.client.get(reverse("scratch-target-asm", args=[scratch.slug]))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), {"target_asm": "glabel func\njr $ra\nnop"})
@@ -705,9 +703,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
         scratch = Scratch.objects.get(slug=response.json()["slug"])
 
-        response = self.client.get(
-            reverse("scratch-target-asm", args=[scratch.slug])
-        )
+        response = self.client.get(reverse("scratch-target-asm", args=[scratch.slug]))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), {"target_asm": None})
