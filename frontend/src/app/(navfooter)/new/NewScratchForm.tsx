@@ -25,6 +25,7 @@ import { scratchUrl } from "@/lib/api/urls";
 import basicSetup from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
 import getTranslation from "@/lib/i18n/translate";
+import { decompileWithM2C, isClientM2CEnabled } from "@/lib/m2c/client";
 import { useRouter } from "@/lib/navigation";
 
 import {
@@ -262,6 +263,33 @@ export default function NewScratchForm({
     const submit = async () => {
         setSubmissionError(null);
 
+        const diffLabel = draft.label || defaultLabel || "";
+        const selectedCompiler = compilers[draft.compilerId];
+        let sourceCode: string | undefined;
+        if (
+            isClientM2CEnabled() &&
+            selectedCompiler?.m2c_target &&
+            draft.platform &&
+            draft.asm
+        ) {
+            try {
+                sourceCode = await decompileWithM2C({
+                    asm: draft.asm,
+                    context: draft.context || "",
+                    defaultSourceCode: `void ${diffLabel || "func"}(void) {\n    // ...\n}\n`,
+                    platformId: draft.platform,
+                    target: selectedCompiler.m2c_target,
+                });
+            } catch (error) {
+                // Omitting source_code preserves the existing server-side m2c
+                // behavior, so browser runtime failures are non-fatal.
+                console.warn(
+                    "Client-side m2c failed; falling back to cromper",
+                    error,
+                );
+            }
+        }
+
         let scratch: api.ClaimableScratch;
         try {
             scratch = await api.post("/scratch", {
@@ -273,7 +301,10 @@ export default function NewScratchForm({
                 diff_flags: draft.diffFlags,
                 libraries: draft.libraries,
                 preset: draft.presetId,
-                diff_label: draft.label || defaultLabel || "",
+                diff_label: diffLabel,
+                ...(sourceCode === undefined
+                    ? {}
+                    : { source_code: sourceCode }),
             });
         } catch (error) {
             const createError = formatCreateScratchError(error);

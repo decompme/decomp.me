@@ -673,6 +673,45 @@ class ScratchForkTests(BaseTestCase):
 
 
 class ScratchDetailTests(BaseTestCase):
+    def test_target_asm(self) -> None:
+        scratch = self.create_scratch(
+            {
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
+                "context": "",
+                "target_asm": "glabel func\njr $ra\nnop\n",
+            }
+        )
+
+        response = self.client.get(
+            reverse("scratch-target-asm", args=[scratch.slug])
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"target_asm": "glabel func\njr $ra\nnop"})
+
+    def test_target_asm_is_null_for_object_scratch(self) -> None:
+        response = self.client.post(
+            reverse("scratch-list"),
+            {
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
+                "context": "",
+                "source_code": "",
+                "target_obj": SimpleUploadedFile("target.o", b"\x7fELFmock"),
+            },
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
+        scratch = Scratch.objects.get(slug=response.json()["slug"])
+
+        response = self.client.get(
+            reverse("scratch-target-asm", args=[scratch.slug])
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"target_asm": None})
+
     def test_404_head(self) -> None:
         """
         Ensure that HEAD requests 404 correctly.

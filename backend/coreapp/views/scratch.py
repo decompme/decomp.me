@@ -500,6 +500,15 @@ class ScratchViewSet(
 
         return Response({"decompilation": decompilation})
 
+    @action(detail=True, methods=["GET"], url_path="target-asm")
+    def target_asm(self, request: Request, pk: str) -> Response:
+        """Return source assembly for browser-side decompilation."""
+        scratch: Scratch = self.get_object()
+        source_asm = scratch.target_assembly.source_asm
+        return Response(
+            {"target_asm": source_asm.data if source_asm is not None else None}
+        )
+
     @action(detail=True, methods=["POST"])
     def claim(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()

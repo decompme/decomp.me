@@ -7,7 +7,14 @@
     },
     "files": {
         "ignoreUnknown": false,
-        "includes": ["**", "!**/.next", "!**/cache", "!**/node_modules"]
+        "includes": [
+            "**",
+            "!**/.next",
+            "!**/cache",
+            "!**/node_modules",
+            "!**/public/vendor/pyodide",
+            "!**/public/vendor/m2c"
+        ]
     },
     "formatter": {
         "enabled": true,

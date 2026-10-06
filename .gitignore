@@ -21,6 +21,8 @@ docker.prod.env
 /frontend/cache
 /frontend/public/sw.*
 /frontend/public/workbox-*
+/frontend/public/vendor/pyodide/
+/frontend/public/vendor/m2c/
 .vercel
 send_update.py
 update.sh

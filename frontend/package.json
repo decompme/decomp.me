@@ -1,15 +1,22 @@
 {
     "license": "MIT",
     "scripts": {
+        "predev": "node scripts/prepare-m2c.mjs",
         "dev": "next dev --port 8080",
+        "prebuild": "node scripts/prepare-m2c.mjs",
         "build": "next build",
         "start": "next start --port 8080",
         "lint": "biome check .",
+        "pretest": "node scripts/prepare-m2c.mjs",
         "test": "vitest run",
+        "posttest": "node --experimental-wasm-stack-switching scripts/smoke-m2c.mjs",
+        "pretest:m2c": "node scripts/prepare-m2c.mjs",
+        "test:m2c": "node --experimental-wasm-stack-switching scripts/smoke-m2c.mjs",
         "format": "biome format . --write",
         "postinstall": "next telemetry disable",
+        "preanalyze": "node scripts/prepare-m2c.mjs",
         "analyze": "ANALYZE=true next build",
-        "clean": "rm -rf .next node_modules"
+        "clean": "rm -rf .next node_modules public/vendor/m2c public/vendor/pyodide"
     },
     "dependencies": {
         "@clangd-wasm/clangd-wasm": "15.0.7-dev5",
@@ -71,6 +78,7 @@
         "identity-obj-proxy": "^3.0.0",
         "postcss": "^8.5.28",
         "postcss-scss": "^4.0.9",
+        "pyodide": "314.0.7",
         "tailwindcss": "^3.4.16",
         "typescript": "^5.8.3",
         "vitest": "^4.1.5"

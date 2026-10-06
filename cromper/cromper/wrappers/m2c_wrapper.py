@@ -7,29 +7,10 @@ from m2c.main import parse_flags, run
 from ..compilers import Compiler, CompilerType
 from ..config import CromperConfig
 from ..error import M2CError
+from ..m2c_targets import resolve_m2c_target
 from ..sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
-
-PLATFORM_ID_TO_M2C_ARCH = {
-    # mips
-    "irix": "mips",
-    "n64": "mips",
-    "ps1": "mipsel",
-    "ps2": "mipsee",
-    "psp": "mipsel",
-    # ppc
-    "wiiu": "ppc",
-    "gc_wii": "ppc",
-    "macosx": "ppc",
-    # arm
-    "gba": "gba",
-    "n3ds": "arm",
-    "nds_arm9": "arm",
-    # superh
-    "saturn": "sh2",
-}
-
 
 class M2CWrapper:
     def __init__(self, config: CromperConfig):
@@ -37,18 +18,13 @@ class M2CWrapper:
 
     @staticmethod
     def is_platform_supported(platform_id: str) -> bool:
-        return platform_id in PLATFORM_ID_TO_M2C_ARCH
+        return resolve_m2c_target(platform_id, CompilerType.OTHER.value) is not None
 
     @staticmethod
     def get_triple(platform_id: str, compiler: Compiler) -> str:
-        try:
-            triple = PLATFORM_ID_TO_M2C_ARCH[platform_id]
-        except KeyError:
+        triple = resolve_m2c_target(platform_id, compiler.type.value)
+        if triple is None:
             raise M2CError(f"Unsupported platform '{platform_id}'")
-
-        if compiler.type != CompilerType.OTHER:
-            triple += f"-{compiler.type.value}"
-
         return triple
 
     def decompile(

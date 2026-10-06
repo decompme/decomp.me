@@ -21,6 +21,8 @@ x-backend-base: &backend-base
 x-frontend-base: &frontend-base
   build:
     context: frontend
+    additional_contexts:
+      cromper: ./cromper
     target: prod
   env_file:
     - docker.prod.env

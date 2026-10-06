@@ -7,10 +7,7 @@ resolution-markers = [
 ]
 
 [manifest]
-overrides = [
-    { name = "asm-differ", git = "https://github.com/simonlindholm/asm-differ.git?rev=f49f9b26a7b91f3da6c8d555a87218efb28bbea7" },
-    { name = "m2c", git = "https://github.com/matt-kempster/m2c.git?rev=1d1c4454a445326541305f83f2b0cb680a9ecb2d" },
-]
+overrides = [{ name = "asm-differ", git = "https://github.com/simonlindholm/asm-differ.git?rev=f49f9b26a7b91f3da6c8d555a87218efb28bbea7" }]
 
 [[package]]
 name = "asgiref"
@@ -101,7 +98,6 @@ name = "backend"
 version = "0.1.0"
 source = { directory = "../backend" }
 dependencies = [
-    { name = "asm-differ" },
     { name = "django" },
     { name = "django-cleanup" },
     { name = "django-cors-headers" },
@@ -115,7 +111,6 @@ dependencies = [
     { name = "gunicorn" },
     { name = "html-json-forms" },
     { name = "itsdangerous" },
-    { name = "m2c" },
     { name = "parameterized" },
     { name = "pillow" },
     { name = "psycopg2-binary" },
@@ -128,7 +123,6 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "asm-differ", git = "https://github.com/simonlindholm/asm-differ.git" },
     { name = "django", specifier = "==6.1.1" },
     { name = "django-cleanup", specifier = ">=9.0.0" },
     { name = "django-cors-headers", specifier = ">=4.9.0" },
@@ -142,7 +136,6 @@ requires-dist = [
     { name = "gunicorn", specifier = ">=26.2.0" },
     { name = "html-json-forms", specifier = ">=1.1.1" },
     { name = "itsdangerous", specifier = "==2.2.0" },
-    { name = "m2c", git = "https://github.com/matt-kempster/m2c.git" },
     { name = "parameterized", specifier = ">=0.9.0" },
     { name = "pillow", specifier = "==12.3.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.12" },
@@ -414,7 +407,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "asm-differ", git = "https://github.com/simonlindholm/asm-differ.git?rev=f49f9b26a7b91f3da6c8d555a87218efb28bbea7" },
-    { name = "m2c", git = "https://github.com/matt-kempster/m2c.git?rev=1d1c4454a445326541305f83f2b0cb680a9ecb2d" },
+    { name = "m2c", git = "https://github.com/matt-kempster/m2c.git?rev=708d2d2cb2698f091a92492b328f73b24209f72d" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=2.3.1" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.1.1" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.4.0" },
@@ -887,7 +880,7 @@ wheels = [
 [[package]]
 name = "m2c"
 version = "0.1.0"
-source = { git = "https://github.com/matt-kempster/m2c.git?rev=1d1c4454a445326541305f83f2b0cb680a9ecb2d#1d1c4454a445326541305f83f2b0cb680a9ecb2d" }
+source = { git = "https://github.com/matt-kempster/m2c.git?rev=708d2d2cb2698f091a92492b328f73b24209f72d#708d2d2cb2698f091a92492b328f73b24209f72d" }
 dependencies = [
     { name = "graphviz" },
 ]
