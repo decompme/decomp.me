@@ -1298,6 +1298,11 @@ MWCC_41_51213 = MWCCWiiGCCompiler(
     cc=MWCCEPPC_CC,
 )
 
+MWCC_41_51213P1 = MWCCWiiGCCompiler(
+    id="mwcc_41_51213p1",
+    cc=MWCCEPPC_CC,
+)
+
 MWCC_41_60209 = MWCCWiiGCCompiler(
     id="mwcc_41_60209",
     cc=MWCCEPPC_CC,
@@ -1920,6 +1925,7 @@ _all_compilers: list[Compiler] = [
     MWCC_247_107,
     MWCC_247_108,
     MWCC_41_51213,
+    MWCC_41_51213P1,
     MWCC_41_60126,
     MWCC_41_60209,
     MWCC_41_60831,
