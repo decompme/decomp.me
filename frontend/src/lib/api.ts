@@ -371,17 +371,41 @@ export function useCompiler(
     platform: string,
     compiler: string,
 ): Compiler | undefined {
+    return useCompilerMetadata(platform, compiler).compiler;
+}
+
+export function useCompilerMetadata(
+    platform: string,
+    compiler: string,
+): {
+    compiler: Compiler | undefined;
+    isLoading: boolean;
+} {
     const url =
         typeof platform === "string" && typeof compiler === "string"
             ? `/compiler/${platform}/${compiler}`
             : null;
-    const { data } = useSWRImmutable<CompilersResponse>(url, get, {
+    const { data, error } = useSWRImmutable<CompilersResponse>(url, get, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
     });
     const compilers = useMemo(() => resolveCompilersResponse(data), [data]);
 
-    return compilers[compiler];
+    return {
+        compiler: compilers[compiler],
+        isLoading: data === undefined && error === undefined,
+    };
+}
+
+export function useTargetAsm(scratch: Scratch): {
+    targetAsm: string | null | undefined;
+    error: unknown;
+} {
+    const { data, error } = useSWRImmutable<{ target_asm: string | null }>(
+        `${scratchUrl(scratch)}/target-asm`,
+        get,
+    );
+    return { targetAsm: data?.target_asm, error };
 }
 
 export function useCompilers(platform: string): Record<string, Compiler> {

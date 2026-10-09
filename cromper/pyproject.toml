@@ -12,7 +12,7 @@ dependencies = [
     "requests>=2.34.2",
     "python-dotenv>=1.2.3",
     "sentry-sdk>=2.69.1",
-    "m2c @ git+https://github.com/matt-kempster/m2c.git@1d1c4454a445326541305f83f2b0cb680a9ecb2d",
+    "m2c @ git+https://github.com/matt-kempster/m2c.git@708d2d2cb2698f091a92492b328f73b24209f72d",
     "asm-differ @ git+https://github.com/simonlindholm/asm-differ.git@f49f9b26a7b91f3da6c8d555a87218efb28bbea7",
     "pyyaml>=6.0.3",
 ]

@@ -1,11 +1,16 @@
-FROM node:24-alpine AS dev
+FROM node:24-alpine AS base
+
+RUN apk add --no-cache git python3
+
+
+FROM base AS dev
 
 WORKDIR /frontend
 
 ENTRYPOINT ["/frontend/docker_entrypoint.sh"]
 
 
-FROM node:24-alpine AS builder
+FROM base AS builder
 
 COPY package.json /frontend/
 COPY yarn.lock /frontend/
@@ -13,6 +18,8 @@ COPY yarn.lock /frontend/
 WORKDIR /frontend
 
 RUN yarn install --frozen-lockfile
+
+COPY --from=cromper pyproject.toml /cromper/pyproject.toml
 
 COPY next-env.d.ts /frontend/
 COPY next.config.js /frontend/
@@ -22,6 +29,7 @@ COPY tsconfig.json /frontend/
 COPY sentry.server.config.ts /frontend/
 
 COPY loaders /frontend/loaders
+COPY scripts /frontend/scripts
 COPY public /frontend/public
 COPY src /frontend/src
 

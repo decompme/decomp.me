@@ -26,6 +26,7 @@ jobs:
             target: prod
           - name: frontend
             context: frontend
+            build_contexts: cromper=./cromper
             target: prod
           - name: nginx
             context: nginx
@@ -52,6 +53,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: ./${{ matrix.context }}
+          build-contexts: ${{ matrix.build_contexts }}
           target: ${{ matrix.target }}
           push: true
           pull: true

@@ -76,6 +76,24 @@ let app = {
                 ],
             },
             {
+                source: "/vendor/pyodide/:path*",
+                headers: [
+                    {
+                        key: "Cache-Control",
+                        value: "public, max-age=31536000, immutable",
+                    },
+                ],
+            },
+            {
+                source: "/vendor/m2c/:path*",
+                headers: [
+                    {
+                        key: "Cache-Control",
+                        value: "public, max-age=0, must-revalidate",
+                    },
+                ],
+            },
+            {
                 source: "/new",
                 headers: [
                     {

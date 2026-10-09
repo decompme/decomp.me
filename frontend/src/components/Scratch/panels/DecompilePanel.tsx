@@ -9,6 +9,7 @@ import { scratchUrl } from "@/lib/api/urls";
 import { decompileSetup } from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
 import useCompareExtension from "@/lib/codemirror/useCompareExtension";
+import { decompile, isClientEnabled } from "@/lib/m2c/client";
 
 import styles from "./DecompilePanel.module.scss";
 
@@ -26,14 +27,55 @@ export default function DecompilePanel({ scratch }: Props) {
     });
     const [valueVersion, setValueVersion] = useState(0);
     const url = scratchUrl(scratch);
+    const { compiler, isLoading: compilerIsLoading } = api.useCompilerMetadata(
+        scratch.platform,
+        scratch.compiler,
+    );
+    const { targetAsm, error: targetAsmError } = api.useTargetAsm(scratch);
 
     useEffect(() => {
+        const clientEnabled = isClientEnabled();
+        if (clientEnabled && compilerIsLoading) return;
+        if (clientEnabled && targetAsm === undefined && !targetAsmError) return;
+
         let isCurrent = true;
 
-        api.post(`${url}/decompile`, {
-            context: debouncedContext,
-            compiler: scratch.compiler,
-        }).then(({ decompilation }: { decompilation: string }) => {
+        const serverDecompile = async () => {
+            const response: { decompilation: string } = await api.post(
+                `${url}/decompile`,
+                {
+                    context: debouncedContext,
+                    compiler: scratch.compiler,
+                },
+            );
+            return response.decompilation;
+        };
+
+        const runDecompile = async () => {
+            if (
+                clientEnabled &&
+                compiler?.decompile_target &&
+                typeof targetAsm === "string"
+            ) {
+                try {
+                    return await decompile({
+                        asm: targetAsm,
+                        context: debouncedContext,
+                        defaultSourceCode: "",
+                        platformId: scratch.platform,
+                        target: compiler.decompile_target,
+                    });
+                } catch (error) {
+                    console.warn(
+                        "Client-side m2c failed; falling back to cromper",
+                        error,
+                    );
+                }
+            }
+            return await serverDecompile();
+        };
+
+        runDecompile().then((decompilation) => {
             if (!isCurrent) return;
 
             setDecompiledCode(decompilation);
@@ -43,7 +85,16 @@ export default function DecompilePanel({ scratch }: Props) {
         return () => {
             isCurrent = false;
         };
-    }, [scratch.compiler, debouncedContext, url]);
+    }, [
+        compiler,
+        compilerIsLoading,
+        debouncedContext,
+        scratch.compiler,
+        scratch.platform,
+        targetAsm,
+        targetAsmError,
+        url,
+    ]);
 
     const isLoading =
         decompiledCode === null || scratch.context !== debouncedContext;

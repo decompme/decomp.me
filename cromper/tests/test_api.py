@@ -93,6 +93,7 @@ class CromperAPITests(AsyncHTTPTestCase):
         self.assertEqual(list(data["compilers"]), ["gcc2.8.1pm"])
         compiler = data["compilers"]["gcc2.8.1pm"]
         self.assertEqual(compiler["flags_class"], "gcc")
+        self.assertEqual(compiler["decompile_target"], "mips-gcc")
         self.assertIn("gcc", data["flags"])
         self.assertEqual(compiler["diff_flags_class"], "mips")
         self.assertEqual(set(data["flags"]), {"gcc"})

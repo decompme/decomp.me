@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import ClassVar
 
 from . import flags
+from .m2c_targets import resolve_m2c_target
 from .platforms import (
     ANDROID_X86,
     DREAMCAST,
@@ -130,6 +131,7 @@ class Compiler:
             "platform": self.platform.id,
             "flags_class": self.flag_class.name,
             "diff_flags_class": self.platform.diff_flag_class.name,
+            "decompile_target": resolve_m2c_target(self.platform.id, self.type.value),
             "language": {
                 "default": self.language.to_json(),
                 "overrides": [
