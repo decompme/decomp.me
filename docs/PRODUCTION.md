@@ -1,5 +1,16 @@
 # Production
 
+## Cromper telemetry
+
+Set `SENTRY_DSN` in `cromper.prod.env` to publish telemetry. `SENTRY_SAMPLE_RATE`
+controls trace sampling independently of `SENTRY_METRICS_SAMPLE_RATE`, which
+controls sampling of operation metrics for compile, assemble, diff, and decompile.
+
+`SENTRY_METRICS_SAMPLE_RATE` defaults to `1.0` (all requests); `0` disables
+operation metrics, and `0.1` records approximately 10% of requests. Each request's
+count, durations, and sizes are kept or dropped together. Request counters count
+sampled requests and are not extrapolated to total traffic.
+
 ## Prerequisites
 
 Create `.deploy.env` with the desired image tags.
