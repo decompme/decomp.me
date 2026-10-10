@@ -144,7 +144,7 @@ wheels = [
 [[package]]
 name = "cromper"
 version = "0.1.0"
-source = { editable = "." }
+source = { virtual = "." }
 dependencies = [
     { name = "asm-differ" },
     { name = "m2c" },

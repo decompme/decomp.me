@@ -5,11 +5,8 @@ build
 .snowpack
 backend/local_files/
 backend/media/
-backend/virtualenvs/
-backend/docker.dev.env
 pgdump/
 postgres/
-sandbox/
 *.db
 .DS_Store
 .env.*
@@ -19,12 +16,11 @@ sandbox/
 /frontend/.next
 /frontend/.cache
 /frontend/cache
-/frontend/public/sw.*
-/frontend/public/workbox-*
 .vercel
 send_update.py
-update.sh
 .venv/
 nginx/production/runtime/*.conf
 !nginx/production/runtime/*.conf.example
+cromper-proxy/production/runtime/*.conf
+!cromper-proxy/production/runtime/*.conf.example
 .deploy.env

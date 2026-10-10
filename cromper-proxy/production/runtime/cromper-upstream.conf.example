@@ -1,0 +1,3 @@
+upstream cromper_upstream {
+    server cromper-orange:8888;
+}

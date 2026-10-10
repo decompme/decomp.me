@@ -1,4 +1,4 @@
 #!/bin/bash
 set -euo pipefail
 
-exec uv run --locked python -m cromper.main
+exec /cromper/.venv/bin/python -m cromper.main

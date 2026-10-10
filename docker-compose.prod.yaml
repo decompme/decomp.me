@@ -34,60 +34,87 @@ x-frontend-base: &frontend-base
   networks:
     - decompme
 
+x-cromper-base: &cromper-base
+  build:
+    context: cromper
+    target: prod
+  cap_drop:
+    - all
+  cap_add:
+    - setuid
+    - setgid
+    - setfcap
+  env_file:
+    - docker.prod.env
+    - cromper.prod.env
+  restart: unless-stopped
+  security_opt:
+    - apparmor=unconfined
+    - seccomp=unconfined
+  volumes:
+    - ./cromper/compilers:/cromper/compilers:ro
+    - ./cromper/libraries:/cromper/libraries:ro
+  tmpfs:
+    - /sandbox/tmp:exec,uid=1000,gid=1000,size=256M,mode=0700
+  healthcheck:
+    test: [ "CMD", "curl", "-f", "http://localhost:8888/healthz" ]
+    interval: 15s
+    timeout: 3s
+    retries: 10
+    start_period: 10s
+  networks:
+    - decompme
+
 services:
-  cromper:
-    image: ghcr.io/decompme/decompme-cromper:${CROMPER_TAG:-latest}
+  cromper-orange:
+    <<: *cromper-base
+    image: ghcr.io/decompme/decompme-cromper:${CROMPER_ORANGE_TAG:-latest}
+
+  cromper-purple:
+    <<: *cromper-base
+    image: ghcr.io/decompme/decompme-cromper:${CROMPER_PURPLE_TAG:-latest}
+
+  cromper-proxy:
+    image: ghcr.io/decompme/decompme-cromper-proxy:${CROMPER_PROXY_TAG:-latest}
     build:
-      context: cromper
-      target: prod
-    cap_drop:
-      - all
-    cap_add:
-      - setuid
-      - setgid
-      - setfcap
-    env_file:
-      - docker.prod.env
-      - cromper.prod.env
-    restart: unless-stopped
-    security_opt:
-      - apparmor=unconfined
-      - seccomp=unconfined
-    volumes:
-      - ./cromper/compilers:/cromper/compilers:ro
-      - ./cromper/libraries:/cromper/libraries:ro
-    tmpfs:
-      - /sandbox/tmp:exec,uid=1000,gid=1000,size=256M,mode=0700
+      context: cromper-proxy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8888/healthz" ]
+      test: [ "CMD", "wget", "-q", "--spider", "http://127.0.0.1:8888/healthz" ]
       interval: 15s
       timeout: 3s
       retries: 10
-      start_period: 20s
+      start_period: 5s
+    restart: unless-stopped
+    volumes:
+      - ./cromper-proxy/production/runtime:/etc/nginx/conf.d/runtime:ro
     networks:
       - decompme
 
   backend-blue:
     <<: *backend-base
     image: ghcr.io/decompme/decompme-backend:${BLUE_TAG:-latest}
+    environment:
+      CROMPER_URL: http://cromper-proxy:8888
 
   frontend-blue:
     <<: *frontend-base
     image: ghcr.io/decompme/decompme-frontend:${BLUE_TAG:-latest}
     environment:
       INTERNAL_API_BASE: http://backend-blue:8000/api
-      INTERNAL_CROMPER_BASE: http://cromper:8888
+      INTERNAL_CROMPER_BASE: http://cromper-proxy:8888
 
   backend-green:
     <<: *backend-base
     image: ghcr.io/decompme/decompme-backend:${GREEN_TAG:-latest}
+    environment:
+      CROMPER_URL: http://cromper-proxy:8888
 
   frontend-green:
     <<: *frontend-base
     image: ghcr.io/decompme/decompme-frontend:${GREEN_TAG:-latest}
     environment:
       INTERNAL_API_BASE: http://backend-green:8000/api
-      INTERNAL_CROMPER_BASE: http://cromper:8888
+      INTERNAL_CROMPER_BASE: http://cromper-proxy:8888
 
   nginx:
     image: ghcr.io/decompme/decompme-nginx:${NGINX_TAG:-latest}
