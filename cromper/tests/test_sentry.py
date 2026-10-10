@@ -1,10 +1,8 @@
 from types import SimpleNamespace
 from unittest.mock import patch
 
-import pytest
 from sentry_sdk.integrations.tornado import TornadoIntegration
 
-from cromper.config import CromperConfig
 from cromper.main import init_sentry
 
 
@@ -39,22 +37,3 @@ def test_sentry_is_initialized_from_config() -> None:
     assert kwargs["transport"].TIMEOUT == config.sentry_timeout
     assert len(kwargs["integrations"]) == 1
     assert isinstance(kwargs["integrations"][0], TornadoIntegration)
-
-
-def test_metrics_sample_rate_defaults_to_all_requests() -> None:
-    with patch.dict("os.environ", {}, clear=True):
-        assert CromperConfig().sentry_metrics_sample_rate == 1.0
-
-
-def test_metrics_sample_rate_is_configurable() -> None:
-    with patch.dict("os.environ", {"SENTRY_METRICS_SAMPLE_RATE": "0.1"}):
-        assert CromperConfig().sentry_metrics_sample_rate == 0.1
-
-
-def test_metrics_sample_rate_rejects_invalid_values() -> None:
-    for value in ("-0.1", "1.1", "nan", "inf", "invalid"):
-        with (
-            patch.dict("os.environ", {"SENTRY_METRICS_SAMPLE_RATE": value}),
-            pytest.raises(ValueError),
-        ):
-            CromperConfig()

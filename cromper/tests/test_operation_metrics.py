@@ -75,33 +75,3 @@ def test_metrics_are_sent_with_tracing_disabled():
         )
     finally:
         client.close()
-
-
-@pytest.mark.parametrize(
-    "rate, draw, published",
-    [
-        (0, 0, False),
-        (1, 0.99, True),
-        (0.1, 0.05, True),
-        (0.1, 0.1, False),
-        (0.1, 0.9, False),
-    ],
-)
-def test_sampling_keeps_or_drops_the_entire_request(rate, draw, published):
-    with (
-        patch(
-            "cromper.handlers.metrics.random.random", return_value=draw
-        ) as random_draw,
-        patch("cromper.handlers.metrics.metrics") as metrics,
-    ):
-        record_operation_metrics(
-            "compile",
-            attributes={},
-            request_duration_ms=20,
-            duration_ms=10,
-            sizes={"input_size": (50, None)},
-            sample_rate=rate,
-        )
-    assert metrics.count.call_count == int(published)
-    assert metrics.distribution.call_count == (3 if published else 0)
-    assert random_draw.call_count == (1 if 0 < rate < 1 else 0)

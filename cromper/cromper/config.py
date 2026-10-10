@@ -24,11 +24,6 @@ class CromperConfig:
         # Error reporting
         self.sentry_dsn = os.getenv("SENTRY_DSN", "")
         self.sentry_sample_rate = float(os.getenv("SENTRY_SAMPLE_RATE", "0.0"))
-        self.sentry_metrics_sample_rate = float(
-            os.getenv("SENTRY_METRICS_SAMPLE_RATE", "1.0")
-        )
-        if not 0 <= self.sentry_metrics_sample_rate <= 1:
-            raise ValueError("SENTRY_METRICS_SAMPLE_RATE must be between 0 and 1")
         self.sentry_timeout = int(os.getenv("SENTRY_TIMEOUT", "3"))
 
         # CPU settings

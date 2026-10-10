@@ -18,7 +18,7 @@ def make_config():
     compilers.from_id.side_effect = lambda compiler_id: (
         compiler if compiler_id == compiler.id else raise_unknown_compiler()
     )
-    return SimpleNamespace(sentry_metrics_sample_rate=1.0, compilers_instance=compilers)
+    return SimpleNamespace(compilers_instance=compilers)
 
 
 def raise_unknown_compiler():

@@ -102,7 +102,6 @@ class DiffHandler(BaseHandler):
             request_duration_ms = (time.perf_counter() - started) * 1000
             record_operation_metrics(
                 "diff",
-                sample_rate=self.config.sentry_metrics_sample_rate,
                 attributes=attributes,
                 request_duration_ms=request_duration_ms,
                 duration_ms=duration_ms,

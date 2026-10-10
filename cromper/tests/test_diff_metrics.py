@@ -20,7 +20,7 @@ def make_config():
         return SimpleNamespace(id="n64")
 
     platforms.from_id.side_effect = from_id
-    return SimpleNamespace(sentry_metrics_sample_rate=1.0, platforms_instance=platforms)
+    return SimpleNamespace(platforms_instance=platforms)
 
 
 def diff_data():

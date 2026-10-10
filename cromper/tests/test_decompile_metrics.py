@@ -27,7 +27,6 @@ def make_config():
     platforms.from_id.side_effect = platform_from_id
     compilers.from_id.side_effect = compiler_from_id
     return SimpleNamespace(
-        sentry_metrics_sample_rate=1.0,
         platforms_instance=platforms,
         compilers_instance=compilers,
     )

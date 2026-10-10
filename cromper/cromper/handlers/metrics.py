@@ -1,5 +1,4 @@
 import logging
-import random
 
 from sentry_sdk import metrics
 
@@ -13,12 +12,8 @@ def record_operation_metrics(
     request_duration_ms: float,
     duration_ms: float | None,
     sizes: dict[str, tuple[int, str | None]],
-    sample_rate: float = 1.0,
 ) -> None:
     try:
-        # Keep each request's count, timings, and sizes in the same sample.
-        if sample_rate <= 0 or (sample_rate < 1 and random.random() >= sample_rate):
-            return
         prefix = f"cromper.{operation}"
         metrics.count(f"{prefix}.requests", 1, attributes=attributes)
         metrics.distribution(
