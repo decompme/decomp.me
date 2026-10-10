@@ -207,8 +207,6 @@ USER ubuntu
 WORKDIR /cromper
 
 COPY pyproject.toml uv.lock /cromper/
-COPY cromper/ /cromper/cromper/
-COPY asm_preludes/ /cromper/asm_preludes/
 
 RUN uv sync --locked --no-dev
 
