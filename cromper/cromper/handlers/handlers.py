@@ -63,7 +63,13 @@ class HealthHandler(BaseHandler):
     """Health check endpoint."""
 
     def get(self):
-        self.write({"status": "healthy", "service": "cromper"})
+        self.write(
+            {
+                "status": "healthy",
+                "service": "cromper",
+                "metadata_revision": self.settings["metadata_revision"],
+            }
+        )
 
 
 class PlatformHandler(BaseHandler):

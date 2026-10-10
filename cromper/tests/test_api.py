@@ -8,6 +8,7 @@ import unittest
 from tornado.testing import AsyncHTTPTestCase
 
 from cromper.main import CromperConfig, make_app
+from cromper.metadata import metadata_revision
 from cromper.platforms import N64
 
 
@@ -27,6 +28,15 @@ class CromperAPITests(AsyncHTTPTestCase):
         data = json.loads(response.body)
         self.assertEqual(data["status"], "healthy")
         self.assertEqual(data["service"], "cromper")
+        self.assertTrue(data["metadata_revision"])
+        self.assertEqual(
+            json.loads(self.fetch("/healthz").body)["metadata_revision"],
+            data["metadata_revision"],
+        )
+        self.assertEqual(
+            metadata_revision(CromperConfig()),
+            data["metadata_revision"],
+        )
 
     def test_platforms_endpoint(self):
         """Test the platforms endpoint."""
