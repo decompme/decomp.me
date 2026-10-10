@@ -61,9 +61,11 @@ fi
 git reset --hard origin/main
 NEW_HASH=$(git rev-parse --short HEAD)
 
-# Update compilers and libraries
-python3 cromper/compilers/download.py
-python3 cromper/libraries/download.py
+# Update compilers and libraries when deploying Cromper.
+if [ "${COMMAND}" = "deploy-all" ] || [ "${COMMAND}" = "deploy-cromper" ]; then
+  python3 cromper/compilers/download.py
+  python3 cromper/libraries/download.py
+fi
 
 if [ "${COMMAND}" = "deploy-all" ]; then
   python3 deploy.py deploy-cromper "${TAG}"
