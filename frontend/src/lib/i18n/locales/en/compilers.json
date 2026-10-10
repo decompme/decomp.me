@@ -322,7 +322,7 @@
     "clang_no_rtti": "Disable standard c++ runtime type information features",
     "clang_no_exceptions": "Disable exception handling",
 
-    "gcc_arch": "CPU CPU",
+    "gcc_cpu": "Target CPU",
     "gcc_cpu.-m1": "SH-1",
     "gcc_cpu.-m2": "SH-2 (Saturn)",
     "gcc_cpu.-m2e": "SH-2E",
