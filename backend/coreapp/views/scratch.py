@@ -10,14 +10,16 @@ from typing import Any
 
 import django_filters
 from django.core.files import File
-from django.db.models import Case, F, FloatField, Value, When
+from django.db.models import Case, Count, F, FloatField, Max, Q, Value, When
 from django.db.models.functions import Cast
 from django.db.models.query import QuerySet
 from django.http import HttpResponse, QueryDict
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
+from rest_framework.request import Request as DRFRequest
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -35,15 +37,17 @@ from ..filters.search import NonEmptySearchFilter
 from ..middleware import Request
 from ..models.best_fork import update_best_forks_for_scratch
 from ..models.preset import Preset
-from ..models.scratch import Asm, Assembly, Library, Scratch
+from ..models.scratch import Asm, Assembly, Library, Scratch, ScratchFlags
 from ..pagination import SafeCursorPagination
 from ..serializers import (
     ClaimableScratchSerializer,
     ScratchCompileSerializer,
     ScratchCreateSerializer,
     ScratchDecompileSerializer,
+    ScratchFlagsSerializer,
     ScratchSerializer,
     TerseScratchSerializer,
+    serialize_profile,
 )
 from ..wrapper_result import CompilationResult, DiffResult
 
@@ -320,6 +324,20 @@ class ScratchPagination(SafeCursorPagination):
     page_size_query_param = "page_size"
     max_page_size = 100
 
+    def get_ordering(
+        self, request: DRFRequest, queryset: QuerySet[Any, Any], view: Any
+    ) -> tuple[str, ...]:
+        if getattr(view, "action", None) == "help_wanted":
+            ordering = request.query_params.get("ordering", "-help_wanted_at")
+            if ordering in {
+                "-help_wanted_at",
+                "help_wanted_at",
+                "-help_wanted_count",
+            }:
+                return ordering, "slug"
+            return "-help_wanted_at", "slug"
+        return super().get_ordering(request, queryset, view)
+
 
 @method_decorator(globally_cacheable(max_age=5, stale_while_revalidate=1), name="list")
 @method_decorator(globally_cacheable(max_age=1), name="retrieve")
@@ -363,6 +381,105 @@ class ScratchViewSet(
             return TerseScratchSerializer
         else:
             return ScratchSerializer
+
+    @action(detail=False, methods=["GET"], url_path="help-wanted")
+    def help_wanted(self, request: Request) -> Response:
+        matching_family_ids = Scratch.objects.filter(
+            Q(score=0) | Q(match_override=True),
+            family_id__isnull=False,
+        ).values("family_id")
+        queryset = (
+            self.filter_queryset(self.get_queryset())
+            .annotate(
+                help_wanted_count=Count(
+                    "flags",
+                    filter=Q(flags__help_wanted=True),
+                    distinct=True,
+                ),
+                help_wanted_at=Max(
+                    "flags__help_wanted_at",
+                    filter=Q(flags__help_wanted=True),
+                ),
+            )
+            .filter(help_wanted_count__gt=0)
+            .exclude(Q(score=0) | Q(match_override=True))
+            .exclude(family_id__in=matching_family_ids)
+            .filter(best_fork__isnull=True)
+            .distinct()
+        )
+        ordering = request.query_params.get("ordering", "-help_wanted_at")
+        allowed_orderings = {
+            "-help_wanted_at": "-help_wanted_at",
+            "help_wanted_at": "help_wanted_at",
+            "-help_wanted_count": "-help_wanted_count",
+        }
+        queryset = queryset.order_by(
+            allowed_orderings.get(ordering, "-help_wanted_at"), "slug"
+        )
+        page = self.paginate_queryset(queryset)
+        serializer = TerseScratchSerializer(
+            page, many=True, context=self.get_serializer_context()
+        )
+        return self.get_paginated_response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["GET"],
+        url_path="help-wanted-requesters",
+    )
+    def help_wanted_requesters(self, request: Request, pk: str) -> Response:
+        scratch = self.get_object()
+        requesters = (
+            ScratchFlags.objects.filter(scratch=scratch, help_wanted=True)
+            .select_related("profile__user__github")
+            .order_by("-help_wanted_at", "profile_id")
+        )
+        return Response([serialize_profile(flag.profile) for flag in requesters])
+
+    @action(
+        detail=True,
+        methods=["GET", "PATCH"],
+        url_path="flags",
+    )
+    def flags(self, request: Request, pk: str) -> Response:
+        scratch = self.get_object()
+        scratch_flags = ScratchFlags.objects.filter(
+            scratch=scratch, profile=request.profile
+        ).first()
+
+        if request.method == "PATCH":
+            serializer = ScratchFlagsSerializer(data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            values = serializer.validated_data
+            if scratch_flags is None:
+                scratch_flags = ScratchFlags(
+                    scratch=scratch,
+                    profile=request.profile,
+                    **values,
+                )
+            else:
+                was_help_wanted = scratch_flags.help_wanted
+                for field, value in values.items():
+                    setattr(scratch_flags, field, value)
+                if "help_wanted" in values:
+                    if scratch_flags.help_wanted and not was_help_wanted:
+                        scratch_flags.help_wanted_at = timezone.now()
+                    elif not scratch_flags.help_wanted:
+                        scratch_flags.help_wanted_at = None
+            if "help_wanted" in values and scratch_flags.help_wanted:
+                scratch_flags.help_wanted_at = (
+                    scratch_flags.help_wanted_at or timezone.now()
+                )
+            if scratch_flags.help_wanted:
+                scratch_flags.save()
+            elif scratch_flags.pk is not None:
+                scratch_flags.delete()
+
+        return Response(
+            {
+                "help_wanted": bool(scratch_flags and scratch_flags.help_wanted),
+            }
+        )
 
     @scratch_condition
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:

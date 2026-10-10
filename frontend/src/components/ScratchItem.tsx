@@ -1,9 +1,15 @@
 "use client";
 
-import { RepoForkedIcon, TrashIcon } from "@primer/octicons-react";
+import {
+    IssueOpenedIcon,
+    RepoForkedIcon,
+    TrashIcon,
+} from "@primer/octicons-react";
 import clsx from "clsx";
 import Image from "next/image";
 import { type ReactNode, useState } from "react";
+import { useLayer } from "react-laag";
+import useSWR from "swr";
 import Link from "@/components/Link";
 
 import TimeAgo from "@/components/TimeAgo";
@@ -13,6 +19,7 @@ import { presetUrl, scratchUrl, userAvatarUrl } from "@/lib/api/urls";
 import getTranslation from "@/lib/i18n/translate";
 import Button from "./Button";
 import AnonymousFrogAvatar from "./Frog/AnonymousFrog";
+import LoadingSpinner from "./loading.svg";
 import PlatformLink from "./PlatformLink";
 import { calculateScorePercent, percentToString } from "./ScoreBadge";
 import styles from "./ScratchItem.module.scss";
@@ -157,6 +164,86 @@ function ScratchOwner({ scratch }: { scratch: api.TerseScratch }) {
     );
 }
 
+function HelpWantedCount({ scratch }: { scratch: api.TerseScratch }) {
+    const helpWantedCount = scratch.help_wanted_count ?? 0;
+    const [isOpen, setIsOpen] = useState(false);
+    const { data: requesters, error } = useSWR<
+        Array<api.User | api.AnonymousUser>
+    >(
+        isOpen ? `${scratchUrl(scratch)}/help-wanted-requesters` : null,
+        api.getPublic,
+    );
+    const { renderLayer, triggerProps, layerProps } = useLayer({
+        isOpen,
+        onOutsideClick: () => setIsOpen(false),
+        overflowContainer: false,
+        auto: true,
+        placement: "top-end",
+        triggerOffset: 6,
+    });
+
+    if (helpWantedCount === 0) return null;
+
+    const helpWantedLabel =
+        helpWantedCount === 1
+            ? "1 person is requesting help on this scratch"
+            : `${helpWantedCount} people are requesting help on this scratch`;
+
+    return (
+        <>
+            <button
+                {...triggerProps}
+                type="button"
+                className={styles.helpWanted}
+                title={helpWantedLabel}
+                aria-label={helpWantedLabel}
+                aria-expanded={isOpen}
+                aria-haspopup="dialog"
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <IssueOpenedIcon size={14} />
+                <span>{helpWantedCount}</span>
+            </button>
+            {renderLayer(
+                isOpen && (
+                    <div
+                        {...layerProps}
+                        className={styles.helpWantedPopup}
+                        role="dialog"
+                        aria-label="People requesting help"
+                    >
+                        <h3>People requesting help</h3>
+                        {!requesters && !error && (
+                            <LoadingSpinner
+                                className={styles.requestersLoading}
+                            />
+                        )}
+                        {error && (
+                            <p className={styles.requestersError}>
+                                Could not load requesters.
+                            </p>
+                        )}
+                        {requesters && (
+                            <ul className={styles.requesterList}>
+                                {requesters.map((requester) => (
+                                    <li
+                                        key={`${requester.is_anonymous ? "anonymous" : "user"}-${requester.id}`}
+                                    >
+                                        <UserLink
+                                            user={requester}
+                                            truncateUsername={false}
+                                        />
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                ),
+            )}
+        </>
+    );
+}
+
 function ScratchPresetOrCompiler({ scratch }: { scratch: api.TerseScratch }) {
     const compilersTranslation = getTranslation("compilers");
     const compilerName = compilersTranslation.t(scratch.compiler);
@@ -223,6 +310,7 @@ function ScratchItemRow({
                                 showPlatform={showPlatform}
                             />
                             <span className={styles.improvementSlot}>
+                                <HelpWantedCount scratch={scratch} />
                                 <Improvement improvement={scratch.best_fork} />
                             </span>
                         </div>

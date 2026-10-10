@@ -22,6 +22,7 @@ import type {
     Preset,
     PresetBase,
     Scratch,
+    ScratchFlags,
     TerseScratch,
     User,
 } from "./api/types";
@@ -169,6 +170,25 @@ export function useIsScratchSaved(scratch: Scratch, enabled = true): boolean {
     const saved = useSavedScratch(scratch, enabled);
 
     return isScratchSaved(scratch, saved);
+}
+
+export function useScratchFlags(scratch: TerseScratch): {
+    flags: ScratchFlags | undefined;
+    updateFlags: (update: Partial<ScratchFlags>) => Promise<ScratchFlags>;
+} {
+    const url = `${scratchUrl(scratch)}/flags`;
+    const { data: flags } = useSWR<ScratchFlags>(url, get);
+
+    const updateFlags = useCallback(
+        async (update: Partial<ScratchFlags>) => {
+            const updatedFlags: ScratchFlags = await patch(url, update);
+            await mutate(url, updatedFlags, { revalidate: false });
+            return updatedFlags;
+        },
+        [url],
+    );
+
+    return { flags, updateFlags };
 }
 
 function getScratchCompileInputKey(scratch: Scratch | null): string {
