@@ -1,0 +1,49 @@
+import logging
+from dataclasses import dataclass
+from typing import Any
+
+from sentry_sdk import metrics
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class OperationResult:
+    """Worker output; only response is exposed to the HTTP client."""
+
+    response: dict[str, Any]
+    duration_ms: float
+    attributes: dict[str, str | int]
+    sizes: dict[str, tuple[int, str | None]]
+
+
+def record_operation_metrics(
+    operation: str,
+    *,
+    attributes: dict[str, str | int],
+    request_duration_ms: float,
+    duration_ms: float,
+    sizes: dict[str, tuple[int, str | None]],
+) -> None:
+    try:
+        prefix = f"cromper.{operation}"
+        metrics.count(f"{prefix}.requests", 1, attributes=attributes)
+        metrics.distribution(
+            f"{prefix}.request_duration",
+            request_duration_ms,
+            unit="millisecond",
+            attributes=attributes,
+        )
+        metrics.distribution(
+            f"{prefix}.duration",
+            duration_ms,
+            unit="millisecond",
+            attributes=attributes,
+        )
+        for name, (size, unit) in sizes.items():
+            metrics.distribution(
+                f"{prefix}.{name}", size, unit=unit, attributes=attributes
+            )
+    except Exception:
+        # Telemetry must not replace an operation result or its original error.
+        logger.warning("Could not record %s metrics", operation, exc_info=True)

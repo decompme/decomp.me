@@ -1,4 +1,5 @@
 import base64
+import time
 from typing import Any
 
 import tornado.web
@@ -8,9 +9,10 @@ from ..error import CompilationError
 from ..libraries import Library
 from ..wrappers.compiler_wrapper import CompilerWrapper
 from .handlers import BaseHandler
+from .metrics import OperationResult, record_operation_metrics
 
 
-def compile(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
+def compile(data: dict[str, Any], config: CromperConfig) -> OperationResult:
     """Synchronous compilation that runs in process pool."""
     compiler_id = data.get("compiler_id")
     if not compiler_id:
@@ -32,6 +34,7 @@ def compile(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
 
     wrapper = CompilerWrapper(config)
 
+    started = time.perf_counter()
     try:
         result = wrapper.compile_code(
             compiler=compiler,
@@ -42,24 +45,43 @@ def compile(data: dict[str, Any], config: CromperConfig) -> dict[str, Any]:
             libraries=libraries,
         )
 
+        duration_ms = (time.perf_counter() - started) * 1000
         elf_object_b64 = base64.b64encode(result.elf_object).decode("utf-8")
 
-        return {
+        response = {
             "success": True,
             "elf_object": elf_object_b64,
             "errors": result.errors,
         }
 
     except CompilationError as e:
-        return {"success": False, "error": str(e)}
+        duration_ms = (time.perf_counter() - started) * 1000
+        response = {"success": False, "error": str(e)}
+
+    attributes: dict[str, str | int] = {
+        "platform": compiler.platform.id,
+        "compiler_id": compiler.id,
+        "outcome": "success" if response["success"] else "compilation_error",
+    }
+    sizes: dict[str, tuple[int, str | None]] = {}
+    if isinstance(code, str) and isinstance(context, str):
+        input_size = len(code) + len(context)
+        attributes["input_size"] = input_size
+        sizes["input_size"] = (input_size, None)
+    return OperationResult(response, duration_ms, attributes, sizes)
 
 
 class CompileHandler(BaseHandler):
-    """Compilation endpoint."""
-
-    async def post(self):
-        """Handle compilation request."""
+    async def post(self) -> None:
+        started = time.perf_counter()
         data = self.get_json_body()
         ioloop = tornado.ioloop.IOLoop.current()
         result = await ioloop.run_in_executor(self.executor, compile, data, self.config)
-        self.write(result)
+        self.write(result.response)
+        record_operation_metrics(
+            "compile",
+            attributes=result.attributes,
+            request_duration_ms=(time.perf_counter() - started) * 1000,
+            duration_ms=result.duration_ms,
+            sizes=result.sizes,
+        )
