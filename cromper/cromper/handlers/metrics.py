@@ -1,8 +1,20 @@
 import logging
+from dataclasses import dataclass
+from typing import Any
 
 from sentry_sdk import metrics
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class OperationResult:
+    """Worker output; only response is exposed to the HTTP client."""
+
+    response: dict[str, Any]
+    duration_ms: float
+    attributes: dict[str, str | int]
+    sizes: dict[str, tuple[int, str | None]]
 
 
 def record_operation_metrics(
@@ -10,7 +22,7 @@ def record_operation_metrics(
     *,
     attributes: dict[str, str | int],
     request_duration_ms: float,
-    duration_ms: float | None,
+    duration_ms: float,
     sizes: dict[str, tuple[int, str | None]],
 ) -> None:
     try:
@@ -22,13 +34,12 @@ def record_operation_metrics(
             unit="millisecond",
             attributes=attributes,
         )
-        if duration_ms is not None:
-            metrics.distribution(
-                f"{prefix}.duration",
-                duration_ms,
-                unit="millisecond",
-                attributes=attributes,
-            )
+        metrics.distribution(
+            f"{prefix}.duration",
+            duration_ms,
+            unit="millisecond",
+            attributes=attributes,
+        )
         for name, (size, unit) in sizes.items():
             metrics.distribution(
                 f"{prefix}.{name}", size, unit=unit, attributes=attributes

@@ -4,7 +4,9 @@
 
 Set `SENTRY_DSN` in `cromper.prod.env` to publish telemetry. `SENTRY_SAMPLE_RATE`
 controls trace sampling. Operation metrics for compile, assemble, diff, and
-decompile are recorded for every request, independently of trace sampling.
+decompile are recorded for completed tool operations, including tool-reported
+failures, independently of trace sampling. Invalid requests and unexpected
+worker failures do not emit operation metrics.
 
 ## Prerequisites
 

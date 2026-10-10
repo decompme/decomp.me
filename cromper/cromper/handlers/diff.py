@@ -7,12 +7,10 @@ import tornado.web
 from ..config import CromperConfig
 from ..wrappers.diff_wrapper import DiffWrapper
 from .handlers import BaseHandler
-from .metrics import record_operation_metrics
+from .metrics import OperationResult, record_operation_metrics
 
 
-def generate_diff(
-    data: dict[str, Any], config: CromperConfig
-) -> tuple[dict[str, Any], float, dict[str, int]]:
+def generate_diff(data: dict[str, Any], config: CromperConfig) -> OperationResult:
     """Synchronous diff generation that runs in process pool."""
     platform_id = data.get("platform_id")
     if not platform_id:
@@ -61,49 +59,34 @@ def generate_diff(
 
     except Exception as e:
         response = {"success": False, "error": str(e)}
-    return response, (time.perf_counter() - started) * 1000, sizes
+    duration_ms = (time.perf_counter() - started) * 1000
+
+    attributes: dict[str, str | int] = {
+        "platform": platform.id,
+        "outcome": "success" if response["success"] else "diff_error",
+        **sizes,
+    }
+    return OperationResult(
+        response,
+        duration_ms,
+        attributes,
+        {name: (size, "byte") for name, size in sizes.items()},
+    )
 
 
 class DiffHandler(BaseHandler):
-    """Diff generation endpoint."""
-
     async def post(self) -> None:
-        """Handle diff request."""
         started = time.perf_counter()
-        attributes: dict[str, str | int] = {
-            "platform": "unknown",
-            "outcome": "internal_error",
-        }
-        duration_ms: float | None = None
-        sizes: dict[str, int] = {}
-        try:
-            data = self.get_json_body()
-            platform_id = data.get("platform_id")
-            if isinstance(platform_id, str) and platform_id:
-                try:
-                    platform = self.config.platforms_instance.from_id(platform_id)
-                except ValueError:
-                    pass
-                else:
-                    attributes["platform"] = platform.id
-            ioloop = tornado.ioloop.IOLoop.current()
-            result, duration_ms, sizes = await ioloop.run_in_executor(
-                self.executor, generate_diff, data, self.config
-            )
-            attributes.update(sizes)
-            attributes["outcome"] = "success" if result["success"] else "diff_error"
-            self.write(result)
-        except tornado.web.HTTPError as e:
-            attributes["outcome"] = (
-                "invalid_request" if 400 <= e.status_code < 500 else "internal_error"
-            )
-            raise
-        finally:
-            request_duration_ms = (time.perf_counter() - started) * 1000
-            record_operation_metrics(
-                "diff",
-                attributes=attributes,
-                request_duration_ms=request_duration_ms,
-                duration_ms=duration_ms,
-                sizes={name: (size, "byte") for name, size in sizes.items()},
-            )
+        data = self.get_json_body()
+        ioloop = tornado.ioloop.IOLoop.current()
+        result = await ioloop.run_in_executor(
+            self.executor, generate_diff, data, self.config
+        )
+        self.write(result.response)
+        record_operation_metrics(
+            "diff",
+            attributes=result.attributes,
+            request_duration_ms=(time.perf_counter() - started) * 1000,
+            duration_ms=result.duration_ms,
+            sizes=result.sizes,
+        )
