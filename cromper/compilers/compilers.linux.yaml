@@ -193,6 +193,7 @@ psp:
 
 saturn:
   - cygnus-2.7-96Q3
+  - cygnus-2.7-96Q3-native
 
 dreamcast:
   - shc-v5.0r10
