@@ -19,6 +19,7 @@ class CromperConfig:
         # Server settings
         self.port = int(os.getenv("CROMPER_PORT", "8888"))
         self.debug = env_flag("CROMPER_DEBUG")
+        self.version = os.getenv("GIT_HASH", "")
 
         # Error reporting
         self.sentry_dsn = os.getenv("SENTRY_DSN", "")

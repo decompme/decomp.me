@@ -223,3 +223,6 @@ COPY --chown=ubuntu:ubuntu asm_preludes/ /cromper/asm_preludes/
 COPY --chown=ubuntu:ubuntu docker_entrypoint.sh /cromper/
 
 ENTRYPOINT ["/cromper/docker_entrypoint.sh"]
+
+ARG GIT_HASH="abc123"
+ENV GIT_HASH=$GIT_HASH

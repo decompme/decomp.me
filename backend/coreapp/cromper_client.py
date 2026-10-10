@@ -1,6 +1,7 @@
 import base64
 import binascii
 import logging
+import time
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
@@ -122,13 +123,41 @@ class CromperClient(AbstractCromperClient):
         self.session = requests.Session()
         self._compilers_cache: dict[str, Compiler] | None = None
         self._platforms_cache: dict[str, Platform] | None = None
+        self._libraries_cache: dict[str, list[dict[str, Any]]] = {}
         self._had_transport_failure = False
+        self._version: str | None = None
+        self._next_version_check = 0.0
+
+    def _invalidate_caches(self) -> None:
+        self._compilers_cache = None
+        self._platforms_cache = None
+        self._libraries_cache.clear()
+
+    def _check_version(self) -> None:
+        """Check for a changed Cromper version at most once a minute."""
+        now = time.monotonic()
+        if now < self._next_version_check:
+            return
+        # Limit retries during outages as well as successful checks.
+        self._next_version_check = now + 60
+        try:
+            response = self._make_request("GET", "/healthz")
+        except CromperError:
+            logger.warning("Could not check Cromper version", exc_info=True)
+            return
+        version = response.get("version")
+        if not isinstance(version, str) or not version:
+            # Older Cromper deployments do not expose a version.
+            return
+        if version != self._version:
+            logger.info("Cromper version changed, invalidating metadata caches")
+            self._invalidate_caches()
+            self._version = version
 
     def _handle_successful_communication(self) -> None:
         if self._had_transport_failure:
             logger.info("connection to cromper restored, invalidating caches")
-            self._compilers_cache = None
-            self._platforms_cache = None
+            self._invalidate_caches()
             self._had_transport_failure = False
 
     @staticmethod
@@ -223,6 +252,7 @@ class CromperClient(AbstractCromperClient):
 
     def get_compilers(self) -> dict[str, Compiler]:
         """Get all compilers from cromper, with caching."""
+        self._check_version()
         if self._compilers_cache is None:
             logger.info("Fetching compilers from cromper...")
             response = self._make_request("GET", "/compiler")
@@ -272,6 +302,7 @@ class CromperClient(AbstractCromperClient):
 
     def get_platforms(self) -> dict[str, Platform]:
         """Get all platforms from cromper, with caching."""
+        self._check_version()
         if self._platforms_cache is None:
             logger.info("Fetching platforms from cromper...")
             response = self._make_request("GET", "/platform")
@@ -297,7 +328,10 @@ class CromperClient(AbstractCromperClient):
         return self._platforms_cache
 
     def get_libraries(self, platform: str = "") -> list[dict[str, Any]]:
-        """Get available libraries from cromper."""
+        """Get available libraries from cromper, cached per platform."""
+        self._check_version()
+        if platform in self._libraries_cache:
+            return self._libraries_cache[platform]
         params = {}
         if platform:
             params["platform"] = platform
@@ -308,7 +342,8 @@ class CromperClient(AbstractCromperClient):
             raise CromperError(
                 "Invalid /library response: libraries must contain objects"
             )
-        return cast(list[dict[str, Any]], libraries)
+        self._libraries_cache[platform] = cast(list[dict[str, Any]], libraries)
+        return self._libraries_cache[platform]
 
     def get_compiler_by_id(self, compiler_id: str) -> Compiler:
         """Get a specific compiler by ID."""

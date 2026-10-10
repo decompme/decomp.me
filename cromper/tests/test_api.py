@@ -3,7 +3,9 @@ Test cromper API endpoints.
 """
 
 import json
+import os
 import unittest
+from unittest.mock import patch
 
 from tornado.testing import AsyncHTTPTestCase
 
@@ -16,7 +18,8 @@ class CromperAPITests(AsyncHTTPTestCase):
 
     def get_app(self):
         """Return the Tornado application for testing."""
-        config = CromperConfig()
+        with patch.dict(os.environ, {"GIT_HASH": "0123456789ab"}):
+            config = CromperConfig()
         return make_app(config)
 
     def test_health_endpoint(self):
@@ -27,6 +30,11 @@ class CromperAPITests(AsyncHTTPTestCase):
         data = json.loads(response.body)
         self.assertEqual(data["status"], "healthy")
         self.assertEqual(data["service"], "cromper")
+        self.assertEqual(data["version"], "0123456789ab")
+        self.assertEqual(
+            json.loads(self.fetch("/healthz").body)["version"],
+            data["version"],
+        )
 
     def test_platforms_endpoint(self):
         """Test the platforms endpoint."""

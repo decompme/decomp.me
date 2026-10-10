@@ -17,6 +17,44 @@ from coreapp.wrapper_result import AssemblyResult, CompilationResult, DiffResult
 
 
 class CromperClientCompilerTests(SimpleTestCase):
+    def setUp(self) -> None:
+        self.enterContext(patch.object(CromperClient, "_check_version"))
+
+    def test_libraries_are_cached_separately_per_platform(self) -> None:
+        client = CromperClient("http://cromper")
+        with patch.object(
+            client,
+            "_make_request",
+            side_effect=[
+                {"libraries": [{"name": "all"}]},
+                {"libraries": []},
+                {"libraries": [{"name": "ps1"}]},
+            ],
+        ) as request:
+            for platform in ("", "n64", "ps1"):
+                first = client.get_libraries(platform)
+                self.assertIs(client.get_libraries(platform), first)
+            self.assertEqual(request.call_count, 3)
+            self.assertEqual(
+                [call.kwargs["params"] for call in request.call_args_list],
+                [{}, {"platform": "n64"}, {"platform": "ps1"}],
+            )
+
+    def test_invalid_libraries_are_not_cached(self) -> None:
+        client = CromperClient("http://cromper")
+        with patch.object(
+            client,
+            "_make_request",
+            side_effect=[
+                {"libraries": ["invalid"]},
+                {"libraries": []},
+            ],
+        ) as request:
+            with self.assertRaises(CromperError):
+                client.get_libraries()
+            self.assertEqual(client.get_libraries(), [])
+            self.assertEqual(request.call_count, 2)
+
     language_response = {
         "default": {"id": "c", "display_name": "C", "extension": "c"},
         "overrides": [
@@ -172,6 +210,7 @@ class CromperClientCompilerTests(SimpleTestCase):
         client = CromperClient("http://cromper")
         client._compilers_cache = {"stale": Mock()}
         client._platforms_cache = {"stale": Mock()}
+        client._libraries_cache = {"n64": [{"name": "stale"}]}
         recovered_response = self.make_response({"libraries": []})
 
         with patch.object(
@@ -188,6 +227,7 @@ class CromperClientCompilerTests(SimpleTestCase):
 
         self.assertIsNone(client._compilers_cache)
         self.assertIsNone(client._platforms_cache)
+        self.assertNotIn("n64", client._libraries_cache)
         self.assertFalse(client._had_transport_failure)
         self.assertEqual(
             [call.args[1] for call in request.call_args_list],
@@ -335,3 +375,89 @@ class CromperClientCompilerTests(SimpleTestCase):
             ),
         ):
             client.decompile("n64", "ido7.1", "asm")
+
+
+class CromperVersionTests(SimpleTestCase):
+    def test_library_requests_detect_version_changes_and_refresh(self) -> None:
+        client = CromperClient("http://cromper")
+        with (
+            patch("coreapp.cromper_client.time.monotonic", return_value=0) as clock,
+            patch.object(
+                client,
+                "_make_request",
+                side_effect=[
+                    {"version": "version-a"},
+                    {"libraries": [{"name": "old"}]},
+                    {"version": "version-b"},
+                    {"libraries": [{"name": "new"}]},
+                ],
+            ) as request,
+        ):
+            self.assertEqual(client.get_libraries("n64"), [{"name": "old"}])
+            clock.return_value = 59
+            self.assertEqual(client.get_libraries("n64"), [{"name": "old"}])
+            self.assertEqual(request.call_count, 2)
+            clock.return_value = 60
+            self.assertEqual(client.get_libraries("n64"), [{"name": "new"}])
+            self.assertEqual(request.call_count, 4)
+
+    def test_metadata_refreshes_only_when_version_changes(self) -> None:
+        client = CromperClient("http://cromper")
+        response = CromperClientCompilerTests.make_response
+        with (
+            patch("coreapp.cromper_client.time.monotonic", return_value=0) as clock,
+            patch.object(
+                client.session,
+                "request",
+                side_effect=[
+                    response({"version": "version-a"}),
+                    response({"compilers": {}}),
+                    response({"version": "version-a"}),
+                    response({"version": "version-b"}),
+                    response({"compilers": {}}),
+                ],
+            ) as request,
+        ):
+            original = client.get_compilers()
+            platforms = client._platforms_cache = {}
+            clock.return_value = 59
+            self.assertIs(client.get_compilers(), original)
+            self.assertEqual(request.call_count, 2)
+            clock.return_value = 60
+            self.assertIs(client.get_compilers(), original)
+            self.assertIs(client._platforms_cache, platforms)
+            clock.return_value = 120
+            self.assertIsNot(client.get_compilers(), original)
+            self.assertIsNone(client._platforms_cache)
+            self.assertEqual(request.call_count, 5)
+
+    def test_failed_check_preserves_cache_and_limits_retries(self) -> None:
+        client = CromperClient("http://cromper")
+        cached = client._platforms_cache = {}
+        with (
+            patch("coreapp.cromper_client.time.monotonic", return_value=0) as clock,
+            patch.object(
+                client.session,
+                "request",
+                side_effect=requests.exceptions.ConnectionError("unavailable"),
+            ) as request,
+        ):
+            self.assertIs(client.get_platforms(), cached)
+            clock.return_value = 59
+            self.assertIs(client.get_platforms(), cached)
+            self.assertEqual(request.call_count, 1)
+
+    def test_older_cromper_preserves_caches_without_version(self) -> None:
+        client = CromperClient("http://cromper")
+        platforms = client._platforms_cache = {"n64": Mock()}
+        compilers = client._compilers_cache = {"ido7.1": Mock()}
+        libraries = client._libraries_cache = {"n64": []}
+        with patch.object(
+            client,
+            "_make_request",
+            return_value={"status": "healthy"},
+        ) as request:
+            self.assertIs(client.get_platforms(), platforms)
+            self.assertIs(client.get_compilers(), compilers)
+            self.assertIs(client.get_libraries("n64"), libraries["n64"])
+            request.assert_called_once_with("GET", "/healthz")
