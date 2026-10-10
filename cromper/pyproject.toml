@@ -26,6 +26,9 @@ dev = [
     "ruff>=0.16.6",
 ]
 
+[tool.uv]
+package = false
+
 [tool.ruff]
 include = ["cromper/**/*.py", "tests/**/*.py"]
 exclude = ["compilers", "libraries"]
