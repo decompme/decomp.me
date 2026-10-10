@@ -267,6 +267,7 @@
     "msc5.1": "Microsoft C Compiler 5.1",
 
     "cygnus-2.7-96Q3": "cygnus-2.7-96Q3 SOA-960904",
+    "cygnus-2.7-96Q3-native": "cygnus-2.7-96Q3 SOA-960904 (native)",
     "shc-v5.0r32-sh2": "SHC v5.0 (Release 32)",
 
     "ndk-r8e-gcc-4.4.3": "Android NDK r8e (GCC 4.4.3)",
@@ -321,6 +322,12 @@
     "clang_no_rtti": "Disable standard c++ runtime type information features",
     "clang_no_exceptions": "Disable exception handling",
 
+    "gcc_cpu": "Target CPU",
+    "gcc_cpu.-m1": "SH-1",
+    "gcc_cpu.-m2": "SH-2 (Saturn)",
+    "gcc_cpu.-m2e": "SH-2E",
+    "gcc_cpu.-m3": "SH-3",
+    "gcc_cpu.-m4": "SH-4",
     "gcc_opt_level": "Optimization level",
     "gcc_opt_level.-O0": "No optimization",
     "gcc_opt_level.-O1": "Some optimization",

@@ -601,6 +601,13 @@ CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
     cc=SATURN_CC,
 )
 
+CYGNUS_2_7_96Q3_NATIVE = GCCSaturnCompiler(
+    id="cygnus-2.7-96Q3-native",
+    cc=(
+        '/usr/bin/cpp -E "${INPUT}" | ${COMPILER_DIR}/cc1-native ${COMPILER_FLAGS} | sh-elf-as -o "${OUTPUT}"'
+    ),
+)
+
 # earlier shc doesn't accept -fpu=single or -aggressive=2
 DREAMCAST_CC_V50R10 = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
@@ -1823,6 +1830,7 @@ _all_compilers: list[Compiler] = [
     MWCCPSP_3_0_1_219,
     # Saturn
     CYGNUS_2_7_96Q3,
+    CYGNUS_2_7_96Q3_NATIVE,
     SHC_V50R32_SH2,
     # Dreamcast
     SHC_V50R10,
