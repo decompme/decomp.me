@@ -461,7 +461,7 @@ COMMON_GCC_SATURN_FLAGS = FlagClass(
     name="gcc-saturn",
     flags=[
         FlagSet(id="gcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3"]),
-        FlagSet(id="gcc_cpu", flags=["-m1", "-m2", "-m3", "-m4"]),
+        FlagSet(id="gcc_cpu", flags=["-m1", "-m2", "-m2e", "-m3", "-m4"]),
     ],
 )
 
