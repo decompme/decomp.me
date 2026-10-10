@@ -39,6 +39,25 @@ We support blue/green deployments when running decomp.me in production. This all
 
 ### Standard deployments
 
+`update.sh` fetches and resets the checkout to `origin/main`, updates compilers
+and libraries, and deploys the backend and frontend by default:
+
+```bash
+./update.sh
+./update.sh auto deploy-cromper
+./update.sh auto deploy-all
+```
+
+`auto` uses the 12-character commit hash of fetched `origin/main` as the image
+tag and prompts before proceeding. An explicit image tag can replace `auto`.
+`deploy-cromper` deploys only Cromper; `deploy-all` deploys Cromper first, then
+the backend and frontend using the same tag. These deployments are sequential:
+if the app deployment fails, Cromper remains updated. Compiler/library updates
+and the Discord update notification run once per successful wrapper invocation.
+The wrapper also accepts `migrate` for maintenance deployments.
+
+To deploy directly without updating the checkout:
+
 ```bash
 python3 deploy.py deploy githash
 ```
