@@ -4,16 +4,32 @@ set -euo pipefail
 set -x
 
 usage() {
-  echo "Usage: update.sh [<image-tag>|auto] [deploy|deploy-cromper|deploy-all|migrate]" >&2
+  echo "Usage: update.sh [deploy|deploy-cromper|deploy-all|migrate] [<image-tag>|auto]" >&2
+  echo "       update.sh [<image-tag>|auto] [deploy|deploy-cromper|deploy-all|migrate]" >&2
   exit 2
 }
 
-TAG="${1:-auto}"
-COMMAND="${2:-deploy}"
+[ "$#" -le 2 ] || usage
+
+case "${1:-}" in
+  deploy|deploy-cromper|deploy-all|migrate)
+    COMMAND="$1"
+    TAG="${2:-auto}"
+    ;;
+  *)
+    TAG="${1:-auto}"
+    COMMAND="${2:-deploy}"
+    ;;
+esac
 
 case "${COMMAND}" in
   deploy|deploy-cromper|deploy-all|migrate) ;;
   *) usage ;;
+esac
+
+# Command names are reserved and must never be used as image tags.
+case "${TAG}" in
+  deploy|deploy-cromper|deploy-all|migrate) usage ;;
 esac
 
 cd "$(dirname "$0")"

@@ -44,12 +44,15 @@ and libraries, and deploys the backend and frontend by default:
 
 ```bash
 ./update.sh
-./update.sh auto deploy-cromper
-./update.sh auto deploy-all
+./update.sh deploy-cromper
+./update.sh deploy-all
+./update.sh deploy-cromper abcdef123456
 ```
 
 `auto` uses the 12-character commit hash of fetched `origin/main` as the image
 tag and prompts before proceeding. An explicit image tag can replace `auto`.
+Commands can come first with an optional tag; the existing tag-first syntax
+(for example, `./update.sh auto deploy-cromper`) is also supported.
 `deploy-cromper` deploys only Cromper; `deploy-all` deploys Cromper first, then
 the backend and frontend using the same tag. These deployments are sequential:
 if the app deployment fails, Cromper remains updated. Compiler/library updates
