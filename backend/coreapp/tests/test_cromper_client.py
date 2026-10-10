@@ -18,7 +18,7 @@ from coreapp.wrapper_result import AssemblyResult, CompilationResult, DiffResult
 
 class CromperClientCompilerTests(SimpleTestCase):
     def setUp(self) -> None:
-        self.enterContext(patch.object(CromperClient, "_check_metadata_revision"))
+        self.enterContext(patch.object(CromperClient, "_check_version"))
 
     def test_libraries_are_cached_separately_per_platform(self) -> None:
         client = CromperClient("http://cromper")
@@ -377,8 +377,8 @@ class CromperClientCompilerTests(SimpleTestCase):
             client.decompile("n64", "ido7.1", "asm")
 
 
-class CromperMetadataRevisionTests(SimpleTestCase):
-    def test_library_requests_detect_revision_changes_and_refresh(self) -> None:
+class CromperVersionTests(SimpleTestCase):
+    def test_library_requests_detect_version_changes_and_refresh(self) -> None:
         client = CromperClient("http://cromper")
         with (
             patch("coreapp.cromper_client.time.monotonic", return_value=0) as clock,
@@ -386,9 +386,9 @@ class CromperMetadataRevisionTests(SimpleTestCase):
                 client,
                 "_make_request",
                 side_effect=[
-                    {"metadata_revision": "revision-a"},
+                    {"version": "version-a"},
                     {"libraries": [{"name": "old"}]},
-                    {"metadata_revision": "revision-b"},
+                    {"version": "version-b"},
                     {"libraries": [{"name": "new"}]},
                 ],
             ) as request,
@@ -401,7 +401,7 @@ class CromperMetadataRevisionTests(SimpleTestCase):
             self.assertEqual(client.get_libraries("n64"), [{"name": "new"}])
             self.assertEqual(request.call_count, 4)
 
-    def test_metadata_refreshes_only_when_revision_changes(self) -> None:
+    def test_metadata_refreshes_only_when_version_changes(self) -> None:
         client = CromperClient("http://cromper")
         response = CromperClientCompilerTests.make_response
         with (
@@ -410,10 +410,10 @@ class CromperMetadataRevisionTests(SimpleTestCase):
                 client.session,
                 "request",
                 side_effect=[
-                    response({"metadata_revision": "revision-a"}),
+                    response({"version": "version-a"}),
                     response({"compilers": {}}),
-                    response({"metadata_revision": "revision-a"}),
-                    response({"metadata_revision": "revision-b"}),
+                    response({"version": "version-a"}),
+                    response({"version": "version-b"}),
                     response({"compilers": {}}),
                 ],
             ) as request,
@@ -447,7 +447,7 @@ class CromperMetadataRevisionTests(SimpleTestCase):
             self.assertIs(client.get_platforms(), cached)
             self.assertEqual(request.call_count, 1)
 
-    def test_older_cromper_preserves_caches_without_metadata_revision(self) -> None:
+    def test_older_cromper_preserves_caches_without_version(self) -> None:
         client = CromperClient("http://cromper")
         platforms = client._platforms_cache = {"n64": Mock()}
         compilers = client._compilers_cache = {"ido7.1": Mock()}

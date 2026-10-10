@@ -67,7 +67,7 @@ class HealthHandler(BaseHandler):
             {
                 "status": "healthy",
                 "service": "cromper",
-                "metadata_revision": self.settings["metadata_revision"],
+                "version": self.config.version,
             }
         )
 

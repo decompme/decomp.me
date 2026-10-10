@@ -125,34 +125,34 @@ class CromperClient(AbstractCromperClient):
         self._platforms_cache: dict[str, Platform] | None = None
         self._libraries_cache: dict[str, list[dict[str, Any]]] = {}
         self._had_transport_failure = False
-        self._metadata_revision: str | None = None
-        self._next_metadata_check = 0.0
+        self._version: str | None = None
+        self._next_version_check = 0.0
 
     def _invalidate_caches(self) -> None:
         self._compilers_cache = None
         self._platforms_cache = None
         self._libraries_cache.clear()
 
-    def _check_metadata_revision(self) -> None:
-        """Check for changed Cromper metadata at most once a minute."""
+    def _check_version(self) -> None:
+        """Check for a changed Cromper version at most once a minute."""
         now = time.monotonic()
-        if now < self._next_metadata_check:
+        if now < self._next_version_check:
             return
         # Limit retries during outages as well as successful checks.
-        self._next_metadata_check = now + 60
+        self._next_version_check = now + 60
         try:
             response = self._make_request("GET", "/healthz")
         except CromperError:
-            logger.warning("Could not check Cromper metadata", exc_info=True)
+            logger.warning("Could not check Cromper version", exc_info=True)
             return
-        metadata_revision = response.get("metadata_revision")
-        if not isinstance(metadata_revision, str) or not metadata_revision:
-            # Older Cromper deployments do not expose a metadata revision.
+        version = response.get("version")
+        if not isinstance(version, str) or not version:
+            # Older Cromper deployments do not expose a version.
             return
-        if metadata_revision != self._metadata_revision:
-            logger.info("Cromper metadata changed, invalidating metadata caches")
+        if version != self._version:
+            logger.info("Cromper version changed, invalidating metadata caches")
             self._invalidate_caches()
-            self._metadata_revision = metadata_revision
+            self._version = version
 
     def _handle_successful_communication(self) -> None:
         if self._had_transport_failure:
@@ -252,7 +252,7 @@ class CromperClient(AbstractCromperClient):
 
     def get_compilers(self) -> dict[str, Compiler]:
         """Get all compilers from cromper, with caching."""
-        self._check_metadata_revision()
+        self._check_version()
         if self._compilers_cache is None:
             logger.info("Fetching compilers from cromper...")
             response = self._make_request("GET", "/compiler")
@@ -302,7 +302,7 @@ class CromperClient(AbstractCromperClient):
 
     def get_platforms(self) -> dict[str, Platform]:
         """Get all platforms from cromper, with caching."""
-        self._check_metadata_revision()
+        self._check_version()
         if self._platforms_cache is None:
             logger.info("Fetching platforms from cromper...")
             response = self._make_request("GET", "/platform")
@@ -329,7 +329,7 @@ class CromperClient(AbstractCromperClient):
 
     def get_libraries(self, platform: str = "") -> list[dict[str, Any]]:
         """Get available libraries from cromper, cached per platform."""
-        self._check_metadata_revision()
+        self._check_version()
         if platform in self._libraries_cache:
             return self._libraries_cache[platform]
         params = {}

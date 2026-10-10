@@ -3,12 +3,13 @@ Test cromper API endpoints.
 """
 
 import json
+import os
 import unittest
+from unittest.mock import patch
 
 from tornado.testing import AsyncHTTPTestCase
 
 from cromper.main import CromperConfig, make_app
-from cromper.metadata import metadata_revision
 from cromper.platforms import N64
 
 
@@ -17,7 +18,8 @@ class CromperAPITests(AsyncHTTPTestCase):
 
     def get_app(self):
         """Return the Tornado application for testing."""
-        config = CromperConfig()
+        with patch.dict(os.environ, {"GIT_HASH": "0123456789ab"}):
+            config = CromperConfig()
         return make_app(config)
 
     def test_health_endpoint(self):
@@ -28,14 +30,10 @@ class CromperAPITests(AsyncHTTPTestCase):
         data = json.loads(response.body)
         self.assertEqual(data["status"], "healthy")
         self.assertEqual(data["service"], "cromper")
-        self.assertTrue(data["metadata_revision"])
+        self.assertEqual(data["version"], "0123456789ab")
         self.assertEqual(
-            json.loads(self.fetch("/healthz").body)["metadata_revision"],
-            data["metadata_revision"],
-        )
-        self.assertEqual(
-            metadata_revision(CromperConfig()),
-            data["metadata_revision"],
+            json.loads(self.fetch("/healthz").body)["version"],
+            data["version"],
         )
 
     def test_platforms_endpoint(self):

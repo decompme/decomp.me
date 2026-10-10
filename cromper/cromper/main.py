@@ -22,7 +22,6 @@ from .handlers.handlers import (
     LibrariesHandler,
     PlatformHandler,
 )
-from .metadata import metadata_revision
 
 
 def init_sentry(config: CromperConfig) -> None:
@@ -47,7 +46,6 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
 
     process_executor = ProcessPoolExecutor(max_workers=config.num_processes)
     thread_executor = ThreadPoolExecutor(max_workers=config.num_threads)
-    revision = metadata_revision(config)
 
     return tornado.web.Application(
         [
@@ -86,7 +84,6 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
             ),
         ],
         debug=config.debug,
-        metadata_revision=revision,
     )
 
 
