@@ -16,7 +16,6 @@ DOCKER_COMPOSE = ["docker", "compose", "-f", "docker-compose.prod.yaml"]
 
 SLOTS = {"blue", "green"}
 CROMPER_SLOTS = {"orange", "purple"}
-INFRA_SERVICES = ["postgres", "cromper-proxy", "certbot"]
 BLUE_TAG = "BLUE_TAG"
 GREEN_TAG = "GREEN_TAG"
 NGINX_TAG = "NGINX_TAG"
@@ -111,7 +110,7 @@ def colour_slot(slot):
 
 
 def validate_tag(tag):
-    if not isinstance(tag, str) or not re.fullmatch(r"[A-Za-z0-9._-]{6,128}", tag):
+    if not re.fullmatch(r"[A-Za-z0-9._-]{6,128}", tag):
         raise SystemExit(f"Invalid image tag: {tag}")
 
 
@@ -312,7 +311,7 @@ def ensure_infra(env):
     write_cromper_upstream(cromper_slot)
     ensure_services(["postgres", f"cromper-{cromper_slot}"], env)
     wait_for_healthy(f"cromper-{cromper_slot}", env)
-    ensure_services(INFRA_SERVICES, env)
+    ensure_services(["cromper-proxy", "certbot"], env)
     wait_for_healthy("cromper-proxy", env)
 
 
@@ -445,8 +444,6 @@ def cmd_deploy_cromper(args):
 
     print(f"Deploying cromper tag {args.tag} to {slot}")
 
-    ensure_infra(env)
-
     if args.pull:
         run([*DOCKER_COMPOSE, "pull", f"cromper-{slot}"], env=env)
     else:
@@ -455,6 +452,7 @@ def cmd_deploy_cromper(args):
     run([*DOCKER_COMPOSE, "up", "-d", f"cromper-{slot}"], env=env)
     wait_for_healthy(f"cromper-{slot}", env)
     nginx_fetch(f"http://cromper-{slot}:8888/healthz", env)
+    ensure_services(["cromper-proxy"], env)
     switch_cromper_upstream(slot, env)
 
     state[CROMPER_ACTIVE_SLOT] = slot
@@ -473,10 +471,6 @@ def cmd_ensure(args):
         raise SystemExit("Cannot ensure services: ACTIVE_SLOT is missing or invalid")
 
     env = compose_env(state)
-    cromper_active = env.get(CROMPER_ACTIVE_SLOT, "orange")
-    if cromper_active not in CROMPER_SLOTS:
-        raise SystemExit("Cannot ensure services: CROMPER_ACTIVE_SLOT is invalid")
-
     print(f"Ensuring shared services and active {active} slot are running.")
     ensure_infra(env)
     ensure_services([f"backend-{active}", f"frontend-{active}"], env)
@@ -533,8 +527,8 @@ def cmd_rollback_cromper(args):
     print("No images will be pulled; rollback uses the already-running previous slot.")
     print()
 
-    ensure_infra(env)
     wait_for_healthy(f"cromper-{slot}", env)
+    ensure_services(["cromper-proxy"], env)
     switch_cromper_upstream(slot, env)
 
     state[CROMPER_ACTIVE_SLOT] = slot
