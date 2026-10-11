@@ -44,6 +44,8 @@ x-cromper-base: &cromper-base
     - setuid
     - setgid
     - setfcap
+  devices:
+    - /dev/kvm:/dev/kvm
   env_file:
     - docker.prod.env
     - cromper.prod.env
