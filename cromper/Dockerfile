@@ -170,7 +170,7 @@ COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 COPY --from=binutils /binutils/ /usr/bin/
 COPY --from=binutils /binutils-libs/ /usr/lib/x86_64-linux-gnu/
 COPY --from=ghcr.io/decompals/wibo:1.2.0 /usr/local/bin/wibo /usr/bin/
-COPY --from=ghcr.io/mkst/daze:0.1.0 /usr/bin/daze /usr/bin/
+COPY --from=ghcr.io/mkst/daze:0.2.0 /usr/bin/daze /usr/bin/
 
 USER ubuntu
 WORKDIR /cromper
