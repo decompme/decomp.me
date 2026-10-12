@@ -21,6 +21,8 @@ services:
       - setuid
       - setgid
       - setfcap
+    devices:
+       - /dev/kvm:/dev/kvm
     env_file:
       - cromper/docker.dev.env
     restart: unless-stopped

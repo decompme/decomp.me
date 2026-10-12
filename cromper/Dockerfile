@@ -140,15 +140,11 @@ RUN ARCHIVE=android-ndk-r8e-linux-x86_64.tar.bz2; \
 
 FROM python314 AS dependencies
 
-RUN add-apt-repository -y ppa:dosemu2/ppa \
-    && add-apt-repository -y ppa:stsp-0/dj64 \
-    && apt-get update \
-    && apt-get install -y -o APT::Immediate-Configure=false --no-install-recommends \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
     cpp \
     curl \
-    dj64 \
     dos2unix \
-    dosemu2 \
     g++ \
     iptables \
     libc6-dev-i386 \
@@ -167,13 +163,14 @@ RUN ARCHIVE=libtinfo5_6.3-2ubuntu0.3_amd64.deb; \
     && apt install "./$ARCHIVE" \
     && rm "$ARCHIVE"
 
-RUN mkdir -p /etc/fonts /sandbox \
+RUN mkdir -p /sandbox \
     && chown -R ubuntu:ubuntu /sandbox
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 COPY --from=binutils /binutils/ /usr/bin/
 COPY --from=binutils /binutils-libs/ /usr/lib/x86_64-linux-gnu/
 COPY --from=ghcr.io/decompals/wibo:1.2.0 /usr/local/bin/wibo /usr/bin/
+COPY --from=ghcr.io/mkst/daze:0.2.0 /usr/bin/daze /usr/bin/
 
 USER ubuntu
 WORKDIR /cromper
@@ -187,6 +184,10 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd -g 108 -o -r kvm108 # ubuntu24
+RUN groupadd -g 991 -o -r kvm991 # ubuntu26
+RUN usermod -aG kvm108,kvm991 ubuntu
 
 USER ubuntu
 
