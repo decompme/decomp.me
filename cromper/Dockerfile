@@ -78,7 +78,8 @@ RUN cp /lib/x86_64-linux-gnu/libbfd*.so* /binutils-libs/ \
     && cp /lib/x86_64-linux-gnu/libctf*.so* /binutils-libs/ \
     && cp /lib/x86_64-linux-gnu/libdebuginfod*.so* /binutils-libs/ \
     && cp /lib/x86_64-linux-gnu/libopcodes*.so* /binutils-libs/ \
-    && cp /lib/x86_64-linux-gnu/libsframe*.so* /binutils-libs/
+    && cp /lib/x86_64-linux-gnu/libsframe*.so* /binutils-libs/ \
+    && cp /lib/x86_64-linux-gnu/libjson-c.so* /binutils-libs/
 
 WORKDIR /binutils
 
