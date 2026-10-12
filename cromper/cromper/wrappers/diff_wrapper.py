@@ -265,6 +265,30 @@ class DiffWrapper:
 
         return basedump
 
+    def get_dump_for_diff(
+        self,
+        elf_object: bytes,
+        platform: Platform,
+        diff_label: str,
+        diff_flags: list[str],
+    ) -> str:
+        try:
+            arch = asm_differ.get_arch(platform.arch or "")
+        except ValueError:
+            logger.error(
+                "Unsupported arch: %s. Continuing assuming mips", platform.arch
+            )
+            arch = asm_differ.get_arch("mips")
+
+        config = DiffWrapper.create_config(arch, diff_flags)
+        return self.get_dump(
+            elf_object,
+            platform,
+            diff_label,
+            config,
+            DiffWrapper.parse_objdump_flags(diff_flags),
+        )
+
     @staticmethod
     def run_diff(
         base_lines: list[str], my_lines: list[str], config: Any
@@ -281,38 +305,49 @@ class DiffWrapper:
         compiled_elf: bytes,
         diff_flags: list[str],
     ) -> DiffResult:
-        try:
-            arch = asm_differ.get_arch(platform.arch or "")
-        except ValueError:
-            logger.error(f"Unsupported arch: {platform.arch}. Continuing assuming mips")
-            arch = asm_differ.get_arch("mips")
-
-        objdump_flags = DiffWrapper.parse_objdump_flags(diff_flags)
-
-        config = DiffWrapper.create_config(arch, diff_flags)
         warnings = []
         try:
-            basedump = self.get_dump(
-                target_elf,
-                platform,
-                diff_label,
-                config,
-                objdump_flags,
+            basedump = self.get_dump_for_diff(
+                target_elf, platform, diff_label, diff_flags
             )
         except Exception as e:
             logger.exception("Error dumping target assembly")
             raise DiffError(f"Error dumping target assembly: {e}")
         if compiled_elf:
             try:
-                mydump = self.get_dump(
-                    compiled_elf, platform, diff_label, config, objdump_flags
+                mydump = self.get_dump_for_diff(
+                    compiled_elf, platform, diff_label, diff_flags
                 )
             except Exception as e:
                 logger.exception("Error dumping compiled assembly")
-                mydump = ""
                 warnings.append(f"Warning: Error dumping compiled assembly: {e}")
+                mydump = ""
         else:
             mydump = ""
+
+        return self.diff_from_dumps(
+            basedump, mydump, platform, diff_flags, compiled_dump_errors=warnings
+        )
+
+    def diff_from_dumps(
+        self,
+        basedump: str,
+        mydump: str,
+        platform: Platform,
+        diff_flags: list[str],
+        compiled_dump_errors: list[str] | None = None,
+    ) -> DiffResult:
+        try:
+            arch = asm_differ.get_arch(platform.arch or "")
+        except ValueError:
+            logger.error(
+                "Unsupported arch: %s. Continuing assuming mips", platform.arch
+            )
+            arch = asm_differ.get_arch("mips")
+
+        objdump_flags = DiffWrapper.parse_objdump_flags(diff_flags)
+        config = DiffWrapper.create_config(arch, diff_flags)
+        warnings = list(compiled_dump_errors or [])
 
         try:
             base_lines = asm_differ.process(basedump, config)

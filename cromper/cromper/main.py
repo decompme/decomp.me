@@ -14,8 +14,10 @@ from sentry_sdk.transport import HttpTransport
 from .config import CromperConfig
 from .handlers.assemble import AssembleHandler
 from .handlers.compile import CompileHandler
+from .handlers.compile_cache import CompilationCache
 from .handlers.decompile import DecompileHandler
 from .handlers.diff import DiffHandler
+from .handlers.diff_cache import TargetDumpCache
 from .handlers.handlers import (
     CompilerHandler,
     HealthHandler,
@@ -46,6 +48,8 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
 
     process_executor = ProcessPoolExecutor(max_workers=config.num_processes)
     thread_executor = ThreadPoolExecutor(max_workers=config.num_threads)
+    compile_cache = CompilationCache()
+    target_dump_cache = TargetDumpCache()
 
     return tornado.web.Application(
         [
@@ -84,6 +88,8 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
             ),
         ],
         debug=config.debug,
+        compile_cache=compile_cache,
+        target_dump_cache=target_dump_cache,
     )
 
 

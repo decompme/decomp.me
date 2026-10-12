@@ -8,6 +8,7 @@ from ..config import CromperConfig
 from ..error import CompilationError
 from ..libraries import Library
 from ..wrappers.compiler_wrapper import CompilerWrapper
+from .compile_cache import CompilationCache, compilation_cache_key
 from .handlers import BaseHandler
 from .metrics import OperationResult, record_operation_metrics
 
@@ -75,12 +76,23 @@ class CompileHandler(BaseHandler):
     async def post(self) -> None:
         started = time.perf_counter()
         data = self.get_json_body()
-        ioloop = tornado.ioloop.IOLoop.current()
-        result = await ioloop.run_in_executor(self.executor, compile, data, self.config)
+        compile_cache: CompilationCache | None = self.settings.get("compile_cache")
+        cache_key = compilation_cache_key(data)
+        result = compile_cache.get(cache_key) if compile_cache is not None else None
+        cache_status = "disabled" if compile_cache is None else "miss"
+        if result is not None:
+            cache_status = "hit"
+        if result is None:
+            ioloop = tornado.ioloop.IOLoop.current()
+            result = await ioloop.run_in_executor(
+                self.executor, compile, data, self.config
+            )
+            if compile_cache is not None:
+                compile_cache.put(cache_key, result)
         self.write(result.response)
         record_operation_metrics(
             "compile",
-            attributes=result.attributes,
+            attributes={**result.attributes, "cache_status": cache_status},
             request_duration_ms=(time.perf_counter() - started) * 1000,
             duration_ms=result.duration_ms,
             sizes=result.sizes,
