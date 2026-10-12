@@ -63,7 +63,6 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/dev/null",
             "--bindmount_ro", "/dev/zero",
             "--bindmount_ro", "/dev/urandom",
-            "--bindmount_ro", "/dev/kvm",
             "--bindmount_ro", "/bin",
             "--bindmount_ro", "/lib",
             "--bindmount_ro", "/lib32",
@@ -81,6 +80,9 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--rlimit_nofile", "soft",
         ]
         # fmt: on
+        if Path("/dev/kvm").exists():
+            wrapper.extend(["--bindmount_ro", "/dev/kvm"])
+
         if self.config.sandbox_disable_proc:
             wrapper.append("--disable_proc")  # needed for running inside Docker
 
