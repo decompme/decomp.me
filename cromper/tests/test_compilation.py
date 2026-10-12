@@ -2,6 +2,7 @@
 Test compilation functionality in cromper.
 """
 
+import os
 import unittest
 
 from cromper import platforms
@@ -13,7 +14,11 @@ from cromper.compilers import (
     WATCOM_105_C,
 )
 from cromper.flags import Language
-from cromper.wrappers.compiler_wrapper import CompilationResult
+from cromper.wrappers.compiler_wrapper import (
+    CompilationResult,
+    CompilerWrapper,
+    InvalidOutputFileError,
+)
 from cromper.wrappers.diff_wrapper import DiffWrapper
 
 from .common import CromperTestCase, compilers, requiresCompiler
@@ -58,6 +63,22 @@ def _make_compiler_test(compiler):
 
 class CompilationTests(CromperTestCase):
     """Test compilation functionality."""
+
+    def test_output_reader_rejects_symlink(self) -> None:
+        target = self.test_dir / "outside"
+        target.write_text("sentinel")
+        output = self.test_dir / "object.o"
+        output.symlink_to(target)
+
+        with self.assertRaises(InvalidOutputFileError):
+            CompilerWrapper._read_output_file(output)
+
+    def test_output_reader_rejects_fifo_without_blocking(self) -> None:
+        output = self.test_dir / "object.o"
+        os.mkfifo(output)
+
+        with self.assertRaises(InvalidOutputFileError):
+            CompilerWrapper._read_output_file(output)
 
     @requiresCompiler(GCC281PM)
     def test_gcc281pm_simple_compilation(self) -> None:
