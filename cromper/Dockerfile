@@ -78,7 +78,8 @@ RUN cp /lib/x86_64-linux-gnu/libbfd*.so* /binutils-libs/ \
     && cp /lib/x86_64-linux-gnu/libctf*.so* /binutils-libs/ \
     && cp /lib/x86_64-linux-gnu/libdebuginfod*.so* /binutils-libs/ \
     && cp /lib/x86_64-linux-gnu/libopcodes*.so* /binutils-libs/ \
-    && cp /lib/x86_64-linux-gnu/libsframe*.so* /binutils-libs/
+    && cp /lib/x86_64-linux-gnu/libsframe*.so* /binutils-libs/ \
+    && cp /lib/x86_64-linux-gnu/libjson-c.so* /binutils-libs/
 
 WORKDIR /binutils
 
@@ -172,6 +173,10 @@ COPY --from=binutils /binutils-libs/ /usr/lib/x86_64-linux-gnu/
 COPY --from=ghcr.io/decompals/wibo:1.2.0 /usr/local/bin/wibo /usr/bin/
 COPY --from=ghcr.io/mkst/daze:0.2.0 /usr/bin/daze /usr/bin/
 
+RUN groupadd -g 108 -o -r kvm108 # ubuntu24
+RUN groupadd -g 991 -o -r kvm991 # ubuntu26
+RUN usermod -aG kvm108,kvm991 ubuntu
+
 USER ubuntu
 WORKDIR /cromper
 
@@ -184,10 +189,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
-
-RUN groupadd -g 108 -o -r kvm108 # ubuntu24
-RUN groupadd -g 991 -o -r kvm991 # ubuntu26
-RUN usermod -aG kvm108,kvm991 ubuntu
 
 USER ubuntu
 
