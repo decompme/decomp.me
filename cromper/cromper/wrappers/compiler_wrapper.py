@@ -1,8 +1,11 @@
 import logging
+import os
 import re
+import stat
 import subprocess
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 from ..compilers import Compiler, CompilerType
 from ..config import CromperConfig
@@ -13,6 +16,10 @@ from ..platforms import Platform
 from ..sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
+
+
+class InvalidOutputFileError(Exception):
+    """Raised when a tool creates a non-regular output file."""
 
 
 @dataclass
@@ -41,6 +48,23 @@ class AssemblyResult:
 class CompilerWrapper:
     def __init__(self, config: CromperConfig):
         self.config = config
+
+    @staticmethod
+    def _read_output_file(path: Path) -> bytes:
+        try:
+            fd = os.open(
+                path,
+                os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC,
+            )
+        except FileNotFoundError:
+            raise
+        except OSError as e:
+            raise InvalidOutputFileError from e
+
+        with os.fdopen(fd, "rb") as output_file:
+            if not stat.S_ISREG(os.fstat(output_file.fileno()).st_mode):
+                raise InvalidOutputFileError
+            return output_file.read()
 
     @staticmethod
     def filter_compile_errors(input: str) -> str:
@@ -158,14 +182,16 @@ class CompilerWrapper:
             except subprocess.TimeoutExpired:
                 raise CompilationError("Compilation failed: timeout expired")
 
-            if not object_path.exists():
+            try:
+                object_bytes = self._read_output_file(object_path)
+            except FileNotFoundError as e:
                 error_msg = (
                     f"Compiler did not create an object file: {compile_proc.stdout}"
                 )
                 logger.debug(error_msg)
-                raise CompilationError(error_msg)
-
-            object_bytes = object_path.read_bytes()
+                raise CompilationError(error_msg) from e
+            except InvalidOutputFileError as e:
+                raise CompilationError("Compiler output is not a regular file") from e
 
             if not object_bytes:
                 raise CompilationError("Compiler created an empty object file")
@@ -217,11 +243,15 @@ class CompilerWrapper:
                     f"Assembler failed with error code {assemble_proc.returncode}"
                 )
 
-            if not object_path.exists():
-                raise AssemblyError("Assembler did not create an object file")
+            try:
+                object_bytes = self._read_output_file(object_path)
+            except FileNotFoundError as e:
+                raise AssemblyError("Assembler did not create an object file") from e
+            except InvalidOutputFileError as e:
+                raise AssemblyError("Assembler output is not a regular file") from e
 
             return AssemblyResult(
                 hash=asm.hash,
                 arch=platform.arch,
-                elf_object=object_path.read_bytes(),
+                elf_object=object_bytes,
             )

@@ -62,8 +62,13 @@ jobs:
             mkdir -p "$dir"
             sudo chown -R "$USER_1000:$USER_1000" "$dir"
           done
+          KVM_DEVICE=()
+          if [ -e /dev/kvm ]; then
+            KVM_DEVICE=(--device /dev/kvm:/dev/kvm)
+          fi
           docker run --rm \
             -v $(pwd)/cromper:/cromper \
+            "${KVM_DEVICE[@]}" \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --cap-drop all \
