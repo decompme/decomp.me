@@ -105,7 +105,11 @@ class DiffWrapper:
             show_source=False,
             stop_at_ret=False,
             ignore_large_imms=False,
-            ignore_addr_diffs=True,
+            # asm-differ only implements this for AArch64 and ARM32: for AArch64
+            # it hides the branch target diffs expected when diffing linked
+            # files against unlinked ones, while for ARM32 it hides `bl`
+            # symbol name diffs. Every other arch is a no-op. See #2099.
+            ignore_addr_diffs=arch.name == "aarch64",
             algorithm=algorithm,
             reg_categories={},
             show_rodata_refs=show_rodata_refs,
