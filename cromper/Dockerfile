@@ -173,9 +173,10 @@ COPY --from=binutils /binutils-libs/ /usr/lib/x86_64-linux-gnu/
 COPY --from=ghcr.io/decompals/wibo:1.2.0 /usr/local/bin/wibo /usr/bin/
 COPY --from=ghcr.io/mkst/daze:0.2.0 /usr/bin/daze /usr/bin/
 
-RUN groupadd -g 108 -o -r kvm108 # ubuntu24
+RUN groupadd -g 108 -o -r kvm108 # ubuntu
 RUN groupadd -g 991 -o -r kvm991 # ubuntu26
-RUN usermod -aG kvm108,kvm991 ubuntu
+RUN groupadd -g 991 -o -r kvm994 # ubuntu24
+RUN usermod -aG kvm108,kvm991,kvm994 ubuntu
 
 USER ubuntu
 WORKDIR /cromper
