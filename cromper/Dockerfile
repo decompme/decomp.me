@@ -163,7 +163,7 @@ RUN ARCHIVE=libtinfo5_6.3-2ubuntu0.3_amd64.deb; \
     && apt install "./$ARCHIVE" \
     && rm "$ARCHIVE"
 
-RUN mkdir -p /etc/fonts /sandbox \
+RUN mkdir -p /sandbox \
     && chown -R ubuntu:ubuntu /sandbox
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
