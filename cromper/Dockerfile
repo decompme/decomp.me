@@ -140,15 +140,11 @@ RUN ARCHIVE=android-ndk-r8e-linux-x86_64.tar.bz2; \
 
 FROM python314 AS dependencies
 
-RUN add-apt-repository -y ppa:dosemu2/ppa \
-    && add-apt-repository -y ppa:stsp-0/dj64 \
-    && apt-get update \
-    && apt-get install -y -o APT::Immediate-Configure=false --no-install-recommends \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
     cpp \
     curl \
-    dj64 \
     dos2unix \
-    dosemu2 \
     g++ \
     iptables \
     libc6-dev-i386 \
