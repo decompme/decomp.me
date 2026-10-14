@@ -601,7 +601,7 @@ CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
 CYGNUS_2_7_96Q3_NATIVE = GCCSaturnCompiler(
     id="cygnus-2.7-96Q3-native",
     cc=(
-        '/usr/bin/cpp -E "${INPUT}" | ${COMPILER_DIR}/cc1-native ${COMPILER_FLAGS} | sh-elf-as -o "${OUTPUT}"'
+        '/usr/bin/cpp -E "${INPUT}" | ${COMPILER_DIR}/cc1-native -quiet ${COMPILER_FLAGS} | sh-elf-as -o "${OUTPUT}"'
     ),
 )
 
@@ -995,7 +995,7 @@ GCC272SN0001 = GCCCompiler(
     id="gcc2.7.2sn0001",
     platform=N64,
     cc=CCN64_CPP_C
-    + '| ${WIBO} "${COMPILER_DIR}"/cc1n64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    + '| ${WIBO} "${COMPILER_DIR}"/cc1n64.exe -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q "$OUTPUT".s -o "$OUTPUT".obj '
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n -s',
 )
@@ -1006,7 +1006,7 @@ GCC272SN0001CXX = GCCCompiler(
     platform=N64,
     language=flags.Language.CXX,
     cc=CCN64_CPP_CXX
-    + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q "$OUTPUT".s -o "$OUTPUT".obj '
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n -s',
 )
@@ -1021,7 +1021,7 @@ GCC272SN0006 = GCCCompiler(
     id="gcc2.7.2sn0006",
     platform=N64,
     cc=CCN64_CPP_C
-    + '| ${WIBO} "${COMPILER_DIR}"/cc1n64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    + '| ${WIBO} "${COMPILER_DIR}"/cc1n64.exe -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n -s',
 )
@@ -1032,7 +1032,7 @@ GCC272SN0006CXX = GCCCompiler(
     platform=N64,
     language=flags.Language.CXX,
     cc=CCN64_CPP_CXX
-    + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n -s',
 )
@@ -1047,7 +1047,7 @@ GCC281SN = GCCCompiler(
     id="gcc2.8.1sn",
     platform=N64,
     cc=CCN64_CPP_C
-    + '| ${WIBO} "${COMPILER_DIR}"/cc1n64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    + '| ${WIBO} "${COMPILER_DIR}"/cc1n64.exe -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
 )
@@ -1058,7 +1058,7 @@ GCC281SNCXX = GCCCompiler(
     platform=N64,
     language=flags.Language.CXX,
     cc=CCN64_CPP_CXX
-    + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
 )
@@ -1069,7 +1069,7 @@ GCC281SNEWCXX = GCCCompiler(
     platform=N64,
     language=flags.Language.CXX,
     cc=CCN64_CPP_CXX
-    + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& python3 "${COMPILER_DIR}"/modern-asn64.py mips-linux-gnu-as "$OUTPUT".s -G0 -EB -mtune=vr4300 -march=vr4300 -mabi=32 -O1 --no-construct-floats -o "$OUTPUT"',
 )
 
