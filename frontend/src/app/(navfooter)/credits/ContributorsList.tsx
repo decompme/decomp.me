@@ -12,6 +12,7 @@ import type { User } from "@/lib/api/types";
 interface GitHubContributor {
     login: string;
     contributions: number;
+    type: "User" | "Bot";
 }
 
 export type Contributor = User | GithubUser;
@@ -31,8 +32,10 @@ export async function getContributorUsernames(): Promise<string[]> {
     }
 
     const contributors = (await req.json()) as GitHubContributor[];
-    contributors.sort((a, b) => b.contributions - a.contributions);
-    return contributors.map((contributor) => contributor.login);
+    return contributors
+        .sort((a, b) => b.contributions - a.contributions)
+        .filter((x) => x.type !== "Bot")
+        .map((contributor) => contributor.login);
 }
 
 export async function usernameToContributor(

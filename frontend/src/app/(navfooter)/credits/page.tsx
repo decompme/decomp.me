@@ -15,6 +15,8 @@ const OTHER_PROJECTS = {
     "psyq-obj-parser":
         "https://github.com/grumpycoders/pcsx-redux/tree/main/tools/psyq-obj-parser",
     objdiff: "https://github.com/encounter/objdiff-web",
+    wibo: "https://github.com/decompals/wibo",
+    daze: "https://github.com/mkst/daze",
     Django: "https://www.djangoproject.com/",
     "Django REST Framework": "https://www.django-rest-framework.org/",
     "Next.js": "https://nextjs.org/",
