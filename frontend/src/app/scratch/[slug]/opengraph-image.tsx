@@ -1,3 +1,4 @@
+import { FeedMergedIcon } from "@primer/octicons-react";
 import { ImageResponse } from "next/og";
 
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon";
@@ -5,8 +6,10 @@ import {
     calculateScorePercent,
     percentToString,
 } from "@/components/ScoreBadge";
+import { getScratchStatusColor } from "@/lib/api/family";
 import { get } from "@/lib/api/request";
-import type { Preset } from "@/lib/api/types";
+import type { Preset, TerseScratch } from "@/lib/api/types";
+import { scratchUrl } from "@/lib/api/urls";
 
 import CheckCircleFillIcon from "./assets/check-circle-fill.svg";
 import PurpleFrog from "./assets/purplefrog.svg";
@@ -61,6 +64,13 @@ export default async function ScratchOG({
     const doneWidth = Math.floor((percent * IMAGE_WIDTH_PX) / 100);
     const todoWidth = IMAGE_WIDTH_PX - doneWidth;
 
+    const statusColor = getScratchStatusColor(
+        scratch,
+        await get(`${scratchUrl(scratch)}/family`).catch(
+            () => [] as TerseScratch[],
+        ),
+    );
+
     return new ImageResponse(
         <div
             tw="flex flex-col justify-between w-full h-full bg-zinc-800 text-slate-50 text-5xl"
@@ -92,6 +102,12 @@ export default async function ScratchOG({
 
             <div tw="flex justify-between mt-5 ml-15 mr-15">
                 <div tw="flex">
+                    {statusColor && (
+                        <div tw="flex items-center justify-center self-center mr-5 w-14 h-14 rounded-full bg-slate-200">
+                            <FeedMergedIcon size={56} fill={statusColor} />
+                        </div>
+                    )}
+
                     {score === -1 ? (
                         <div tw="flex">
                             <div tw="flex flex-col justify-around">
@@ -141,7 +157,7 @@ export default async function ScratchOG({
                     )}
                 </div>
 
-                <div tw="flex flex-col justify-around ml-15">
+                <div tw="flex items-center">
                     <PurpleFrog width={64} height={64} />
                 </div>
             </div>

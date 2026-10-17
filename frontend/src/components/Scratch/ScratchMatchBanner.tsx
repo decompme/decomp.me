@@ -2,6 +2,7 @@ import useSWR from "swr";
 import Link from "@/components/Link";
 
 import * as api from "@/lib/api";
+import { findFamilyMatch, isMatchedScratch } from "@/lib/api/family";
 import { scratchUrl } from "@/lib/api/urls";
 
 import DismissableBanner from "../DismissableBanner";
@@ -21,22 +22,13 @@ export default function ScratchMatchBanner({
         },
     );
 
-    const match = data
-        ?.filter(
-            (s) =>
-                s.slug !== scratch.slug &&
-                s.score < scratch.score &&
-                s.score > -1,
-        )
-        .reduce((lowest, current) => {
-            return !lowest || current.score < lowest.score ? current : lowest;
-        }, null);
+    const match = findFamilyMatch(scratch, data);
 
     if (error) throw error;
 
     if (scratch.score === 0 || !match) return null;
 
-    const isMatch = match.score === 0 || match.match_override;
+    const isMatch = isMatchedScratch(match);
     const subject = userIsYou(match.owner)
         ? "You have"
         : `${match.owner?.username ?? "A user"} has`;
