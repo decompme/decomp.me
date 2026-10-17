@@ -55,7 +55,7 @@ export default function SiteStats() {
                 className="inline-flex min-h-4 items-start gap-8 text-xs md:gap-16"
                 aria-hidden="true"
             >
-                {["w-32", "w-28", "w-36"].map((width) => (
+                {STAT_DEFINITIONS.map(({ width }) => (
                     <span
                         key={width}
                         className="inline-flex flex-col items-center gap-1.5"
