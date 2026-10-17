@@ -4,6 +4,7 @@ import {
     platformIcon,
 } from "@/components/PlatformSelect/PlatformIcon";
 import { getPublic } from "@/lib/api/request";
+import { STAT_DEFINITIONS } from "@/lib/stats";
 
 const IMAGE_WIDTH_PX = 1200;
 
@@ -66,14 +67,22 @@ export default async function HomeOG() {
             </span>
             <div tw="w-full h-1/8" />
             <div
-                tw={`flex justify-between w-full text-[${textSize.stats}rem]`}
+                tw="flex justify-center"
                 style={{ fontFamily: "OpenSans-SemiBold" }}
             >
-                <a tw="ml-10">
-                    {stats.scratch_count.toLocaleString()} scratches
-                </a>
-                <a>{stats.github_user_count.toLocaleString()} users</a>
-                <a tw="mr-10">{stats.asm_count.toLocaleString()} asm globs</a>
+                {STAT_DEFINITIONS.map(({ key, label, Icon }) => (
+                    <div key={key} tw="flex flex-col items-center mx-10">
+                        <div
+                            tw={`flex items-center text-[${textSize.stats}rem]`}
+                        >
+                            <Icon size={32} />
+                            <span tw="ml-2">{stats[key].toLocaleString()}</span>
+                        </div>
+                        <span tw={`flex mt-2 text-[${textSize.stats}rem]`}>
+                            {label}
+                        </span>
+                    </div>
+                ))}
             </div>
         </div>,
         {
