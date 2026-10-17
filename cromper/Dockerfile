@@ -105,8 +105,8 @@ RUN ARCHIVE=linux-x86_64.zip; \
 
 # Xbox 360 (Xenon) PowerPC binutils
 RUN ARCHIVE=linux-x86_64.zip; \
-    URL=https://github.com/encounter/xbox360-binutils/releases/download/2.45.1-1/$ARCHIVE; \
-    SHA256=33e01b228787ed507ebd08755370d5dac2053c2a37b0647a48c6c19cc528218c; \
+    URL=https://github.com/mkst/xbox360-binutils/releases/download/2.45.1-2/$ARCHIVE; \
+    SHA256=a42eb59b4e10702eaf23b5f469c93cfad39b7c1e68a7ae4bee0f298c42460565; \
     wget -O "$ARCHIVE" "$URL" \
     && echo "$SHA256  $ARCHIVE" | sha256sum -c - \
     && bsdtar -xvf "$ARCHIVE" powerpc-xenon-pe-as powerpc-xenon-pe-nm powerpc-xenon-pe-objdump \
