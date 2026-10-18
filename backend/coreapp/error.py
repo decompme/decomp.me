@@ -20,6 +20,7 @@ class ServiceError(Exception):
     status_code: int = HTTP_500_INTERNAL_SERVER_ERROR
     code: str | None = None
     public_message: str | None = None
+    retry_after: int | None = None
 
     def __init__(self, message: str):
         self.msg = message
@@ -47,6 +48,9 @@ def custom_exception_handler(exc: Exception, context: Any) -> Response | None:
         if exc.code is not None:
             data["code"] = exc.code
         response = Response(data=data, status=exc.status_code)
+        if exc.retry_after is not None:
+            response["Retry-After"] = str(exc.retry_after)
+            response["Cache-Control"] = "no-store"
     elif isinstance(exc, (AssertionError, IntegrityError)):
         response = Response(
             data={
