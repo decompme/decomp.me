@@ -38,6 +38,7 @@ env = environ.Env(
     CONN_MAX_AGE=(int, 0),  # default: a new connection for each request
     CONN_HEALTH_CHECKS=(bool, False),
     CROMPER_URL=(str, "http://cromper:8888"),
+    CROMPER_REQUEST_LIMIT=(int, 15),
 )
 
 for stem in [".env.local", ".env"]:
@@ -52,11 +53,14 @@ DJANGO_LOG_LEVEL = env("DJANGO_LOG_LEVEL")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 LOCAL_FILE_DIR = env("LOCAL_FILE_DIR")
 CROMPER_URL = env("CROMPER_URL")
+# Per ASGI worker; budget across all workers and any overlapping deploy slots.
+CROMPER_REQUEST_LIMIT = env("CROMPER_REQUEST_LIMIT")
 
 # Application definition
 
 INSTALLED_APPS = [
     "rest_framework",
+    "adrf",
     "corsheaders",
     "coreapp.apps.CoreappConfig",
     "django.contrib.admin",
@@ -74,8 +78,9 @@ MIDDLEWARE = [
     "coreapp.middleware.strip_session",
     "coreapp.middleware.strip_cookie_vary",
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "coreapp.admission.limit_cromper_requests",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     #'django.middleware.csrf.CsrfViewMiddleware',
     "coreapp.middleware.disable_csrf",
@@ -110,6 +115,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "decompme.wsgi.application"
+ASGI_APPLICATION = "decompme.asgi.application"
 
 DATABASES = {
     "default": {
@@ -184,6 +190,8 @@ LOGGING = {
         "level": "DEBUG",
     },
     "loggers": {
+        "httpcore": {"level": "WARNING"},
+        "httpx": {"level": "WARNING"},
         "django": {
             "handlers": ["console"],
             "level": DJANGO_LOG_LEVEL,
