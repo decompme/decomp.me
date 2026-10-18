@@ -66,10 +66,7 @@ class AssembleHandler(BaseHandler):
     async def post(self) -> None:
         started = time.perf_counter()
         data = self.get_json_body()
-        ioloop = tornado.ioloop.IOLoop.current()
-        result = await ioloop.run_in_executor(
-            self.executor, assemble_asm, data, self.config
-        )
+        result = await self.run_tool(assemble_asm, data)
         self.write(result.response)
         record_operation_metrics(
             "assemble",
