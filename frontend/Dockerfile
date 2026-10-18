@@ -14,7 +14,6 @@ WORKDIR /frontend
 
 RUN yarn install --frozen-lockfile
 
-COPY next-env.d.ts /frontend/
 COPY next.config.js /frontend/
 COPY postcss.config.js /frontend/
 COPY tailwind.config.js /frontend/
