@@ -3,14 +3,32 @@ from datetime import datetime
 from django import forms
 from django.contrib import admin
 from django.db import models
+from django.db.models import Count, IntegerField, OuterRef, Subquery, Value
+from django.db.models.functions import Coalesce
 from django.utils.timezone import now
 from rest_framework.request import Request
 
-from coreapp.models.scratch import LibrariesField
+from coreapp.models.scratch import LibrariesField, Scratch
 
 from .profile import Profile
 
 boot_time = now()
+
+
+def num_scratches_annotation() -> Coalesce:
+    # Correlated subquery so we only count scratches for the presets in the result,
+    # instead of joining and aggregating every scratch in the database.
+    scratch_count = (
+        Scratch.objects.filter(preset=OuterRef("pk"))
+        .order_by()
+        .values("preset")
+        .annotate(count=Count("*"))
+        .values("count")
+    )
+    return Coalesce(
+        Subquery(scratch_count, output_field=IntegerField()),
+        Value(0),
+    )
 
 
 class Preset(models.Model):

@@ -3,7 +3,6 @@ from typing import Any
 
 import django_filters
 from django import forms
-from django.db.models import Count
 from django.utils.decorators import method_decorator
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
@@ -14,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import ModelViewSet
 
-from coreapp.models.preset import Preset
+from coreapp.models.preset import Preset, num_scratches_annotation
 from coreapp.models.profile import Profile
 from coreapp.pagination import SafeCursorPagination
 from coreapp.serializers import PresetSerializer, TinyPresetSerializer
@@ -73,7 +72,7 @@ class PresetViewSet(ModelViewSet):  # type: ignore
     queryset = (
         Preset.objects.select_related("owner__user", "owner__user__github")
         .all()
-        .annotate(num_scratches=Count("scratch"))
+        .annotate(num_scratches=num_scratches_annotation())
     )
     pagination_class = PresetPagination
     filterset_class = PresetFilterSet

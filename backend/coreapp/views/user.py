@@ -14,7 +14,7 @@ from ..decorators.cache import globally_cacheable
 from ..filters.search import NonEmptySearchFilter
 from ..middleware import Request
 from ..models.github import GitHubUser
-from ..models.preset import Preset
+from ..models.preset import Preset, num_scratches_annotation
 from ..models.profile import Profile
 from ..models.scratch import Scratch
 from ..serializers import PresetSerializer, TerseScratchSerializer, serialize_profile
@@ -121,7 +121,7 @@ class UserPresetList(generics.ListAPIView):  # type: ignore
         return (
             Preset.objects.filter(owner__user__username=self.kwargs["username"])
             .select_related("owner__user", "owner__user__github")
-            .annotate(num_scratches=Count("scratch"))
+            .annotate(num_scratches=num_scratches_annotation())
         )
 
 
