@@ -185,6 +185,29 @@ class PresetTests(BaseTestCase):
         assert owner.get("id") == preset.owner_id
         assert owner.get("username") == self.user.username
 
+    def test_list_presets_num_scratches(self) -> None:
+        self.create_admin()
+        preset_with_scratch = self.create_preset(SAMPLE_PRESET_DICT)
+        preset_without_scratch = self.create_preset(
+            {**SAMPLE_PRESET_DICT, "name": "No scratches"}
+        )
+        self.create_scratch(
+            {
+                "preset": str(preset_with_scratch.id),
+                "context": "",
+                "target_asm": "jr $ra\nnop\n",
+            }
+        )
+
+        response = self.client.get(f"{reverse('preset-list')}?ordering=-num_scratches")
+        assert response.status_code == status.HTTP_200_OK
+
+        results = response.data["results"]
+        counts = {result["name"]: result["num_scratches"] for result in results}
+        assert counts[preset_with_scratch.name] == 1
+        assert counts[preset_without_scratch.name] == 0
+        assert results[0]["id"] == preset_with_scratch.id
+
     def test_create_preset_with_invalid_compiler(self) -> None:
         self.create_admin()
         try:

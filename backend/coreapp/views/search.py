@@ -1,4 +1,4 @@
-from django.db.models import Case, Count, IntegerField, When
+from django.db.models import Case, IntegerField, When
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from ..decorators.cache import globally_cacheable
 from ..filters.search import validate_search_query
 from ..middleware import Request
-from ..models.preset import Preset
+from ..models.preset import Preset, num_scratches_annotation
 from ..models.profile import Profile
 from ..models.scratch import Scratch
 from ..serializers import PresetSerializer, TerseScratchSerializer, serialize_profile
@@ -36,7 +36,7 @@ class SearchViewSet(APIView):
         preset_qs = (
             Preset.objects.filter(name__icontains=query)
             .select_related("owner__user", "owner__user__github")
-            .annotate(num_scratches=Count("scratch"))[:page_size]
+            .annotate(num_scratches=num_scratches_annotation())[:page_size]
         )
         # Returns up to 3x page_size, but we should prioritize scratches
         scratch_page_size = page_size * 3 - user_qs.count() - preset_qs.count()
