@@ -249,10 +249,26 @@ class CromperAPITests(AsyncHTTPTestCase):
 
     def test_options_request(self):
         """Test that OPTIONS requests are handled correctly."""
-        response = self.fetch("/compile", method="OPTIONS")
-        self.assertEqual(response.code, 204)
-        self.assertEqual(response.headers.get("Access-Control-Allow-Origin"), "*")
-        self.assertIn("POST", response.headers.get("Access-Control-Allow-Methods", ""))
+        paths = (
+            "/compile",
+            "/platform",
+            "/platform/n64",
+            "/compiler/n64/ido",
+            "/library",
+            "/assemble",
+            "/diff",
+            "/decompile",
+        )
+        for path in paths:
+            with self.subTest(path=path):
+                response = self.fetch(path, method="OPTIONS")
+                self.assertEqual(response.code, 204)
+                self.assertEqual(
+                    response.headers.get("Access-Control-Allow-Origin"), "*"
+                )
+                self.assertIn(
+                    "POST", response.headers.get("Access-Control-Allow-Methods", "")
+                )
 
     def test_invalid_json(self):
         """Test endpoint with invalid JSON."""
