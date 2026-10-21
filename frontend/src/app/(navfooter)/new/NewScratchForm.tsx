@@ -35,6 +35,7 @@ import {
     emptyDraft,
     filterDuplicateScratches,
     formatCreateScratchError,
+    getDuplicateSearchQuery,
     getLabels,
     type NewScratchDraft,
     readStoredDraft,
@@ -42,8 +43,6 @@ import {
     storedDraftFields,
     writeStoredDraft,
 } from "./NewScratchForm.state";
-
-const SEARCH_MAX_LENGTH = 64;
 
 interface FormLabelProps {
     children: React.ReactNode;
@@ -80,13 +79,13 @@ function useDuplicateScratches(
     const [duplicates, setDuplicates] = useState<TerseScratch[]>([]);
 
     useEffect(() => {
-        if (!debouncedLabel) {
+        const query = getDuplicateSearchQuery(debouncedLabel);
+        if (query === null) {
             setDuplicates([]);
             return;
         }
 
         let isCurrent = true;
-        const query = debouncedLabel.slice(0, SEARCH_MAX_LENGTH);
         const search = encodeURIComponent(query);
 
         get(`/scratch?search=${search}`)

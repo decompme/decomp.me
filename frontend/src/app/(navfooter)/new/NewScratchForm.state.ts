@@ -30,6 +30,17 @@ export const emptyDraft: NewScratchDraft = {
     presetId: undefined,
 };
 
+const MIN_DUPLICATE_SEARCH_LENGTH = 3;
+const MAX_DUPLICATE_SEARCH_LENGTH = 64;
+
+export function getDuplicateSearchQuery(label: string): string | null {
+    if (label.length < MIN_DUPLICATE_SEARCH_LENGTH) {
+        return null;
+    }
+
+    return label.slice(0, MAX_DUPLICATE_SEARCH_LENGTH);
+}
+
 const jumpTableLabelRegex = /(^L[0-9a-fA-F]{8}$)|(^jtbl_)/;
 
 export function getLabels(asm: string): string[] {

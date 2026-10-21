@@ -10,6 +10,7 @@ import {
     emptyDraft,
     filterDuplicateScratches,
     formatCreateScratchError,
+    getDuplicateSearchQuery,
     getLabels,
     type NewScratchDraft,
     readStoredDraft,
@@ -172,6 +173,12 @@ describe("draft transitions", () => {
 });
 
 describe("duplicate filtering", () => {
+    it("waits for a meaningful query before searching for duplicate scratches", () => {
+        expect(getDuplicateSearchQuery("f")).toBeNull();
+        expect(getDuplicateSearchQuery("fu")).toBeNull();
+        expect(getDuplicateSearchQuery("fun")).toBe("fun");
+    });
+
     it("matches whole names and filters by preset when selected", () => {
         const scratches = [
             scratch({ name: "func", preset: 1, platform: "n64" }),
