@@ -134,14 +134,14 @@ class MockCromperClient(AbstractCromperClient):
         except KeyError:
             raise ValueError(f"Unknown platform: {platform_id}")
 
-    def assemble_asm(self, platform_id: str, asm: Any) -> AssemblyResult:
+    async def assemble_asm(self, platform_id: str, asm: Any) -> AssemblyResult:
         """Return mock assembly result."""
         # Create a simple mock ELF object
         if asm.data.strip() == "":
             return AssemblyResult("empty_asm_hash", "mips", b"")
         return AssemblyResult("mock_hash_123", "mips", asm.data.encode())
 
-    def decompile(
+    async def decompile(
         self,
         platform_id: str,
         compiler_id: str,
@@ -152,7 +152,7 @@ class MockCromperClient(AbstractCromperClient):
         """Return mock decompiled code."""
         return "int func(void) {\n    return 0;\n}\n"
 
-    def compile_code(
+    async def compile_code(
         self,
         compiler_id: str,
         compiler_flags: str,
@@ -166,7 +166,7 @@ class MockCromperClient(AbstractCromperClient):
             libraries = []
         return CompilationResult(code.encode(), "")
 
-    def diff(
+    async def diff(
         self,
         platform_id: str,
         target_elf: bytes,

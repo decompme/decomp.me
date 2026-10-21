@@ -2,8 +2,6 @@
 Common utilities and fixtures for integration tests.
 """
 
-# ruff: noqa: E402
-
 import os
 from typing import Any
 

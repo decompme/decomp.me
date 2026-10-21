@@ -8,6 +8,7 @@ authors = [
 license = {text = "MIT"}
 requires-python = ">=3.12"
 dependencies = [
+    "adrf>=0.1.14",
     "asm-differ @ git+https://github.com/simonlindholm/asm-differ.git",
     "m2c @ git+https://github.com/matt-kempster/m2c.git",
     "drf-extensions @ git+https://github.com/chibisov/drf-extensions.git",
@@ -22,6 +23,7 @@ dependencies = [
     "djangorestframework>=3.18.1",
     "gunicorn>=26.2.0",
     "html-json-forms>=1.1.1",
+    "httpx>=0.28.1",
     "itsdangerous==2.2.0",
     "parameterized>=0.9.0",
     "Pillow==12.3.0",
@@ -31,6 +33,8 @@ dependencies = [
     "requests>=2.34.2",
     "responses==0.26.3",
     "sentry-sdk>=2.69.1",
+    "uvicorn>=0.36.0",
+    "uvicorn-worker>=0.4.0",
 ]
 
 [dependency-groups]
