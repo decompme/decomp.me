@@ -143,7 +143,10 @@ def get_compiler_raw(
     getter = requests if session is None else session
     resp = getter.get(image_url, headers=headers, timeout=10)
     if resp.status_code != 200:
-        return None
+        logger.error(
+            "Unable to get image index for %s: HTTP %s", docker_image, resp.status_code
+        )
+        return False
     data = resp.json()
 
     # Grab the first image manifest, and download it.
@@ -162,7 +165,12 @@ def get_compiler_raw(
     )
     resp = getter.get(url, headers=headers, timeout=10)
     if resp.status_code != 200:
-        return None
+        logger.error(
+            "Unable to get image manifest for %s: HTTP %s",
+            docker_image,
+            resp.status_code,
+        )
+        return False
     data = resp.json()
 
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -254,7 +262,8 @@ class DownloadThread(threading.Thread):
             try:
                 self.process_item(item)
             except Exception as e:
-                logger.error("Exception thrown while processing item: %s", e)
+                logger.error("Exception thrown while processing %s: %s", item, e)
+                self.results_queue.put((item, False))
             finally:
                 self.download_queue.task_done()
 
@@ -271,7 +280,7 @@ class DownloadThread(threading.Thread):
             session=self.session,
         )
 
-        self.results_queue.put(result)
+        self.results_queue.put((item, result))
 
 
 def main():
@@ -393,13 +402,26 @@ def main():
 
     end = datetime.datetime.now()
 
-    compilers_downloaded = len(list(filter(lambda x: x, results)))
+    # get_compiler_raw returns True on download, None when there was nothing
+    # to do and False on failure (exceptions are recorded as False too)
+    compilers_downloaded = sum(1 for _, result in results if result is True)
+    failed = sorted(
+        f"{platform_id}/{compiler_id}"
+        for (platform_id, compiler_id), result in results
+        if result is False
+    )
     logger.info(
         "Updated %i / %i compiler(s) in %.2f second(s)",
         compilers_downloaded,
         len(results),
         (end - start).total_seconds(),
     )
+    if failed:
+        logger.error(
+            "%i compiler(s) failed to download: %s", len(failed), ", ".join(failed)
+        )
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
@@ -409,4 +431,4 @@ if __name__ == "__main__":
         format=("%(asctime)s.%(msecs)03d %(levelname)s %(funcName)s %(message)s"),
         datefmt="%Y-%m-%d %H:%M:%S",
     )
-    main()
+    sys.exit(main())
