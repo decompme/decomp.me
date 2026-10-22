@@ -1612,6 +1612,12 @@ MSVC80P = MSVCCompiler(
     cc=CL_WIN,
 )
 
+MSVC80SP1 = MSVCCompiler(
+    id="msvc8.0sp1",
+    platform=WIN32,
+    cc=CL_WIN,
+)
+
 # icc rejects CL's /Bk flag, so it needs its own command
 ICL_WIN = '${WIBO} "${COMPILER_DIR}/Bin/icl.exe" /c /nologo /I"Z:${COMPILER_DIR}/Include/" ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
 
@@ -1997,6 +2003,7 @@ _all_compilers: list[Compiler] = [
     MSVC71,
     MSVC80,
     MSVC80P,
+    MSVC80SP1,
     ICC501_010525Z,
     # Watcom, DOS and Win32
     WATCOM_100A_C,
