@@ -241,6 +241,7 @@ win32:
   - msvc7.1
   - msvc8.0
   - msvc8.0p
+  - msvc8.0sp1
   - icc5.0.1-010525z
 
 xbox360:
