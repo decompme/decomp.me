@@ -210,6 +210,22 @@ class Scratch(models.Model):
             return False
 
 
+class ScratchFlags(models.Model):
+    scratch = models.ForeignKey(Scratch, on_delete=models.CASCADE, related_name="flags")
+    profile = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, related_name="scratch_flags"
+    )
+    help_wanted = models.BooleanField(default=False)
+    help_wanted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["scratch", "profile"], name="unique_scratch_flags"
+            )
+        ]
+
+
 class ScratchAdmin(admin.ModelAdmin[Scratch]):
     raw_id_fields = ["owner", "parent", "family", "context_fk"]
     readonly_fields = ["target_assembly"]
