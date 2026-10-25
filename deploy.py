@@ -401,6 +401,25 @@ def cmd_deploy(args):
         env=env,
     )
 
+    if args.run_migrations:
+        print("Running database migrations with the new backend image...")
+        run(
+            [
+                *DOCKER_COMPOSE,
+                "run",
+                "--rm",
+                "--no-deps",
+                "--entrypoint",
+                "uv",
+                f"backend-{slot}",
+                "run",
+                "manage.py",
+                "migrate",
+                "--noinput",
+            ],
+            env=env,
+        )
+
     wait_for_healthy(f"backend-{slot}", env)
     wait_for_healthy(f"frontend-{slot}", env)
 
@@ -622,6 +641,11 @@ def main():
         dest="pull",
         action="store_false",
         help="Use locally available images instead of pulling the target slot images.",
+    )
+    deploy.add_argument(
+        "--run-migrations",
+        action="store_true",
+        help="Run database migrations before switching traffic to the new slot.",
     )
     deploy.set_defaults(pull=True)
     deploy.add_argument("tag")

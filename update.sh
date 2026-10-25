@@ -69,7 +69,13 @@ fi
 
 if [ "${COMMAND}" = "deploy-all" ]; then
   python3 deploy.py deploy-cromper "${TAG}"
-  python3 deploy.py deploy "${TAG}"
+  if [ "${RUN_MIGRATIONS:-}" = "1" ]; then
+    python3 deploy.py deploy "${TAG}" --run-migrations
+  else
+    python3 deploy.py deploy "${TAG}"
+  fi
+elif [ "${COMMAND}" = "deploy" ] && [ "${RUN_MIGRATIONS:-}" = "1" ]; then
+  python3 deploy.py deploy "${TAG}" --run-migrations
 else
   python3 deploy.py "${COMMAND}" "${TAG}"
 fi

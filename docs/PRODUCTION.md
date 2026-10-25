@@ -55,6 +55,7 @@ and libraries, and deploys the backend and frontend by default:
 ./update.sh deploy-cromper
 ./update.sh deploy-all
 ./update.sh deploy-cromper abcdef123456
+RUN_MIGRATIONS=1 ./update.sh deploy
 ```
 
 `auto` uses the 12-character commit hash of fetched `origin/main` as the image
@@ -65,12 +66,23 @@ Commands can come first with an optional tag; the existing tag-first syntax
 the backend and frontend using the same tag. These deployments are sequential:
 if the app deployment fails, Cromper remains updated. Compiler/library updates
 and the Discord update notification run once per successful wrapper invocation.
-The wrapper also accepts `migrate` for maintenance deployments.
+The wrapper also accepts `migrate` for maintenance deployments. Set
+`RUN_MIGRATIONS=1` to have a regular `deploy` (including the app part of
+`deploy-all`) run Django migrations with the new backend image after starting
+the inactive app slot and before health checks and the traffic switch. Use this
+for migrations that are safe while the previous app version is serving traffic;
+the existing `migrate` command remains available for maintenance deployments.
 
 To deploy directly without updating the checkout:
 
 ```bash
 python3 deploy.py deploy githash
+```
+
+To run migrations as part of a direct deployment:
+
+```bash
+python3 deploy.py deploy --run-migrations githash
 ```
 
 The old slot is left running after a successful deploy so rollback remains quick.
