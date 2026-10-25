@@ -8,7 +8,9 @@ from typing import Any
 import itsdangerous
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.postgres.indexes import GinIndex, OpClass
 from django.db import IntegrityError, models
+from django.db.models.functions import Upper
 from django.utils.crypto import get_random_string
 
 from .profile import Profile
@@ -163,6 +165,14 @@ class Scratch(models.Model):
             models.Index(fields=["-creation_time"], name="scratch_created_idx"),
             models.Index(fields=["-last_updated"], name="scratch_updated_idx"),
             models.Index(fields=["score"], name="scratch_score_idx"),
+            GinIndex(
+                OpClass(Upper("name"), name="gin_trgm_ops"),
+                name="scratch_upper_name_trgm",
+            ),
+            GinIndex(
+                OpClass(Upper("diff_label"), name="gin_trgm_ops"),
+                name="scratch_upper_diff_label_trgm",
+            ),
         ]
         verbose_name_plural = "Scratches"
 
