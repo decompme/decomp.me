@@ -15,4 +15,9 @@ done
 
 uv run /backend/manage.py migrate
 
-uv run /backend/manage.py runserver ${BE_HOST}:${BE_PORT}
+if [ -n "${BACKEND_DEBUGPY:-}" ]; then
+  # Autoreload is disabled so debugpy can attach to the process serving the app.
+  uv run python -m debugpy --listen 0.0.0.0:5678 -m uvicorn decompme.asgi:application --host ${BE_HOST} --port ${BE_PORT}
+else
+  uv run uvicorn decompme.asgi:application --host ${BE_HOST} --port ${BE_PORT} --reload --reload-dir /backend/coreapp --reload-dir /backend/decompme
+fi

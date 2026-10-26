@@ -50,6 +50,38 @@ E.g. to enable `SWITCH` platform:
 ```
 
 
+### Backend request limit
+
+`CROMPER_REQUEST_LIMIT` defaults to `15` in `backend/decompme/settings.py` and
+can be overridden in the backend's environment file. It limits concurrent
+requests that may wait for Cromper **per ASGI worker process**, including scratch
+creation, updates, compilation, decompilation, forks, and exports. Excess requests
+receive HTTP 429 with `Retry-After: 1` before session or profile database access.
+Ordinary reads bypass the limit.
+
+Budget `CROMPER_REQUEST_LIMIT × total backend workers` below Postgres's connection
+limit, leaving headroom for other requests and database clients. Include workers
+in both slots during overlapping blue/green deployments. This setting does not
+limit concurrent ordinary requests.
+
+Cromper also returns HTTP 429 with `Retry-After: 1` when its tool executor is
+full. The backend distinguishes this from HTTP 503 or transport failures and
+does not automatically retry. Scratch compile/decompile responses retain their
+existing response shape and include a friendly busy message.
+
+## Debugging the backend
+
+The `backend` container exposes port `5678` for the VS Code **Debug Backend**
+launch configuration (`.vscode/launch.json`). Debugpy is off by default; enable it
+by setting `BACKEND_DEBUGPY` in the environment when starting the stack:
+
+```bash
+BACKEND_DEBUGPY=1 docker compose up -d backend
+```
+
+Then attach using the **Debug Backend** configuration. While debug mode is on the
+backend runs the ASGI server without autoreload, so restart it after code changes.
+
 ## Connecting from a different host
 
 If you wish to run decomp.me on one machine and connect from a *different* one (e.g. to test the site on your phone) please edit `./backend/docker.dev.env` to add your `hostname` to the `ALLOWED_HOSTS` environment variable.
