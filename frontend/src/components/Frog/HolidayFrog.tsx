@@ -31,7 +31,7 @@ export default function HolidayFrog({
     }
     if (month === 9 && date === 31) {
         primary = "#d96516";
-        secondary = "#20150aff";
+        secondary = "#f28c28";
         message = "🎃 Happy Halloween! 🎃";
     }
 
