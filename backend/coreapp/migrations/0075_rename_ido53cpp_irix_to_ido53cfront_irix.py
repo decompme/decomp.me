@@ -34,7 +34,7 @@ def rename_compilers(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> Non
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("coreapp", "0074_rename_ido53c++_to_ido53cfront"),
+        ("coreapp", "0074_rename_ido53cpp_to_ido53cfront"),
     ]
 
     operations = [
