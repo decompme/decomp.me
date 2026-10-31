@@ -922,10 +922,10 @@ IDO53 = IDOCompiler(
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
-IDO53_CXX = IDOCompiler(
-    id="ido5.3_c++",
+IDO53_CFRONT = IDOCompiler(
+    id="ido5.3_cfront",
     platform=N64,
-    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='PATH=""${COMPILER_DIR}"/usr/bin" "${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     language=flags.Language.OLD_CXX,
 )
 
@@ -951,7 +951,7 @@ IDO71_IRIX4_CXX = IDOCompiler(
     language=flags.Language.OLD_CXX,
     cc='"${COMPILER_DIR}/cc-irix4"'
     ' --frontend "${COMPILER_DIR}/../ido4.1"'
-    ' --cfront "${COMPILER_DIR}/../ido5.3_c++"'
+    ' --cfront "${COMPILER_DIR}/../ido5.3_cfront"'
     ' --backend "${COMPILER_DIR}"'
     ' -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
@@ -1123,11 +1123,11 @@ IDO53_ASM_IRIX = IDOCompiler(
     language=flags.Language.ASSEMBLY,
 )
 
-IDO53_CXX_IRIX = IDOCompiler(
-    id="ido5.3_c++_irix",
+IDO53_CFRONT_IRIX = IDOCompiler(
+    id="ido5.3_cfront_irix",
     platform=IRIX,
-    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_compiler=IDO53_CXX,
+    cc='PATH=""${COMPILER_DIR}"/usr/bin" "${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_compiler=IDO53_CFRONT,
     language=flags.Language.OLD_CXX,
 )
 
@@ -1888,7 +1888,7 @@ _all_compilers: list[Compiler] = [
     IDO41,
     IDO52,
     IDO53,
-    IDO53_CXX,
+    IDO53_CFRONT,
     IDO60,
     IDO71,
     IDO71_IRIX4,
@@ -1912,7 +1912,7 @@ _all_compilers: list[Compiler] = [
     # IRIX
     IDO53_IRIX,
     IDO53_ASM_IRIX,
-    IDO53_CXX_IRIX,
+    IDO53_CFRONT_IRIX,
     IDO53PASCAL,
     IDO60_IRIX,
     IDO71_IRIX,
