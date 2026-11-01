@@ -7,6 +7,11 @@ import { useDebounce } from "use-debounce";
 import * as api from "@/lib/api";
 import { presetUrl, scratchUrl, userHtmlUrl } from "@/lib/api/urls";
 import { useRouter } from "@/lib/navigation";
+import {
+    isLongEnoughToSearch,
+    MAX_SEARCH_QUERY_LENGTH,
+    MIN_SEARCH_QUERY_LENGTH,
+} from "@/lib/search";
 
 import LoadingSpinner from "../loading.svg";
 import { PlatformIcon } from "../PlatformSelect/PlatformIcon";
@@ -17,7 +22,6 @@ import verticalMenuStyles from "../VerticalMenu.module.scss"; // eslint-disable-
 import styles from "./Search.module.scss";
 
 const SEARCH_DEBOUNCE_MS = 200;
-const SEARCH_MAX_LENGTH = 64;
 const SEARCH_PAGE_SIZE = 5;
 
 function HighlightedMatch({ text, query }: { text: string; query: string }) {
@@ -44,7 +48,6 @@ function HighlightedMatch({ text, query }: { text: string; query: string }) {
 }
 
 function useSearchResults(query: string): {
-    isLoading: boolean;
     searchItems: api.SearchResult[];
     resultQuery: string;
 } {
@@ -55,35 +58,30 @@ function useSearchResults(query: string): {
     });
     const [searchItems, setSearchItems] = useState<api.SearchResult[]>([]);
     const [resultQuery, setResultQuery] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
 
     latestQuery.current = query;
 
     useEffect(() => {
-        if (query.length === 0) {
+        if (!isLongEnoughToSearch(query)) {
             setSearchItems([]);
             setResultQuery("");
-            setIsLoading(false);
-            return;
         }
-
-        setIsLoading(true);
     }, [query]);
 
     useEffect(() => {
-        if (debouncedQuery.length === 0) {
+        const trimmedQuery = debouncedQuery.trim();
+        if (!isLongEnoughToSearch(trimmedQuery)) {
             return;
         }
 
         let isCurrent = true;
-        const search = encodeURIComponent(debouncedQuery);
+        const search = encodeURIComponent(trimmedQuery);
 
         api.get(`/search?search=${search}&page_size=${SEARCH_PAGE_SIZE}`).then(
             (resp) => {
-                if (isCurrent && latestQuery.current === debouncedQuery) {
+                if (isCurrent && latestQuery.current.trim() === trimmedQuery) {
                     setSearchItems(resp);
-                    setResultQuery(debouncedQuery);
-                    setIsLoading(false);
+                    setResultQuery(trimmedQuery);
                 }
             },
         );
@@ -93,15 +91,17 @@ function useSearchResults(query: string): {
         };
     }, [debouncedQuery]);
 
-    return { isLoading, searchItems, resultQuery };
+    return { searchItems, resultQuery };
 }
 
 function MountedSearch({ className }: { className?: string }) {
     const [query, setQuery] = useState("");
     const [isFocused, setIsFocused] = useState(false);
-    const { isLoading, searchItems, resultQuery } = useSearchResults(query);
+    const { searchItems, resultQuery } = useSearchResults(query);
 
-    const items = query.length > 0 ? searchItems : [];
+    const searchable = isLongEnoughToSearch(query);
+    const items = searchable ? searchItems : [];
+    const isSearching = searchable && resultQuery !== query.trim();
 
     const close = () => {
         console.info("<Search> close");
@@ -129,10 +129,7 @@ function MountedSearch({ className }: { className?: string }) {
     const { isOpen, getMenuProps, getInputProps, getItemProps, setInputValue } =
         useCombobox({
             items,
-            isOpen:
-                (isFocused || !!query) &&
-                query.length > 0 &&
-                !(isLoading && items.length === 0),
+            isOpen: (isFocused || !!query) && query.trim().length > 0,
             itemToString(item) {
                 switch (item.type) {
                     case "scratch":
@@ -145,7 +142,7 @@ function MountedSearch({ className }: { className?: string }) {
                 }
             },
             onInputValueChange({ inputValue }) {
-                setQuery((inputValue ?? "").slice(0, SEARCH_MAX_LENGTH));
+                setQuery((inputValue ?? "").slice(0, MAX_SEARCH_QUERY_LENGTH));
             },
             onSelectedItemChange({ selectedItem }) {
                 if (selectedItem) {
@@ -184,10 +181,10 @@ function MountedSearch({ className }: { className?: string }) {
                     evt.stopPropagation();
                     evt.preventDefault();
 
-                    if (searchItems.length > 0) {
+                    if (items.length > 0) {
                         console.info("<Search> Enter pressed");
                         close();
-                        pushRoute(searchItems[0]);
+                        pushRoute(items[0]);
                     }
                 }
             }}
@@ -200,13 +197,13 @@ function MountedSearch({ className }: { className?: string }) {
                     "rounded-md bg-transparent text-sm placeholder-current transition-colors hover:bg-gray-4 focus:bg-gray-5 focus:placeholder-gray-11": true,
                 })}
                 type="text"
-                maxLength={SEARCH_MAX_LENGTH}
+                maxLength={MAX_SEARCH_QUERY_LENGTH}
                 placeholder="Search decomp.me"
                 spellCheck={false}
                 onFocus={() => setIsFocused(true)}
                 onClick={() => setIsFocused(true)}
             />
-            {isLoading && isFocused && (
+            {isSearching && isFocused && (
                 <LoadingSpinner className={styles.loadingIcon} />
             )}
             {renderLayer(
@@ -322,7 +319,11 @@ function MountedSearch({ className }: { className?: string }) {
                                     styles.noResults,
                                 )}
                             >
-                                No search results
+                                {isSearching
+                                    ? "Searching..."
+                                    : searchable
+                                      ? "No search results"
+                                      : `Enter at least ${MIN_SEARCH_QUERY_LENGTH} characters to search`}
                             </div>
                         </li>
                     )}

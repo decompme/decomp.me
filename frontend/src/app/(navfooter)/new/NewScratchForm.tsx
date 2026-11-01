@@ -26,6 +26,7 @@ import basicSetup from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
 import getTranslation from "@/lib/i18n/translate";
 import { useRouter } from "@/lib/navigation";
+import { isLongEnoughToSearch, MAX_SEARCH_QUERY_LENGTH } from "@/lib/search";
 
 import {
     applyCompiler,
@@ -42,8 +43,6 @@ import {
     storedDraftFields,
     writeStoredDraft,
 } from "./NewScratchForm.state";
-
-const SEARCH_MAX_LENGTH = 64;
 
 interface FormLabelProps {
     children: React.ReactNode;
@@ -80,13 +79,13 @@ function useDuplicateScratches(
     const [duplicates, setDuplicates] = useState<TerseScratch[]>([]);
 
     useEffect(() => {
-        if (!debouncedLabel) {
+        const query = debouncedLabel.trim().slice(0, MAX_SEARCH_QUERY_LENGTH);
+        if (!isLongEnoughToSearch(query)) {
             setDuplicates([]);
             return;
         }
 
         let isCurrent = true;
-        const query = debouncedLabel.slice(0, SEARCH_MAX_LENGTH);
         const search = encodeURIComponent(query);
 
         get(`/scratch?search=${search}`)
