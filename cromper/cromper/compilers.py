@@ -925,7 +925,15 @@ IDO53 = IDOCompiler(
 IDO53_CFRONT = IDOCompiler(
     id="ido5.3_cfront",
     platform=N64,
-    cc='PATH=""${COMPILER_DIR}"/usr/bin" "${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='USE_CFRONT="1" PATH=""${COMPILER_DIR}"/usr/bin" "${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    language=flags.Language.OLD_CXX,
+)
+
+IDO53_CXX = IDOCompiler(
+    id="ido5.3_c++",
+    platform=N64,
+    cc='PATH=""${COMPILER_DIR}"/usr/bin" "${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/NCC" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_compiler=IDO53_CFRONT,
     language=flags.Language.OLD_CXX,
 )
 
@@ -959,7 +967,7 @@ IDO71_IRIX4_CXX = IDOCompiler(
 IDO71_CXX = IDOCompiler(
     id="ido7.1_c++",
     platform=N64,
-    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/NCC" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='PATH=""${COMPILER_DIR}"/usr/bin" "${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/NCC" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO71,
     language=flags.Language.OLD_CXX,
 )
@@ -1126,7 +1134,15 @@ IDO53_ASM_IRIX = IDOCompiler(
 IDO53_CFRONT_IRIX = IDOCompiler(
     id="ido5.3_cfront_irix",
     platform=IRIX,
-    cc='PATH=""${COMPILER_DIR}"/usr/bin" "${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='USE_CFRONT="1" PATH=""${COMPILER_DIR}"/usr/bin" "${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_compiler=IDO53_CFRONT,
+    language=flags.Language.OLD_CXX,
+)
+
+IDO53_CXX_IRIX = IDOCompiler(
+    id="ido5.3_c++_irix",
+    platform=IRIX,
+    cc='PATH=""${COMPILER_DIR}"/usr/bin" "${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/NCC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO53_CFRONT,
     language=flags.Language.OLD_CXX,
 )
@@ -1889,6 +1905,7 @@ _all_compilers: list[Compiler] = [
     IDO52,
     IDO53,
     IDO53_CFRONT,
+    IDO53_CXX,
     IDO60,
     IDO71,
     IDO71_IRIX4,
@@ -1913,6 +1930,7 @@ _all_compilers: list[Compiler] = [
     IDO53_IRIX,
     IDO53_ASM_IRIX,
     IDO53_CFRONT_IRIX,
+    IDO53_CXX_IRIX,
     IDO53PASCAL,
     IDO60_IRIX,
     IDO71_IRIX,
