@@ -2,10 +2,17 @@ from rest_framework.filters import SearchFilter
 from rest_framework.request import Request
 from rest_framework.serializers import ValidationError
 
+MIN_SEARCH_QUERY_LENGTH = 3
 MAX_SEARCH_QUERY_LENGTH = 64
 
 
 def validate_search_query(query: str) -> str:
+    stripped_query = query.strip()
+    if 0 < len(stripped_query) < MIN_SEARCH_QUERY_LENGTH:
+        raise ValidationError(
+            {"search": f"Must be at least {MIN_SEARCH_QUERY_LENGTH} characters."}
+        )
+
     if len(query) > MAX_SEARCH_QUERY_LENGTH:
         raise ValidationError(
             {"search": f"Must be at most {MAX_SEARCH_QUERY_LENGTH} characters."}

@@ -28,6 +28,39 @@ class SearchTests(BaseTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_rejects_short_query(self) -> None:
+        for query in ("a", "ab", " a "):
+            with self.subTest(query=query):
+                response = self.client.get(reverse("search"), {"search": query})
+
+                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+                self.assertIn("search", response.json())
+
+    def test_accepts_min_length_query(self) -> None:
+        response = self.client.get(reverse("search"), {"search": "abc"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_allows_missing_query(self) -> None:
+        response = self.client.get(reverse("search"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_treats_whitespace_query_as_empty(self) -> None:
+        response = self.client.get(reverse("search"), {"search": "   "})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_rejects_short_list_filter_query(self) -> None:
+        response = self.client.get(reverse("scratch-list"), {"search": "ab"})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_allows_missing_list_filter_query(self) -> None:
+        response = self.client.get(reverse("scratch-list"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_rejects_long_list_filter_query(self) -> None:
         response = self.client.get(reverse("scratch-list"), {"search": "a" * 65})
 
