@@ -32,14 +32,20 @@ class SearchViewSet(APIView):
         query = validate_search_query(request.query_params.get("search", ""))
         page_size = get_page_size(request.query_params.get("page_size", "5"))
 
-        user_qs = Profile.objects.filter(user__username__icontains=query)[:page_size]
+        # Fetch users and presets up front so the scratch page size can be
+        # computed without separate COUNT queries.
+        user_qs = Profile.objects.filter(
+            user__username__icontains=query
+        ).select_related("user", "user__github")
+        users = list(user_qs[:page_size])
         preset_qs = (
             Preset.objects.filter(name__icontains=query)
             .select_related("owner__user", "owner__user__github")
-            .annotate(num_scratches=num_scratches_annotation())[:page_size]
+            .annotate(num_scratches=num_scratches_annotation())
         )
+        presets = list(preset_qs[:page_size])
         # Returns up to 3x page_size, but we should prioritize scratches
-        scratch_page_size = page_size * 3 - user_qs.count() - preset_qs.count()
+        scratch_page_size = page_size * 3 - len(users) - len(presets)
         scratch_qs = (
             Scratch.objects.filter(name__icontains=query)
             .select_related(
@@ -58,7 +64,7 @@ class SearchViewSet(APIView):
 
         results = []
 
-        for user in user_qs:
+        for user in users:
             results.append(
                 {
                     "type": "user",
@@ -66,7 +72,7 @@ class SearchViewSet(APIView):
                 }
             )
 
-        for preset in PresetSerializer(preset_qs, many=True).data:
+        for preset in PresetSerializer(presets, many=True).data:
             results.append(
                 {
                     "type": "preset",

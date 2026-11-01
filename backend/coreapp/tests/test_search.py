@@ -1,6 +1,11 @@
+from django.contrib.auth.models import User
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
 
+from coreapp.models.github import GitHubUser
+from coreapp.models.profile import Profile
 from coreapp.models.scratch import Assembly, Scratch
 from coreapp.tests.common import BaseTestCase
 
@@ -17,6 +22,11 @@ class SearchTests(BaseTestCase):
             platform="dummy",
             target_assembly=assembly,
         )
+
+    def create_search_user(self, username: str, github_id: int) -> Profile:
+        user = User.objects.create_user(username=username)
+        GitHubUser.objects.create(user=user, github_id=github_id)
+        return Profile.objects.create(user=user)
 
     def test_rejects_long_query(self) -> None:
         response = self.client.get(reverse("search"), {"search": "a" * 65})
@@ -60,6 +70,31 @@ class SearchTests(BaseTestCase):
         response = self.client.get(reverse("scratch-list"))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_search_does_not_query_per_user(self) -> None:
+        for index in range(5):
+            self.create_search_user(f"searchuser{index}", github_id=index + 1)
+
+        # Warm up the connection so both requests pay the same fixed overhead.
+        self.client.get(reverse("search"), {"search": "warmup"})
+
+        with CaptureQueriesContext(connection) as one_user:
+            response = self.client.get(
+                reverse("search"), {"search": "searchuser0", "page_size": "5"}
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+
+        with CaptureQueriesContext(connection) as five_users:
+            response = self.client.get(
+                reverse("search"), {"search": "searchuser", "page_size": "5"}
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 5)
+
+        self.assertEqual(
+            len(one_user.captured_queries), len(five_users.captured_queries)
+        )
 
     def test_rejects_long_list_filter_query(self) -> None:
         response = self.client.get(reverse("scratch-list"), {"search": "a" * 65})
