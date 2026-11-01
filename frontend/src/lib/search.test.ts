@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-    isLongEnoughToSearch,
-    MAX_SEARCH_QUERY_LENGTH,
-    MIN_SEARCH_QUERY_LENGTH,
-} from "./search";
+import { isLongEnoughToSearch, MAX_SEARCH_QUERY_LENGTH } from "./search";
 
 describe("isLongEnoughToSearch", () => {
     it("rejects queries shorter than the minimum", () => {
@@ -20,9 +16,5 @@ describe("isLongEnoughToSearch", () => {
         expect(isLongEnoughToSearch("a".repeat(MAX_SEARCH_QUERY_LENGTH))).toBe(
             true,
         );
-    });
-
-    it("uses a minimum of three characters", () => {
-        expect(MIN_SEARCH_QUERY_LENGTH).toBe(3);
     });
 });

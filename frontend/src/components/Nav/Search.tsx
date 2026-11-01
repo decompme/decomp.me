@@ -48,7 +48,6 @@ function HighlightedMatch({ text, query }: { text: string; query: string }) {
 }
 
 function useSearchResults(query: string): {
-    isLoading: boolean;
     searchItems: api.SearchResult[];
     resultQuery: string;
 } {
@@ -59,7 +58,6 @@ function useSearchResults(query: string): {
     });
     const [searchItems, setSearchItems] = useState<api.SearchResult[]>([]);
     const [resultQuery, setResultQuery] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
 
     latestQuery.current = query;
 
@@ -67,11 +65,7 @@ function useSearchResults(query: string): {
         if (!isLongEnoughToSearch(query)) {
             setSearchItems([]);
             setResultQuery("");
-            setIsLoading(false);
-            return;
         }
-
-        setIsLoading(true);
     }, [query]);
 
     useEffect(() => {
@@ -88,7 +82,6 @@ function useSearchResults(query: string): {
                 if (isCurrent && latestQuery.current.trim() === trimmedQuery) {
                     setSearchItems(resp);
                     setResultQuery(trimmedQuery);
-                    setIsLoading(false);
                 }
             },
         );
@@ -98,13 +91,13 @@ function useSearchResults(query: string): {
         };
     }, [debouncedQuery]);
 
-    return { isLoading, searchItems, resultQuery };
+    return { searchItems, resultQuery };
 }
 
 function MountedSearch({ className }: { className?: string }) {
     const [query, setQuery] = useState("");
     const [isFocused, setIsFocused] = useState(false);
-    const { isLoading, searchItems, resultQuery } = useSearchResults(query);
+    const { searchItems, resultQuery } = useSearchResults(query);
 
     const searchable = isLongEnoughToSearch(query);
     const items = searchable ? searchItems : [];
@@ -210,7 +203,7 @@ function MountedSearch({ className }: { className?: string }) {
                 onFocus={() => setIsFocused(true)}
                 onClick={() => setIsFocused(true)}
             />
-            {isLoading && isFocused && (
+            {isSearching && isFocused && (
                 <LoadingSpinner className={styles.loadingIcon} />
             )}
             {renderLayer(

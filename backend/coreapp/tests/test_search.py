@@ -46,7 +46,7 @@ class SearchTests(BaseTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_treats_whitespace_query_as_empty(self) -> None:
+    def test_allows_whitespace_query(self) -> None:
         response = self.client.get(reverse("search"), {"search": "   "})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
