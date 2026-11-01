@@ -967,7 +967,7 @@ IDO71_IRIX4_CXX = IDOCompiler(
 IDO71_CXX = IDOCompiler(
     id="ido7.1_c++",
     platform=N64,
-    cc='PATH=""${COMPILER_DIR}"/usr/bin" "${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/NCC" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/NCC" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO71,
     language=flags.Language.OLD_CXX,
 )
