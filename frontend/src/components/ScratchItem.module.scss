@@ -95,10 +95,31 @@
         color: var(--g1200);
     }
 
+    .helpWanted {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35em;
+
+        padding: 0;
+        border: 0;
+        background: none;
+
+        color: var(--g1000);
+        font-size: 0.8em;
+        line-height: 1;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--link);
+        }
+    }
+
     .improvementSlot {
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: 0.5em;
         min-width: 1rem;
     }
 
@@ -127,6 +148,51 @@
             flex-shrink: 0;
         }
     }
+}
+
+.helpWantedPopup {
+    z-index: 100;
+
+    min-width: 14rem;
+    max-width: min(22rem, calc(100vw - 2rem));
+    max-height: 18rem;
+    padding: 0.75rem;
+    overflow-y: auto;
+
+    border: 1px solid var(--a200);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+
+    h3 {
+        margin-bottom: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    :global(.dark) & {
+        border-color: var(--a100);
+        background: rgba(0, 0, 0, 0.9);
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+    }
+}
+
+.requesterList {
+    display: grid;
+    gap: 0.4rem;
+
+    list-style: none;
+}
+
+.requestersLoading {
+    width: 1rem;
+    height: 1rem;
+}
+
+.requestersError {
+    color: var(--g1000);
+    font-size: 0.8rem;
 }
 
 .singleLine {
