@@ -360,7 +360,7 @@ export function useCompilation(
 
 export function usePlatform(id: string | undefined): Platform | undefined {
     const url = typeof id === "string" && id ? `/platform/${id}` : null;
-    const { data } = useSWRImmutable(url, get, {
+    const { data } = useSWRImmutable(url, getPublic, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
     });
@@ -375,7 +375,7 @@ export function useCompiler(
         typeof platform === "string" && typeof compiler === "string"
             ? `/compiler/${platform}/${compiler}`
             : null;
-    const { data } = useSWRImmutable<CompilersResponse>(url, get, {
+    const { data } = useSWRImmutable<CompilersResponse>(url, getPublic, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
     });
@@ -386,7 +386,7 @@ export function useCompiler(
 
 export function useCompilers(platform: string): Record<string, Compiler> {
     const url = typeof platform === "string" ? `/compiler/${platform}` : null;
-    const { data } = useSWRImmutable<CompilersResponse>(url, get, {
+    const { data } = useSWRImmutable<CompilersResponse>(url, getPublic, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
     });
@@ -396,7 +396,7 @@ export function useCompilers(platform: string): Record<string, Compiler> {
 
 export function useLibraries(platform: string): LibraryVersions[] {
     const getByPlatform = ([url, platform]: [string | null, string]) => {
-        return get(url && platform && `${url}?platform=${platform}`);
+        return getPublic(url && platform && `${url}?platform=${platform}`);
     };
 
     const url = typeof platform === "string" ? "/library" : null;
