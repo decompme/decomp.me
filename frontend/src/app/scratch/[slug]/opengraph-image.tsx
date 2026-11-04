@@ -24,8 +24,6 @@ const truncateText = (text: string, length: number) =>
 const IMAGE_WIDTH_PX = 1200;
 const IMAGE_HEIGHT_PX = 400;
 
-export const runtime = "edge";
-
 export default async function ScratchOG({
     params,
 }: {

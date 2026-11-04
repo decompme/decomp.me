@@ -8,7 +8,6 @@ import PurpleFrog from "../../scratch/[slug]/assets/purplefrog.svg";
 const IMAGE_WIDTH_PX = 1200;
 const IMAGE_HEIGHT_PX = 400;
 
-export const runtime = "edge";
 export const contentType = "image/png";
 
 type Result = {
