@@ -208,7 +208,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         required=False,
     )  # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
-    libraries = serializers.JSONField(default=list)  # type: ignore
+    libraries = serializers.JSONField(default=list)
 
     project = serializers.CharField(allow_blank=False, required=False)
     rom_address = serializers.IntegerField(required=False)

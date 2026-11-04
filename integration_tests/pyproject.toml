@@ -28,7 +28,7 @@ dev = [
     "ruff>=0.8.0",
     "mypy>=1.13.0",
     "django-stubs[compatible-mypy]>=6.1.0",
-    "djangorestframework-stubs>=3.18.1",
+    "djangorestframework-stubs>=3.18.2",
     "types-requests>=2.33.0.20260906",
 ]
 
