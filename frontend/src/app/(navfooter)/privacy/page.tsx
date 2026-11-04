@@ -3,6 +3,26 @@ import Link from "@/components/Link";
 const subtitle = "mt-8 text-xl font-semibold tracking-tight text-gray-11";
 const link = "text-blue-11 hover:underline active:translate-y-px";
 
+function slugify(text: string) {
+    return text
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-");
+}
+
+function SectionHeading({ heading }: { heading: string }) {
+    const id = slugify(heading);
+
+    return (
+        <h2 id={id} className={subtitle}>
+            <a href={`#${id}`} className="no-underline hover:underline">
+                {heading}
+            </a>
+        </h2>
+    );
+}
+
 export const metadata = {
     title: "Privacy policy",
 };
@@ -34,7 +54,7 @@ export default function Page() {
                 and "user" refers to any person or robot visiting this website.
             </p>
 
-            <h2 className={subtitle}>Your privacy</h2>
+            <SectionHeading heading="Your privacy" />
             <p className="my-4">
                 We care and respect your right to privacy, and only store data
                 we believe we have legitimate uses for. We have made every
@@ -42,7 +62,7 @@ export default function Page() {
                 such as GDPR, CCPA, and PECR.
             </p>
 
-            <h2 className={subtitle}>Types of data we collect</h2>
+            <SectionHeading heading="Types of data we collect" />
             <p className="my-4">
                 <b>Logging:</b> decomp.me stores logs when users make requests
                 to decomp.me and its associated API. Data logs are restricted to
@@ -73,7 +93,7 @@ export default function Page() {
                 cookies.
             </p>
 
-            <h2 className={subtitle}>How data is stored and used</h2>
+            <SectionHeading heading="How data is stored and used" />
             <p className="my-4">
                 decomp.me does not sell, rent, or mine user information under
                 any circumstances. decomp.me's servers are located in Finland.
@@ -103,7 +123,7 @@ export default function Page() {
                 receive or store user passwords.
             </p>
 
-            <h2 className={subtitle}>How to request your data or delete it</h2>
+            <SectionHeading heading="How to request your data or delete it" />
             <p className="my-4">
                 If you want us to delete some or all data linked to you, please
                 contact us via{" "}
