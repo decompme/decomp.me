@@ -4,6 +4,7 @@ import {
     PLATFORMS,
     platformIcon,
 } from "@/components/PlatformSelect/PlatformIcon";
+import type { Stats } from "@/lib/api";
 import { getPublic } from "@/lib/api/request";
 import { STAT_DEFINITIONS } from "@/lib/stats";
 
@@ -21,10 +22,15 @@ export default async function HomeOG() {
         new URL("../../public/fonts/OpenSans-Bold.ttf", import.meta.url),
     );
 
-    const stats = await getPublic("/stats").catch((error) => {
-        console.error("Failed to load stats for the Open Graph image", error);
-        return null;
-    });
+    const stats: Stats | null = await getPublic("/stats").catch(
+        (error): null => {
+            console.error(
+                "Failed to load stats for the Open Graph image",
+                error,
+            );
+            return null;
+        },
+    );
     const iconSize = 160;
     const iconCount = 5;
     const textScale = 4.15;
