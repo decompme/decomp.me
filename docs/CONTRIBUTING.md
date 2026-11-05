@@ -65,7 +65,7 @@ uv run python manage.py migrate
 
 - Start the API server
 ```shell
-uv run python manage.py runserver
+uv run uvicorn decompme.asgi:application --reload
 ```
 
 ---

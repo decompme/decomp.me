@@ -253,3 +253,23 @@ jobs:
           uv run --locked mypy .
           uv run --locked ruff check
           uv run --locked ruff format --check
+
+  integration_tests_lint:
+    name: integration tests lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.0.1
+        with:
+          version: "latest"
+      - name: Setup Python 3.14
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: |-
+          cd integration_tests
+          uv sync --locked --all-extras
+          uv run --locked ruff check
+          uv run --locked ruff format --check
