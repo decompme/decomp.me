@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { FeedMergedIcon } from "@primer/octicons-react";
 import { ImageResponse } from "next/og";
 
@@ -29,12 +30,12 @@ export default async function ScratchOG({
 }: {
     params: Promise<{ slug: string }>;
 }) {
-    const OpenSansSemiBold = fetch(
+    const OpenSansSemiBold = readFile(
         new URL(
             "../../../../public/fonts/OpenSans-SemiBold.ttf",
             import.meta.url,
         ),
-    ).then((res) => res.arrayBuffer());
+    );
 
     const { slug } = await params;
     const { scratch, parentScratch, compilation } =
