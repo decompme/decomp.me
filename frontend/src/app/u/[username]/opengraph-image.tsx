@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { ImageResponse } from "next/og";
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon";
 import type { ScratchUser } from "@/lib/api";
@@ -66,12 +67,12 @@ export default async function UserOG({
 }: {
     params: Promise<{ username: string }>;
 }) {
-    const OpenSansSemiBold = fetch(
+    const OpenSansSemiBold = readFile(
         new URL(
             "../../../../public/fonts/OpenSans-SemiBold.ttf",
             import.meta.url,
         ),
-    ).then((res) => res.arrayBuffer());
+    );
 
     const { username } = await params;
 

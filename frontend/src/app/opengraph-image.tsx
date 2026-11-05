@@ -1,8 +1,10 @@
+import { readFile } from "node:fs/promises";
 import { ImageResponse } from "next/og";
 import {
     PLATFORMS,
     platformIcon,
 } from "@/components/PlatformSelect/PlatformIcon";
+import type { Stats } from "@/lib/api";
 import { getPublic } from "@/lib/api/request";
 import { STAT_DEFINITIONS } from "@/lib/stats";
 
@@ -13,15 +15,22 @@ const IMAGE_HEIGHT_PX = 400;
 export const dynamic = "force-dynamic";
 
 export default async function HomeOG() {
-    const OpenSansSemiBold = fetch(
+    const OpenSansSemiBold = readFile(
         new URL("../../public/fonts/OpenSans-SemiBold.ttf", import.meta.url),
-    ).then((res) => res.arrayBuffer());
-
-    const OpenSansBold = fetch(
+    );
+    const OpenSansBold = readFile(
         new URL("../../public/fonts/OpenSans-Bold.ttf", import.meta.url),
-    ).then((res) => res.arrayBuffer());
+    );
 
-    const stats = await getPublic("/stats");
+    const stats: Stats | null = await getPublic("/stats").catch(
+        (error): null => {
+            console.error(
+                "Failed to load stats for the Open Graph image",
+                error,
+            );
+            return null;
+        },
+    );
     const iconSize = 160;
     const iconCount = 5;
     const textScale = 4.15;
@@ -75,7 +84,9 @@ export default async function HomeOG() {
                             tw={`flex items-center text-[${textSize.stats}rem]`}
                         >
                             <Icon size={32} />
-                            <span tw="ml-2">{stats[key].toLocaleString()}</span>
+                            <span tw="ml-2">
+                                {stats?.[key].toLocaleString() ?? "—"}
+                            </span>
                         </div>
                         <span tw={`flex mt-2 text-[${textSize.stats}rem]`}>
                             {label}
