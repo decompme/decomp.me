@@ -25,6 +25,14 @@ class RequestTests(BaseTestCase):
         self.assertEqual(Profile.objects.count(), 0)
         self.assertNotIn("sessionid", response.cookies)
 
+    def test_health_check_head_has_no_body_and_is_stateless(self) -> None:
+        response = self.client.head(reverse("healthz"), HTTP_USER_AGENT="browser")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.content, b"")
+        self.assertEqual(Profile.objects.count(), 0)
+        self.assertNotIn("sessionid", response.cookies)
+
     def test_cookie_less_current_user_does_not_create_profile(self) -> None:
         """
         Ensure that a passive current-user read does not create a session profile.
