@@ -37,6 +37,11 @@ urlpatterns = [
         name="user-scratches",
     ),
     path(
+        "users/<slug:username>/help-wanted",
+        user.UserHelpWantedScratchList.as_view(),
+        name="user-help-wanted",
+    ),
+    path(
         "users/<slug:username>/presets",
         user.UserPresetList.as_view(),
         name="user-presets",

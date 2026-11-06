@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SingleLineScratchItem } from "@/components/ScratchItem";
 import ScratchList from "@/components/ScratchList";
+import type { SortMode } from "@/components/SortScratch";
 import YourScratchList from "@/components/YourScratchList";
 
 import WelcomeInfo from "./WelcomeInfo";
@@ -44,11 +45,27 @@ export default function Page() {
                     />
                 </section>
                 <section className="md:w-1/2 lg:w-3/4">
-                    <h2 className="mb-2 text-lg">Recent activity</h2>
-                    <ScratchList
-                        isPublic
-                        url="/scratch?page_size=20&has_owner=true"
-                    />
+                    <div className="mb-10">
+                        <ScratchList
+                            title="Help wanted"
+                            isPublic
+                            isSortable
+                            initialSortMode={"-help_wanted_at" as SortMode}
+                            sortOptions={{
+                                "-help_wanted_at": "Most recent",
+                                help_wanted_at: "Oldest",
+                                "-help_wanted_count": "Most votes",
+                            }}
+                            url="/scratch/help-wanted?page_size=20"
+                        />
+                    </div>
+                    <div>
+                        <h2 className="mb-2 text-lg">Recent activity</h2>
+                        <ScratchList
+                            isPublic
+                            url="/scratch?page_size=20&has_owner=true"
+                        />
+                    </div>
                 </section>
             </div>
         </main>
