@@ -35,7 +35,7 @@ You can CTRL+C to stop tailing logs. If you want to stop the processes then runn
 
 ## Configuration
 
-Compiler assets are managed by Cromper. The download script processes all platforms by default; set a platform's `ENABLE_<PLATFORM>_SUPPORT` variable to `NO` to skip its compiler assets.
+Compiler assets are managed by cromper. The download script processes all platforms by default; set a platform's `ENABLE_<PLATFORM>_SUPPORT` variable to `NO` to skip its compiler assets.
 
 To download assets for only one platform, pass its name with `--platforms`:
 
