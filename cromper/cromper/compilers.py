@@ -932,7 +932,7 @@ IDO53_CFRONT = IDOCompiler(
 IDO53_CXX = IDOCompiler(
     id="ido5.3_c++",
     platform=N64,
-    cc='PATH=""${COMPILER_DIR}"/usr/bin" "${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/NCC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='PATH="${COMPILER_DIR}/usr/bin" "${COMPILER_DIR}/usr/bin/qemu-irix" -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/NCC" -I "${COMPILER_DIR}/usr/include" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO53_CFRONT,
     language=flags.Language.OLD_CXX,
 )
@@ -1134,7 +1134,7 @@ IDO53_ASM_IRIX = IDOCompiler(
 IDO53_CFRONT_IRIX = IDOCompiler(
     id="ido5.3_cfront_irix",
     platform=IRIX,
-    cc='USE_CFRONT="1" PATH=""${COMPILER_DIR}"/usr/bin" "${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='USE_CFRONT="1" PATH="${COMPILER_DIR}/usr/bin" "${COMPILER_DIR}/usr/bin/qemu-irix" -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "${COMPILER_DIR}/usr/include" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO53_CFRONT,
     language=flags.Language.OLD_CXX,
 )
@@ -1142,7 +1142,7 @@ IDO53_CFRONT_IRIX = IDOCompiler(
 IDO53_CXX_IRIX = IDOCompiler(
     id="ido5.3_c++_irix",
     platform=IRIX,
-    cc='PATH=""${COMPILER_DIR}"/usr/bin" "${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/NCC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='PATH="${COMPILER_DIR}/usr/bin" "${COMPILER_DIR}/usr/bin/qemu-irix" -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/NCC" -I "${COMPILER_DIR}/usr/include" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO53_CFRONT,
     language=flags.Language.OLD_CXX,
 )
