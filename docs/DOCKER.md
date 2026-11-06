@@ -35,18 +35,12 @@ You can CTRL+C to stop tailing logs. If you want to stop the processes then runn
 
 ## Configuration
 
-By default, the Docker `backend` container is configured with the Switch platform disabled (due to the size of the Clang compilers).
+Compiler assets are managed by cromper. The download script processes all platforms by default; set a platform's `ENABLE_<PLATFORM>_SUPPORT` variable to `NO` to skip its compiler assets.
 
-Platforms can be enabled by changing the `ENABLE_<PLATFORM>_SUPPORT` variables to `YES` in the `docker-compose.yaml` and re-running the `docker compose up` command.
+To download assets for only one platform, pass its name with `--platforms`:
 
-E.g. to enable `SWITCH` platform:
-
-```yaml
-  backend:
-    build:
-      context: backend
-    environment:
-      - ENABLE_SWITCH_SUPPORT=YES
+```bash
+docker compose exec cromper uv run python compilers/download.py --platforms switch
 ```
 
 
