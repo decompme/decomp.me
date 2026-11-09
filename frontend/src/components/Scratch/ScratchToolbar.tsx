@@ -2,6 +2,7 @@ import {
     CheckIcon,
     DownloadIcon,
     FileIcon,
+    IssueOpenedIcon,
     IterationsIcon,
     MilestoneIcon,
     RepoForkedIcon,
@@ -163,6 +164,7 @@ function ActionButton({
     icon,
     text,
     dataTour,
+    pressed,
 }: {
     onClick: (event: MouseEvent<HTMLButtonElement>) => void | Promise<void>;
     disabled?: boolean;
@@ -170,6 +172,7 @@ function ActionButton({
     icon: JSX.Element;
     text: string;
     dataTour?: string;
+    pressed?: boolean;
 }) {
     return (
         <button
@@ -177,6 +180,7 @@ function ActionButton({
             disabled={disabled}
             title={title}
             aria-label={text}
+            aria-pressed={pressed}
             data-tour={dataTour}
         >
             {icon}
@@ -200,6 +204,8 @@ function Actions({
     const saveScratchRequest = api.useSaveScratch(scratch);
     const [isSaving, setIsSaving] = useState(false);
     const [isForking, setIsForking] = useState(false);
+    const [isUpdatingFlags, setIsUpdatingFlags] = useState(false);
+    const { flags, updateFlags } = api.useScratchFlags(scratch);
 
     const canSave = !!(scratch.owner && userIsYou(scratch.owner));
     const isSaved = api.useIsScratchSaved(scratch);
@@ -227,6 +233,16 @@ function Actions({
             saveCallback();
         } finally {
             setIsForking(false);
+        }
+    };
+
+    const toggleHelpWanted = async () => {
+        if (isUpdatingFlags) return;
+        setIsUpdatingFlags(true);
+        try {
+            await updateFlags({ help_wanted: !flags?.help_wanted });
+        } finally {
+            setIsUpdatingFlags(false);
         }
     };
 
@@ -272,6 +288,18 @@ function Actions({
                     dataTour={
                         tourTargetsEnabled ? "scratch-action-fork" : undefined
                     }
+                />
+            </li>
+            <li>
+                <ActionButton
+                    onClick={() => void toggleHelpWanted()}
+                    disabled={!flags || isUpdatingFlags}
+                    text={
+                        flags?.help_wanted ? "Help requested" : "Request help"
+                    }
+                    title="Show this scratch in the help-wanted list"
+                    icon={<IssueOpenedIcon />}
+                    pressed={flags?.help_wanted}
                 />
             </li>
             {((scratch.owner && userIsYou(scratch.owner)) || isAdmin) && (

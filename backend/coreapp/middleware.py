@@ -4,7 +4,6 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from django.contrib import auth
-from django.contrib.auth.models import User
 from django.http.request import HttpRequest
 from django.utils.timezone import now
 from rest_framework.request import Request as DRFRequest
@@ -22,7 +21,6 @@ class AnonymousUser(auth.models.AnonymousUser):
 if TYPE_CHECKING:
 
     class Request(DRFRequest):
-        user: User | AnonymousUser
         profile: Profile
 
 else:
@@ -47,6 +45,7 @@ def is_public_get_request(req: Request) -> bool:
         "/api/platform",
         "/api/preset",
         "/api/scratch-count$",
+        "/api/scratch/help-wanted$",
         "/api/scratch/[A-Za-z0-9]+/compile$",
         "/api/scratch/[A-Za-z0-9]+/export$",
         "/api/scratch/[A-Za-z0-9]+/family$",
