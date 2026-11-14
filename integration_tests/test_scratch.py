@@ -8,6 +8,7 @@ import io
 import zipfile
 
 import pytest
+from asgiref.sync import async_to_sync
 from coreapp.models.scratch import Scratch
 from coreapp.views.scratch import compile_scratch_update_score
 from django.urls import reverse
@@ -218,7 +219,7 @@ class TestScratchModification(IntegrationTestBase):
         assert scratch.max_score == -1
 
         prev_last_updated = scratch.last_updated
-        compile_scratch_update_score(scratch)
+        async_to_sync(compile_scratch_update_score)(scratch)
         assert scratch.max_score == 200
         assert prev_last_updated == scratch.last_updated
 

@@ -29,6 +29,10 @@ class CromperConfig:
         # CPU settings
         self.num_processes = int(os.getenv("CROMPER_NUM_PROCESSES", "4"))
         self.num_threads = int(os.getenv("CROMPER_NUM_THREADS", "8"))
+        # Queue allowance beyond running workers; excess requests receive HTTP 429.
+        self.max_queued_jobs = int(
+            os.getenv("CROMPER_MAX_QUEUED_JOBS", str(self.num_processes))
+        )
 
         # Sandbox settings
         self.use_sandbox_jail = env_flag("USE_SANDBOX_JAIL", True)
