@@ -10,7 +10,6 @@ import zipfile
 import pytest
 from coreapp.models.scratch import Scratch
 from coreapp.views.scratch import compile_scratch_update_score
-from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 
