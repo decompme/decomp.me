@@ -1,14 +1,17 @@
 import json
 import logging
 import traceback
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from collections.abc import Callable
+from concurrent.futures import Executor
 from typing import Any
 
+import tornado.ioloop
 import tornado.web
 
 from cromper import flags, libraries
 
 from ..config import CromperConfig
+from ..executor import OverloadedError
 
 logger = logging.getLogger(__name__)
 
@@ -16,9 +19,7 @@ logger = logging.getLogger(__name__)
 class BaseHandler(tornado.web.RequestHandler):
     """Base handler with common functionality."""
 
-    def initialize(
-        self, config: CromperConfig, executor: ProcessPoolExecutor | ThreadPoolExecutor
-    ):
+    def initialize(self, config: CromperConfig, executor: Executor) -> None:
         self.config = config
         self.executor = executor
 
@@ -46,6 +47,9 @@ class BaseHandler(tornado.web.RequestHandler):
                         traceback.format_exception(*exc_info)
                     )
         self.set_status(status_code)
+        if status_code == 429:
+            # send_error() clears headers set before the error was raised.
+            self.set_header("Retry-After", "1")
         self.write({"error": error_message})
 
     def get_json_body(self) -> dict[str, Any]:
@@ -57,6 +61,16 @@ class BaseHandler(tornado.web.RequestHandler):
         if not isinstance(body, dict):
             raise tornado.web.HTTPError(400, reason="JSON body must be an object")
         return body
+
+    async def run_tool(self, tool: Callable[..., Any], data: dict[str, Any]) -> Any:
+        try:
+            return await tornado.ioloop.IOLoop.current().run_in_executor(
+                self.executor, tool, data, self.config
+            )
+        except OverloadedError as e:
+            raise tornado.web.HTTPError(
+                429, reason="cromper is at capacity, please retry shortly"
+            ) from e
 
 
 class HealthHandler(BaseHandler):

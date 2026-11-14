@@ -12,6 +12,7 @@ from sentry_sdk.integrations.tornado import TornadoIntegration
 from sentry_sdk.transport import HttpTransport
 
 from .config import CromperConfig
+from .executor import BoundedExecutor
 from .handlers.assemble import AssembleHandler
 from .handlers.compile import CompileHandler
 from .handlers.decompile import DecompileHandler
@@ -44,7 +45,10 @@ def init_sentry(config: CromperConfig) -> None:
 def make_app(config: CromperConfig) -> tornado.web.Application:
     """Create and configure the Tornado application."""
 
-    process_executor = ProcessPoolExecutor(max_workers=config.num_processes)
+    process_executor = BoundedExecutor(
+        ProcessPoolExecutor(max_workers=config.num_processes),
+        capacity=config.num_processes + config.max_queued_jobs,
+    )
     thread_executor = ThreadPoolExecutor(max_workers=config.num_threads)
 
     return tornado.web.Application(
@@ -105,6 +109,11 @@ def main():
     logger.info(f"Debug mode: {config.debug}")
     logger.info(f"Use sandbox jail: {config.use_sandbox_jail}")
     logger.info(f"Compiler base path: {config.compiler_base_path}")
+    logger.info(
+        "Tool capacity: %d running + %d queued",
+        config.num_processes,
+        config.max_queued_jobs,
+    )
 
     app = make_app(config)
     app.listen(config.port)
