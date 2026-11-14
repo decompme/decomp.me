@@ -275,4 +275,3 @@ class TestScratchExport(IntegrationTestBase):
         assert "code.c" in file_names
         assert "ctx.c" in file_names
         assert "current.o" not in file_names
-
