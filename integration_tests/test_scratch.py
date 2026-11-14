@@ -10,7 +10,6 @@ import zipfile
 import pytest
 from coreapp.models.scratch import Scratch
 from coreapp.views.scratch import compile_scratch_update_score
-from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 
@@ -276,4 +275,3 @@ class TestScratchExport(IntegrationTestBase):
         assert "code.c" in file_names
         assert "ctx.c" in file_names
         assert "current.o" not in file_names
-
