@@ -4,7 +4,14 @@ import useSWRImmutable from "swr/immutable";
 import { useDebouncedCallback } from "use-debounce";
 import { useRouter } from "@/lib/navigation";
 import { resolveCompilersResponse } from "./api/compilerFlags";
-import { get, getPublic, patch, post, ResponseError } from "./api/request";
+import {
+    get,
+    getPublic,
+    patch,
+    post,
+    RequestFailedError,
+    ResponseError,
+} from "./api/request";
 import {
     buildScratchCompileRequest,
     buildScratchSavePatch,
@@ -524,6 +531,10 @@ export function useStats(): Stats | undefined {
     const { data, error } = useSWR<Stats>("/stats", getPublic, {
         refreshInterval: 1000 * 60, // 60 seconds
     });
+
+    if (error instanceof RequestFailedError) {
+        return data;
+    }
 
     if (error) {
         throw error;
