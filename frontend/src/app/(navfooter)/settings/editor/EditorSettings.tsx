@@ -49,19 +49,17 @@ export default function EditorSettings() {
             let isCurrent = true;
             setDownloadingLanguageServer(true);
 
-            import("@decompme/clangd-wasm").then(
-                ({ ClangdStdioTransport }) => {
-                    // We don't need to do anything with the result of this fetch - all this
-                    // is is a way to make sure the wasm file ends up in the browser's cache.
-                    fetch(ClangdStdioTransport.getDefaultWasmURL(false))
-                        .then((res) => res.blob())
-                        .then(() => {
-                            if (isCurrent) {
-                                setDownloadingLanguageServer(false);
-                            }
-                        });
-                },
-            );
+            import("@decompme/clangd-wasm").then(({ ClangdStdioTransport }) => {
+                // We don't need to do anything with the result of this fetch - all this
+                // is is a way to make sure the wasm file ends up in the browser's cache.
+                fetch(ClangdStdioTransport.getDefaultWasmURL(false))
+                    .then((res) => res.blob())
+                    .then(() => {
+                        if (isCurrent) {
+                            setDownloadingLanguageServer(false);
+                        }
+                    });
+            });
 
             return () => {
                 isCurrent = false;

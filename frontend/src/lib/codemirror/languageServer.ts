@@ -1,6 +1,5 @@
 /* Originally adapted from https://github.com/FurqanSoftware/codemirror-languageserver */
 
-import type { ClangdStdioTransport } from "@decompme/clangd-wasm";
 import type {
     Completion,
     CompletionContext,
@@ -18,6 +17,7 @@ import {
     type Tooltip,
     ViewPlugin,
 } from "@codemirror/view";
+import type { ClangdStdioTransport } from "@decompme/clangd-wasm";
 import { Client, RequestManager } from "@open-rpc/client-js";
 import type { Transport } from "@open-rpc/client-js/build/transports/Transport";
 import type * as LSP from "vscode-languageserver-protocol";

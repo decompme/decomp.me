@@ -1,8 +1,8 @@
+import { StateEffect } from "@codemirror/state";
 import type {
     ClangdStdioTransport,
     CompileCommands,
 } from "@decompme/clangd-wasm";
-import { StateEffect } from "@codemirror/state";
 import type { EditorView } from "codemirror";
 import { type RefObject, useEffect, useState } from "react";
 
