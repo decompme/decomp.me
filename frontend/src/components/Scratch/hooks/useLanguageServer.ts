@@ -1,7 +1,7 @@
 import type {
     ClangdStdioTransport,
     CompileCommands,
-} from "@clangd-wasm/clangd-wasm";
+} from "@decompme/clangd-wasm";
 import { StateEffect } from "@codemirror/state";
 import type { EditorView } from "codemirror";
 import { type RefObject, useEffect, useState } from "react";
@@ -56,7 +56,7 @@ export default function useLanguageServer(
             if (!languageId) return;
 
             const { ClangdStdioTransport } = await import(
-                "@clangd-wasm/clangd-wasm"
+                "@decompme/clangd-wasm"
             );
             if (isCurrent) {
                 setClangdStdioTransportModule(() => ClangdStdioTransport);

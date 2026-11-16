@@ -1,6 +1,6 @@
 /* Originally adapted from https://github.com/FurqanSoftware/codemirror-languageserver */
 
-import type { ClangdStdioTransport } from "@clangd-wasm/clangd-wasm";
+import type { ClangdStdioTransport } from "@decompme/clangd-wasm";
 import type {
     Completion,
     CompletionContext,

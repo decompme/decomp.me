@@ -1061,13 +1061,6 @@
   resolved "https://registry.yarnpkg.com/@biomejs/cli-win32-x64/-/cli-win32-x64-2.0.6.tgz#53acf543060bfda18853dfa81b34e6e95fb545a5"
   integrity sha512-bfM1Bce0d69Ao7pjTjUS+AWSZ02+5UHdiAP85Th8e9yV5xzw6JrHXbL5YWlcEKQ84FIZMdDc7ncuti1wd2sdbw==
 
-"@clangd-wasm/clangd-wasm@15.0.7-dev5":
-  version "15.0.7-dev5"
-  resolved "https://registry.yarnpkg.com/@clangd-wasm/clangd-wasm/-/clangd-wasm-15.0.7-dev5.tgz#6787f95ae28574c0f5addb6ca44177f0dd358a5c"
-  integrity sha512-HwzZ0EgSayCgjgk9WRVjiurrqo2Tc7iJR1s1PDx718/kOSPgnc1JyIMH/0EazLDfB2pOPDewnxNwdCSDnDhz+w==
-  dependencies:
-    "@open-rpc/client-js" "^1.8.1"
-
 "@codemirror/autocomplete@^6.0.0":
   version "6.19.1"
   resolved "https://registry.yarnpkg.com/@codemirror/autocomplete/-/autocomplete-6.19.1.tgz#355e49c9fd275b42a6e16e9ea0cf4361f67a3ec4"
@@ -1172,6 +1165,13 @@
     crelt "^1.0.6"
     style-mod "^4.1.0"
     w3c-keyname "^2.2.4"
+
+"@decompme/clangd-wasm@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@decompme/clangd-wasm/-/clangd-wasm-0.1.0.tgz#bd398c28242ca79d26b1113c1a1f3f3a47c15b08"
+  integrity sha512-G7sKfk0XoFXE3k/GUzEdOC8ApCcb6MZzpLLfuV82i3xDMNr6+vjA0ZUVsPNRHxjAOK0ceXRDZ8u0Rr3zPu5r+w==
+  dependencies:
+    "@open-rpc/client-js" "^1.8.1"
 
 "@discoveryjs/json-ext@0.5.7":
   version "0.5.7"

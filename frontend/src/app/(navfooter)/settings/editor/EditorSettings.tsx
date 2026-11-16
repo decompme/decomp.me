@@ -49,7 +49,7 @@ export default function EditorSettings() {
             let isCurrent = true;
             setDownloadingLanguageServer(true);
 
-            import("@clangd-wasm/clangd-wasm").then(
+            import("@decompme/clangd-wasm").then(
                 ({ ClangdStdioTransport }) => {
                     // We don't need to do anything with the result of this fetch - all this
                     // is is a way to make sure the wasm file ends up in the browser's cache.
@@ -169,7 +169,7 @@ export default function EditorSettings() {
                     checked={languageServerEnabled}
                     onChange={setLanguageServerEnabled}
                     label="Enable language server"
-                    description="Enable editor features such as code completion, error checking, and formatting via clangd and WebAssembly magic. WARNING: enabling will incur a one time ~13MB download, and bump up resource usage during editing."
+                    description="Enable editor features such as code completion, error checking, and formatting via clangd and WebAssembly magic. WARNING: enabling will incur a one time ~21MB WASM download, and bump up resource usage during editing."
                 >
                     {downloadingLanguageServer && (
                         <div className="flex gap-2 p-4">
