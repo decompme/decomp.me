@@ -17,7 +17,6 @@ import {
     type Tooltip,
     ViewPlugin,
 } from "@codemirror/view";
-import type { ClangdStdioTransport } from "@decompme/clangd-wasm";
 import { Client, RequestManager } from "@open-rpc/client-js";
 import type { Transport } from "@open-rpc/client-js/build/transports/Transport";
 import type * as LSP from "vscode-languageserver-protocol";
@@ -222,8 +221,10 @@ class LanguageServerClient {
     }
 
     transportWriteFile(filename: string, contents: string) {
-        const transport = <ClangdStdioTransport>this.transport;
-        transport.module?.FS?.writeFile(filename, contents);
+        const transport = this.transport as Transport & {
+            writeFile?: (filename: string, contents: string) => void;
+        };
+        transport.writeFile?.(filename, contents);
     }
 
     attachPlugin(plugin: LanguageServerPlugin) {
