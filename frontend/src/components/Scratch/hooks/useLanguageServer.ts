@@ -1,12 +1,10 @@
-import type {
-    ClangdStdioTransport,
-    CompileCommands,
-} from "@clangd-wasm/clangd-wasm";
-import { StateEffect } from "@codemirror/state";
+import { Compartment, StateEffect } from "@codemirror/state";
+import type { CompileCommands } from "@decompme/clangd-wasm";
 import type { EditorView } from "codemirror";
-import { type RefObject, useEffect, useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 
 import type * as api from "@/lib/api";
+import { ClangdWorkerTransport } from "@/lib/codemirror/clangdWorkerTransport";
 import {
     LanguageServerClient,
     languageServerWithTransport,
@@ -40,35 +38,11 @@ export default function useLanguageServer(
     const [defaultClangFormat, setDefaultClangFormat] =
         useState<string>(undefined);
 
-    const [ClangdStdioTransportModule, setClangdStdioTransportModule] =
-        useState<typeof ClangdStdioTransport>(undefined);
-
     const [saveSource, setSaveSource] =
         useState<(source: string) => Promise<void>>(undefined);
     const [saveContext, setSaveContext] =
         useState<(context: string) => Promise<void>>(undefined);
-
-    useEffect(() => {
-        let isCurrent = true;
-
-        const loadClangdModule = async () => {
-            if (!enabled) return;
-            if (!languageId) return;
-
-            const { ClangdStdioTransport } = await import(
-                "@clangd-wasm/clangd-wasm"
-            );
-            if (isCurrent) {
-                setClangdStdioTransportModule(() => ClangdStdioTransport);
-            }
-        };
-
-        loadClangdModule();
-
-        return () => {
-            isCurrent = false;
-        };
-    }, [languageId, enabled]);
+    const languageServerCompartment = useRef(new Compartment());
 
     useEffect(() => {
         if (!initialScratchState && languageId) {
@@ -96,14 +70,15 @@ export default function useLanguageServer(
     // because if we had _lsClient defined inside an async function, we wouldn't be
     // able to reference it inside of the destructor.
     useEffect(() => {
-        if (!ClangdStdioTransportModule) return;
+        if (!enabled || !languageId) return;
         if (!initialScratchState) return;
         if (!defaultClangFormat) return;
 
-        const { scratch: initialScratch, languageId } = initialScratchState;
+        const { scratch: initialScratch, languageId: initialLanguageId } =
+            initialScratchState;
 
-        const sourceFilename = `source.${languageId}`;
-        const contextFilename = `context.${languageId}`;
+        const sourceFilename = `source.${initialLanguageId}`;
+        const contextFilename = `context.${initialLanguageId}`;
 
         const compileCommands: CompileCommands = [
             {
@@ -125,17 +100,18 @@ export default function useLanguageServer(
         initialFileState[sourceFilename] = initialScratch.source_code;
         initialFileState[contextFilename] = initialScratch.context;
 
+        const transport = new ClangdWorkerTransport(
+            compileCommands,
+            initialFileState,
+        );
+
         const _lsClient = new LanguageServerClient({
-            transport: new ClangdStdioTransportModule({
-                compileCommands,
-                initialFileState,
-                useSmallBinary: false,
-            }),
+            transport,
 
             rootUri: "file:///",
             workspaceFolders: null,
             documentUri: null,
-            languageId,
+            languageId: initialLanguageId,
         });
 
         const [sourceLsExtension, _saveSource] = languageServerWithTransport({
@@ -144,7 +120,7 @@ export default function useLanguageServer(
             rootUri: "file:///",
             workspaceFolders: null,
             documentUri: `file:///${sourceFilename}`,
-            languageId,
+            languageId: initialLanguageId,
         });
 
         const [contextLsExtension, _saveContext] = languageServerWithTransport({
@@ -153,27 +129,42 @@ export default function useLanguageServer(
             rootUri: "file:///",
             workspaceFolders: null,
             documentUri: `file:///${contextFilename}`,
-            languageId,
+            languageId: initialLanguageId,
         });
 
         // TODO: return the codemirror extensions instead of hotpatching them in?
         // Given the async nature of the extension being ready, it'd require updating the Codemirror
         // component to support inserting extensions when the extension prop changes
         sourceEditor.current?.dispatch({
-            effects: StateEffect.appendConfig.of(sourceLsExtension),
+            effects: StateEffect.appendConfig.of(
+                languageServerCompartment.current.of(sourceLsExtension),
+            ),
         });
         contextEditor.current?.dispatch({
-            effects: StateEffect.appendConfig.of(contextLsExtension),
+            effects: StateEffect.appendConfig.of(
+                languageServerCompartment.current.of(contextLsExtension),
+            ),
         });
 
         setSaveSource(() => _saveSource);
         setSaveContext(() => _saveContext);
 
         return () => {
-            _lsClient.exit();
+            const removeLanguageServer =
+                languageServerCompartment.current.reconfigure([]);
+            sourceEditor.current?.dispatch({
+                effects: removeLanguageServer,
+            });
+            contextEditor.current?.dispatch({
+                effects: removeLanguageServer,
+            });
+            setSaveSource(undefined);
+            setSaveContext(undefined);
+            void _lsClient.exit().finally(() => transport.close());
         };
     }, [
-        ClangdStdioTransportModule,
+        enabled,
+        languageId,
         initialScratchState,
         defaultClangFormat,
         sourceEditor,

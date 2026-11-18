@@ -1,6 +1,5 @@
 /* Originally adapted from https://github.com/FurqanSoftware/codemirror-languageserver */
 
-import type { ClangdStdioTransport } from "@clangd-wasm/clangd-wasm";
 import type {
     Completion,
     CompletionContext,
@@ -222,8 +221,10 @@ class LanguageServerClient {
     }
 
     transportWriteFile(filename: string, contents: string) {
-        const transport = <ClangdStdioTransport>this.transport;
-        transport.module?.FS?.writeFile(filename, contents);
+        const transport = this.transport as Transport & {
+            writeFile?: (filename: string, contents: string) => void;
+        };
+        transport.writeFile?.(filename, contents);
     }
 
     attachPlugin(plugin: LanguageServerPlugin) {
