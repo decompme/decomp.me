@@ -96,6 +96,7 @@
     "ido5.3": "IDO 5.3",
     "ido5.2": "IDO 5.2",
     "ido5.3_cfront": "IDO 5.3 C++ (Cfront)",
+    "ido5.3_mipspro6.2": "IDO 5.3 C++ (MIPSPro 6.2)",
     "ido5.3Pascal": "IDO 5.3 Pascal",
     "ido7.1": "IDO 7.1",
     "ido7.1_irix4": "IDO 7.1 (IRIX 4 frontend)",
