@@ -1,5 +1,6 @@
 n64:
   - ido5.3
+  - ido5.3_mipspro6.2
   - ido7.1
   - gcc2.7.2kmc
   - gcc2.8.1pm

@@ -929,6 +929,13 @@ IDO53_CFRONT = IDOCompiler(
     language=flags.Language.OLD_CXX,
 )
 
+IDO53_MIPSPRO62 = IDOCompiler(
+    id="ido5.3_mipspro6.2",
+    platform=N64,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/NCC" -c -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    language=flags.Language.OLD_CXX,
+)
+
 IDO71 = IDOCompiler(
     id="ido7.1",
     platform=N64,
@@ -1889,6 +1896,7 @@ _all_compilers: list[Compiler] = [
     IDO52,
     IDO53,
     IDO53_CFRONT,
+    IDO53_MIPSPRO62,
     IDO60,
     IDO71,
     IDO71_IRIX4,
