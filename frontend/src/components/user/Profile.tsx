@@ -8,12 +8,14 @@ import Tabs, { Tab } from "@/components/Tabs";
 import type { ScratchUser } from "@/lib/api/types";
 import { userGithubHtmlUrl } from "@/lib/api/urls";
 
+import HelpWantedTab from "./tabs/HelpWantedTab";
 import PresetsTab from "./tabs/PresetsTab";
 import ScratchesTab from "./tabs/ScratchesTab";
 import UserAvatar from "./UserAvatar";
 
 enum TabId {
     SCRATCHES = "user_scratches",
+    HELP_WANTED = "user_help_wanted",
     PRESETS = "user_presets",
 }
 
@@ -53,10 +55,11 @@ function CustomLayout({ renderTab, layout, onChange }: Props) {
 export default function Profile({ user }: { user: ScratchUser }) {
     const [layout, setLayout] = useState<TabLayout>({
         ...defaultTabLayout,
-        tabs:
-            user.num_presets > 0
-                ? [...defaultTabLayout.tabs, TabId.PRESETS]
-                : defaultTabLayout.tabs,
+        tabs: [
+            ...defaultTabLayout.tabs,
+            ...(user.num_help_wanted > 0 ? [TabId.HELP_WANTED] : []),
+            ...(user.num_presets > 0 ? [TabId.PRESETS] : []),
+        ],
     });
 
     const renderTab = (id: string) => {
@@ -69,6 +72,16 @@ export default function Profile({ user }: { user: ScratchUser }) {
                         label={`Scratches (${user.num_scratches.toLocaleString("en-US")})`}
                     >
                         {() => <ScratchesTab user={user} />}
+                    </Tab>
+                );
+            case TabId.HELP_WANTED:
+                return (
+                    <Tab
+                        key={id}
+                        tabKey={id}
+                        label={`Help wanted (${user.num_help_wanted.toLocaleString("en-US")})`}
+                    >
+                        {() => <HelpWantedTab user={user} />}
                     </Tab>
                 );
             case TabId.PRESETS:
