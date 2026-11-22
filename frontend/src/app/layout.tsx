@@ -1,3 +1,4 @@
+import FaviconBlinker from "./FaviconBlinker";
 import ThemeProvider from "./ThemeProvider";
 
 import "allotment/dist/style.css";
@@ -44,10 +45,11 @@ export default function RootLayout({
 
                 <link rel="manifest" href="/manifest.json" />
 
-                <link rel="shortcut icon" href="/purplefrog.svg" />
+                <link id="favicon" rel="icon" href="/purplefrog.svg" />
                 <link rel="apple-touch-icon" href="/purplefrog-bg-180.png" />
 
                 <ThemeProvider />
+                <FaviconBlinker />
             </head>
             <body className="flex flex-col bg-gray-1 font-sans text-gray-12 subpixel-antialiased">
                 {children}
