@@ -1,0 +1,6 @@
+abi <abi/4.0>,
+include <tunables/global>
+
+profile decompme-cromper flags=(unconfined) {
+  userns,
+}
