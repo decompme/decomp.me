@@ -7,7 +7,10 @@ from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 import requests
 from django.conf import settings
-from rest_framework.status import HTTP_429_TOO_MANY_REQUESTS, HTTP_503_SERVICE_UNAVAILABLE
+from rest_framework.status import (
+    HTTP_429_TOO_MANY_REQUESTS,
+    HTTP_503_SERVICE_UNAVAILABLE,
+)
 
 from coreapp.compiler_utils import (
     Compiler,
