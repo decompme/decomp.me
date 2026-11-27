@@ -4,6 +4,17 @@ There is support for running subprocesses within [`nsjail`](https://github.com/g
 
 This is controlled by the `SANDBOX` settings, and is enabled by default inside the `cromper` Docker container.
 
+### AppArmor on Docker hosts
+
+The Cromper Docker service uses the `decompme-cromper` AppArmor profile to permit nsjail's unprivileged user namespaces while leaving the host-wide AppArmor restrictions enabled. Load the profile on each Docker host before starting or recreating Cromper:
+
+```sh
+sudo install -o root -g root -m 0644 cromper/apparmor/decompme-cromper /etc/apparmor.d/decompme-cromper
+sudo apparmor_parser -r /etc/apparmor.d/decompme-cromper
+```
+
+The profile is loaded again by AppArmor at boot from `/etc/apparmor.d`. Docker Compose attaches it to the Cromper container by name.
+
 To enable it locally outside of the Docker container:
 
 - Build or install `nsjail` locally. Example instructions for Ubuntu:

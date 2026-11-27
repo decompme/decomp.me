@@ -53,10 +53,10 @@ jobs:
       - uses: actions/checkout@v7
       - name: Build cromper development image
         run: docker build cromper --target dev -t decompme_cromper
+      - name: Load Cromper AppArmor profile on host
+        run: sudo apparmor_parser -r cromper/apparmor/decompme-cromper
       - name: Run cromper tests
         run: |-
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           export USER_1000=$(getent passwd 1000 | cut -d: -f1)
           for dir in cromper/.venv cromper/compilers cromper/libraries; do
             mkdir -p "$dir"
@@ -69,7 +69,7 @@ jobs:
           docker run --rm \
             -v $(pwd)/cromper:/cromper \
             "${KVM_DEVICE[@]}" \
-            --security-opt apparmor=unconfined \
+            --security-opt apparmor=decompme-cromper \
             --security-opt seccomp=unconfined \
             --cap-drop all \
             --cap-add setuid \
@@ -91,11 +91,6 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
-
-      - name: Allow nsjail user namespaces
-        run: |
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - name: Fetch compilers and libraries
         run: |
@@ -125,6 +120,9 @@ jobs:
           echo 'CROMPER_PURPLE_TAG=latest' >> .deploy.env
           touch backend.prod.env
           touch cromper.prod.env
+
+      - name: Load Cromper AppArmor profile on host
+        run: sudo apparmor_parser -r cromper/apparmor/decompme-cromper
 
       - name: Comment out SSL server configuration from nginx
         run: |

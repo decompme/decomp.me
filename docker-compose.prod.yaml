@@ -51,7 +51,7 @@ x-cromper-base: &cromper-base
     - cromper.prod.env
   restart: unless-stopped
   security_opt:
-    - apparmor=unconfined
+    - apparmor=decompme-cromper
     - seccomp=unconfined
   volumes:
     - ./cromper/compilers:/cromper/compilers:ro

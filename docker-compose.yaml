@@ -27,7 +27,7 @@ services:
       - cromper/docker.dev.env
     restart: unless-stopped
     security_opt:
-      - apparmor=unconfined
+      - apparmor=decompme-cromper
       - seccomp=unconfined
     volumes:
       - ./cromper:/cromper
