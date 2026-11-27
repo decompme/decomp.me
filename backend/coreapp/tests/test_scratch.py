@@ -4,13 +4,16 @@ import json
 import zipfile
 from time import sleep
 from typing import Any
+from unittest.mock import patch
 from urllib.parse import urlencode
 
+from asgiref.sync import async_to_sync
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import ProtectedError
 from django.urls import reverse
 from rest_framework import status
 
+from coreapp.cromper_client import CromperBusyError, CromperUnavailableError
 from coreapp.models.scratch import (
     Assembly,
     Context,
@@ -31,8 +34,91 @@ from coreapp.tests.mock_cromper_client import (
     IDO71,
     MWCC_242_81,
     N64,
+    MockCromperClient,
 )
 from coreapp.views.scratch import compile_scratch_update_score
+
+
+class ScratchCromperBusyTests(BaseTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.scratch = self.create_nop_scratch()
+
+    def test_compile_busy_preserves_response_shape_and_score(self) -> None:
+        with patch.object(
+            MockCromperClient,
+            "compile_code",
+            side_effect=CromperBusyError("at capacity"),
+        ) as compile_code:
+            response = self.client.get(f"/api/scratch/{self.scratch.slug}/compile")
+
+        compile_code.assert_awaited_once()
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["success"])
+        self.assertIn("service is busy", response.json()["compiler_output"])
+        self.assertNotIn("at capacity", response.json()["compiler_output"])
+        score = self.scratch.score
+        self.scratch.refresh_from_db()
+        self.assertEqual(self.scratch.score, score)
+
+    def test_diff_busy_preserves_response_shape_and_score(self) -> None:
+        with patch.object(
+            MockCromperClient, "diff", side_effect=CromperBusyError("at capacity")
+        ) as diff:
+            response = self.client.get(f"/api/scratch/{self.scratch.slug}/compile")
+
+        diff.assert_awaited_once()
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.json()["diff_output"])
+        self.assertIn("service is busy", response.json()["compiler_output"])
+        score = self.scratch.score
+        self.scratch.refresh_from_db()
+        self.assertEqual(self.scratch.score, score)
+
+    def test_decompile_busy_preserves_response_shape(self) -> None:
+        with patch.object(
+            MockCromperClient, "decompile", side_effect=CromperBusyError("at capacity")
+        ) as decompile:
+            response = self.client.post(
+                f"/api/scratch/{self.scratch.slug}/decompile", {}
+            )
+
+        decompile.assert_awaited_once()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {"decompilation": CromperBusyError.public_message},
+        )
+
+    def test_create_busy_is_429_and_unavailable_remains_503(self) -> None:
+        for error, expected_status, expected_code in (
+            (CromperBusyError, 429, "TooManyRequests"),
+            (CromperUnavailableError, 503, "ServiceUnavailable"),
+        ):
+            with (
+                self.subTest(error=error),
+                patch.object(
+                    MockCromperClient,
+                    "assemble_asm",
+                    side_effect=error("internal detail"),
+                ) as assemble,
+            ):
+                response = self.client.post(
+                    "/api/scratch",
+                    {"compiler": "dummy", "context": "", "target_asm": "jr $ra\nnop\n"},
+                    format="json",
+                )
+
+                assemble.assert_awaited_once()
+                self.assertEqual(response.status_code, expected_status)
+                self.assertEqual(response.json()["code"], expected_code)
+                self.assertEqual(response.json()["kind"], error.__name__)
+                self.assertNotIn("internal detail", response.json()["detail"])
+                if expected_status == 429:
+                    self.assertEqual(response["Retry-After"], "1")
+                    self.assertEqual(response["Cache-Control"], "no-store")
+                else:
+                    self.assertNotIn("Retry-After", response)
 
 
 class ScratchListTests(BaseTestCase):
@@ -56,6 +142,17 @@ class ScratchListTests(BaseTestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_list_uses_terse_serializer(self) -> None:
+        self.create_nop_scratch()
+
+        response = self.client.get(reverse("scratch-list"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.json()["results"]
+        self.assertTrue(results)
+        self.assertNotIn("source_code", results[0])
+        self.assertIn("best_fork", results[0])
 
 
 class ScratchCreationTests(BaseTestCase):
@@ -616,7 +713,7 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(scratch.max_score, -1)
 
         prev_last_updated = scratch.last_updated
-        compile_scratch_update_score(scratch)
+        async_to_sync(compile_scratch_update_score)(scratch)
         self.assertEqual(scratch.max_score, 200)
         self.assertEqual(prev_last_updated, scratch.last_updated)
 
@@ -931,3 +1028,25 @@ class ScratchExportTests(BaseTestCase):
         self.assertIn("code.c", file_names)
         self.assertIn("ctx.c", file_names)
         self.assertNotIn("current.o", file_names)
+
+    def test_export_conditional_get(self) -> None:
+        """
+        Ensure that exports set Last-Modified and honour If-Modified-Since.
+        """
+        scratch_dict = {
+            "platform": N64.id,
+            "compiler": IDO71.id,
+            "context": "",
+            "target_asm": "jr $ra\nli $v0,2",
+            "source_code": "s32 func() { return 2; }",
+        }
+        scratch = self.create_scratch(scratch_dict)
+        url = f"/api/scratch/{scratch.slug}/export?target_only=1"
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        last_modified = response.headers["Last-Modified"]
+
+        response2 = self.client.get(url, HTTP_IF_MODIFIED_SINCE=last_modified)
+        self.assertEqual(response2.status_code, status.HTTP_304_NOT_MODIFIED)
+        self.assertEqual(response2.headers["Last-Modified"], last_modified)

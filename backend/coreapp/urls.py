@@ -1,5 +1,5 @@
+from adrf.routers import DefaultRouter
 from django.urls import path
-from rest_framework.routers import DefaultRouter
 
 from coreapp.views import (
     health,
