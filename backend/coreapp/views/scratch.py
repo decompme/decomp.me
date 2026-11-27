@@ -23,6 +23,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from ..compiler_utils import filter_compiler_flags
 from ..cromper_client import (
+    CromperBusyError,
     CromperError,
     CromperTimeoutError,
     CromperUnavailableError,
@@ -113,6 +114,8 @@ def compile_scratch(scratch: Scratch, context: str | None = None) -> Compilation
             libraries=libraries,
         )
     except (CromperError, APIException) as e:
+        if isinstance(e, CromperBusyError):
+            return CompilationResult(b"", e.detail)
         if isinstance(e, (CromperUnavailableError, CromperTimeoutError)):
             return CompilationResult(
                 b"",
@@ -135,6 +138,8 @@ def diff_compilation(
             diff_flags=scratch.diff_flags,
         )
     except CromperError as e:
+        if isinstance(e, CromperBusyError):
+            return DiffResult(None, e.detail)
         if isinstance(e, (CromperUnavailableError, CromperTimeoutError)):
             return DiffResult(
                 None, "The diff service is unavailable. Please try again in a moment."

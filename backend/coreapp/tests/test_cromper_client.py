@@ -7,6 +7,7 @@ import requests
 from django.test import SimpleTestCase
 
 from coreapp.cromper_client import (
+    CromperBusyError,
     CromperClient,
     CromperError,
     CromperTimeoutError,
@@ -189,6 +190,15 @@ class CromperClientCompilerTests(SimpleTestCase):
             client._make_request("POST", "/compile")
 
         self.assertFalse(client._had_transport_failure)
+
+    def test_too_many_requests_maps_to_busy_error(self) -> None:
+        client = CromperClient("http://cromper")
+        response = self.make_response({"error": "executor full"}, status_code=429)
+
+        error = client._http_error(response, "/compile")
+
+        self.assertIsInstance(error, CromperBusyError)
+        self.assertEqual(error.status_code, 429)
 
     def test_malformed_json_is_protocol_error(self) -> None:
         client = CromperClient("http://cromper")
