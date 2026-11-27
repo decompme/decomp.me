@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 import requests
 from django.conf import settings
-from rest_framework.status import HTTP_503_SERVICE_UNAVAILABLE
+from rest_framework.status import HTTP_429_TOO_MANY_REQUESTS, HTTP_503_SERVICE_UNAVAILABLE
 
 from coreapp.compiler_utils import (
     Compiler,
@@ -42,6 +42,15 @@ class CromperUnavailableError(CromperError):
     status_code = HTTP_503_SERVICE_UNAVAILABLE
     code = "ServiceUnavailable"
     public_message = _SERVICE_UNAVAILABLE_MESSAGE
+
+
+class CromperBusyError(CromperError):
+    """Raised when Cromper rejects work because its tool executor is full."""
+
+    status_code = HTTP_429_TOO_MANY_REQUESTS
+    code = "TooManyRequests"
+    public_message = "The compiler service is busy. Please try again in a moment."
+    retry_after = 1
 
 
 class CromperTimeoutError(CromperError):
@@ -214,6 +223,8 @@ class CromperClient(AbstractCromperClient):
         message = f"cromper {endpoint} returned HTTP {response.status_code}"
         if detail:
             message = f"{message}: {detail}"
+        if response.status_code == HTTP_429_TOO_MANY_REQUESTS:
+            return CromperBusyError(message)
         return CromperError(message)
 
     def _make_request(
