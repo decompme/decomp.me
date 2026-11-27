@@ -7,8 +7,8 @@ import requests
 from django.test import SimpleTestCase
 
 from coreapp.cromper_client import (
-    CromperClient,
     CromperBusyError,
+    CromperClient,
     CromperError,
     CromperTimeoutError,
     CromperUnavailableError,
