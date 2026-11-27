@@ -71,6 +71,7 @@ services:
         condition: service_healthy
     environment:
       CROMPER_URL: http://cromper-proxy:8888
+      BACKEND_DEBUGPY: ${BACKEND_DEBUGPY:-}
     ports:
       - "8000:8000"
       - "5678:5678" # vscode debugger

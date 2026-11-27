@@ -57,6 +57,7 @@ CROMPER_URL = env("CROMPER_URL")
 
 INSTALLED_APPS = [
     "rest_framework",
+    "adrf",
     "corsheaders",
     "coreapp.apps.CoreappConfig",
     "django.contrib.admin",
@@ -74,8 +75,8 @@ MIDDLEWARE = [
     "coreapp.middleware.strip_session",
     "coreapp.middleware.strip_cookie_vary",
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     #'django.middleware.csrf.CsrfViewMiddleware',
     "coreapp.middleware.disable_csrf",
@@ -110,6 +111,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "decompme.wsgi.application"
+ASGI_APPLICATION = "decompme.asgi.application"
 
 DATABASES = {
     "default": {
@@ -184,6 +186,8 @@ LOGGING = {
         "level": "DEBUG",
     },
     "loggers": {
+        "httpcore": {"level": "WARNING"},
+        "httpx": {"level": "WARNING"},
         "django": {
             "handlers": ["console"],
             "level": DJANGO_LOG_LEVEL,

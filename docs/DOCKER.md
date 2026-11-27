@@ -44,6 +44,19 @@ docker compose exec cromper uv run python compilers/download.py --platforms swit
 ```
 
 
+## Debugging the backend
+
+The `backend` container exposes port `5678` for the VS Code **Debug Backend**
+launch configuration (`.vscode/launch.json`). Debugpy is off by default; enable it
+by setting `BACKEND_DEBUGPY` in the environment when starting the stack:
+
+```bash
+BACKEND_DEBUGPY=1 docker compose up -d backend
+```
+
+Then attach using the **Debug Backend** configuration. While debug mode is on the
+backend runs the ASGI server without autoreload, so restart it after code changes.
+
 ## Connecting from a different host
 
 If you wish to run decomp.me on one machine and connect from a *different* one (e.g. to test the site on your phone) please edit `./backend/docker.dev.env` to add your `hostname` to the `ALLOWED_HOSTS` environment variable.

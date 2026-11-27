@@ -20,4 +20,4 @@ else
   echo "Skipping housekeeping: running in CI environment"
 fi
 
-uv run gunicorn -w ${WORKERS} decompme.wsgi --bind ${BE_HOST}:${BE_PORT}
+uv run gunicorn -k uvicorn_worker.UvicornWorker -w ${WORKERS} decompme.asgi:application --bind ${BE_HOST}:${BE_PORT}
